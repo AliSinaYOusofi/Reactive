@@ -1,5 +1,7 @@
-import React from 'react';
-import { Text, Button, StyleSheet, Image, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Text, Button, StyleSheet, Image, View, Modal } from 'react-native';
+
+import CustomButton from './CustomButton';
 
 const logo = {
     uri: 'https://img.freepik.com/free-vector/coloring-page-outline-cute-cat_1308-153756.jpg?size=626&ext=jpg',
@@ -7,7 +9,23 @@ const logo = {
     height: 64,
 };
 
+
+
 export default function ScrollViews() {
+
+    const [modal, setModal] = useState(false)
+
+    const handleFullScreen = () => {
+        
+        // meo.play()
+        setModal(true);
+    };
+
+    const closeModal = () => {
+        // meo.pause()
+        setModal(false);
+    };
+    
     return (
         <View 
             style={styleSheet.container}
@@ -25,9 +43,31 @@ export default function ScrollViews() {
                                 source={logo} 
                                 style={styleSheet.image} 
                             />
-                            <Button title={"full screen"} onPress={() => alert('Full Screen')}>Full Screen</Button>
+                            <CustomButton 
+                                title={''}
+                                onPress={handleFullScreen}
+                            />
                     </View>
                 ))}
+            </View>
+            
+            <View style={styleSheet.container}>
+
+                <Modal
+                    animationType='slide'
+                    transparent={true}
+                    visible={modal}
+                    onRequestClose={closeModal}
+                >
+                    <View style={styleSheet.modal}>
+
+                        <Image 
+                            source={logo} 
+                            style={styleSheet.image} 
+                        />
+                    </View>
+
+                </Modal>
             </View>
         </View>
     );
@@ -66,4 +106,26 @@ const styleSheet = StyleSheet.create({
         marginVertical: 5,
         marginHorizontal: 5,
     },
+
+    full_screen_button:  {
+        borderRadius: 10,
+        backgroundColor: "gray"
+    },
+    svg: {
+        width: 20,
+        height: 20,
+        color: "white",
+        marginVertical: 5,
+        marginHorizontal: 5,
+    },
+
+    modal: {
+        
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        width: "90%",
+        height: "100%"
+    }
 });
