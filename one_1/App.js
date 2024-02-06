@@ -1,21 +1,20 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import ScrollViews from './components/ScrollView';
+import { Navigation } from "react-native-navigation";
+import App from "./App";
 
-export default function App() {
-  return (
-    <>
-      <StatusBar style="auto" />
-      <ScrollViews />
-    </>
-  );
-}
+Navigation.registerComponent('com.myApp.WelcomeScreen', () => App);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+Navigation.events().registerAppLaunchedListener(() => {
+  Navigation.setRoot({
+    root: {
+      stack: {
+        children: [
+          {
+            component: {
+              name: 'com.myApp.WelcomeScreen'
+            }
+          }
+        ]
+      }
+    }
+  });
+})
