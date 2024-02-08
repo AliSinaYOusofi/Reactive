@@ -40,7 +40,7 @@ export default function FlatListData() {
     )
 }
 
-const styles = StyleSheet({
+const styles = StyleSheet.create({
     
     container: {
         flex: 1,

@@ -11,7 +11,7 @@ const logo = {
 
 
 
-export default function ScrollViews() {
+export default function ScrollViews({navigation}) {
 
     const [modal, setModal] = useState(false)
 
@@ -33,7 +33,25 @@ export default function ScrollViews() {
         >
             
             <Text>Scrollable Container</Text>
-            
+
+            <View >
+
+                <Button 
+                    onPress={() => navigation.navigate("List")}
+                    title="go to profile"
+                >   
+                    List
+                </Button>
+                
+                <Button 
+                    onPress={() => navigation.navigate("Section")}
+                    title="go to profile"
+                    color={'black'}
+
+                >   
+                    List
+                </Button>
+            </View>
             <View style={styleSheet.viewContainer}>
                 {[...Array(15)].map((_, index) => (
                     <View 
@@ -69,6 +87,7 @@ export default function ScrollViews() {
 
                 </Modal>
             </View>
+        
         </View>
     );
 }
@@ -127,5 +146,14 @@ const styleSheet = StyleSheet.create({
         borderRadius: 10,
         width: "90%",
         height: "100%"
+    },
+
+    button_container: {
+        flex: 1,
+        flexDirection: "column",
+        flexWrap: "wrap",
+        rowGap: 10,
+        columnGap: 5,
+        width: 100
     }
 });
