@@ -5,6 +5,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 export default function TotalExpenses() {
 
     return (
+        <>
         <View style={styles.container}>
             
             <View style={[styles.take_give_views, styles.give]}>
@@ -12,15 +13,15 @@ export default function TotalExpenses() {
                 <View  style={styles.carets}>
                     
                     <FontAwesome 
-                        name="chevron-up" 
+                        name="chevron-circle-up" 
                         size={28} 
-                        color="white" 
+                        color="red" 
                     />
                 </View>
 
                 <View>
-                    <Text style={styles.text}>To give</Text>
-                    <Text style={styles.text}>10000</Text>
+                    <Text style={styles.to_give_text}>10000 AFG</Text>
+                    <Text style={styles.to_give_text}>I have to give</Text>
                 </View>
             </View>
             
@@ -28,17 +29,18 @@ export default function TotalExpenses() {
                 
                 <View style={styles.carets}>
                     <FontAwesome 
-                        name="chevron-down" 
+                        name="chevron-circle-down" 
                         size={28} 
-                        color="white" 
+                        color="green" 
                     />
                 </View>
                 <View>
-                    <Text style={styles.text}>To take</Text>
-                    <Text style={styles.text}>200000</Text>
+                    <Text style={styles.to_take_text}>200000 AFG</Text>
+                    <Text style={styles.to_take_text}>I have to take</Text>
                 </View>
             </View>
         </View>
+        </>
     )
 }
 
@@ -68,24 +70,28 @@ const styles = StyleSheet.create({
     },
 
     give: {
-        backgroundColor: "#FF0038",
+        backgroundColor: "#FFC8CD",
         flex: 1
     },
     
     take: {
-        backgroundColor: "#36B35F",
+        backgroundColor: "#93e9be",
         flex: 1
     },
 
-    text: {
-        color: "white",
-        fontSize: 15
+    to_give_text: {
+        color: "red",
+        fontSize: 15,
+        fontWeight: "600"
+    },
+
+    to_take_text: {
+        color: "green",
+        fontSize: 15,
+        fontWeight: "600"
     },
 
     carets: {
-        borderColor: "white",
-        borderRadius: 50,
-        borderWidth: 1,
-        padding: 2
+        
     }
 })
