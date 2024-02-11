@@ -36,13 +36,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 10,
         columnGap: 10
     },
 
     icon: {
         marginRight: 10,
-        color: "gray"
+        color: "black"
     },
 
     input: {
@@ -62,7 +61,6 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'lightgray',
         borderRadius: 5,
         padding: 5,
     },
