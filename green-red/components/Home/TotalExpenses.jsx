@@ -47,7 +47,7 @@ export default function TotalExpenses() {
 const styles = StyleSheet.create({
     
     container: {
-        flex: 1,
+        display: "flex",
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignContent: "center",
@@ -56,26 +56,25 @@ const styles = StyleSheet.create({
     },
 
     take_give_views: {
-        borderRadius: 15,
-        padding: 10,
-        width: 100,
-        height: 100,
+        borderRadius: 8,
+        height: "auto",
         color: "white",
         display: "flex",
         flexDirection: 'row',
         alignContent: "center",
         alignItems: "center",
         gap: 10,
-        margin: 2
+        margin: 2,
+        padding: 10
     },
 
     give: {
-        backgroundColor: "#FFC8CD",
+        backgroundColor: "#FFDDE4",
         flex: 1
     },
     
     take: {
-        backgroundColor: "#93e9be",
+        backgroundColor: "#D4F7E4",
         flex: 1
     },
 

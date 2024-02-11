@@ -9,7 +9,15 @@ const StackNavigator = createNativeStackNavigator()
 export default function App() {
   return (
     <NavigationContainer>
-      <StackNavigator.Navigator>
+      <StackNavigator.Navigator
+        screenOptions={{
+          headerShown: true,
+          contentStyle: {
+            marginHorizontal: 20,
+            margin: 5
+          }
+        }}
+      >
         <StackNavigator.Screen
           name={"homescreen"}
           component={HomeScreen}
