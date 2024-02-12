@@ -1,7 +1,7 @@
 import React from 'react'
 import { Image, Text, View, StyleSheet } from 'react-native'
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-
+import { FontAwesome6 } from '@expo/vector-icons';
 export default function TotalExpenses() {
 
     return (
@@ -13,7 +13,7 @@ export default function TotalExpenses() {
                 <View  style={styles.carets}>
                     
                     <FontAwesome 
-                        name="chevron-circle-up" 
+                        name="arrow-circle-down" 
                         size={28} 
                         color="red" 
                     />
@@ -29,7 +29,7 @@ export default function TotalExpenses() {
                 
                 <View style={styles.carets}>
                     <FontAwesome 
-                        name="chevron-circle-down" 
+                        name="arrow-circle-up" 
                         size={28} 
                         color="green" 
                     />
