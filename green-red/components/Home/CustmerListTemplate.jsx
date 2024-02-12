@@ -5,7 +5,6 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
     
     return (
         <>
-            <View style={styles.hr}/>
 
             <View style={styles.container}>
                 
@@ -22,8 +21,6 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
                 </View>
                 
             </View>
-            
-            <View style={styles.hr}/>
         </>
     )
 }
@@ -34,7 +31,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 6
+        padding: 6,
+        backgroundColor: "#f5f5f5"
     },
     
     usernameShortCutStyle: {

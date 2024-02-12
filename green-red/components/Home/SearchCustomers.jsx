@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { EvilIcons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function SearchCustomers() {
     
@@ -11,7 +14,7 @@ export default function SearchCustomers() {
             
             <View style={styles.searchContainer}>
                 
-                <FontAwesome name="search-plus" size={24} color="black" style={styles.icon} />
+                <EvilIcons name="search" size={24} color="black" style={styles.icon}/>
                 
                 <TextInput
                     style={styles.input}
@@ -22,8 +25,8 @@ export default function SearchCustomers() {
             </View>
 
             <View style={styles.sort_and_pdf_container}>
-                <FontAwesome name="sort" size={24} color="black" style={styles.icon} />
-                <FontAwesome name="file-pdf-o" size={24} color="black" style={styles.icon} />
+                <MaterialIcons name="sort" size={24} color="black" style={styles.icon}/>
+                <AntDesign name="pdffile1" size={24} color="black" style={styles.icon}/>
             </View>
         </View>
     );
@@ -36,7 +39,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        columnGap: 10
+        columnGap: 10,
+        backgroundColor: "#f5f5f5"
     },
 
     icon: {
