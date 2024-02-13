@@ -3,13 +3,14 @@ import { View, TextInput, StyleSheet, Pressable, Text, Image } from 'react-nativ
 import { EvilIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../../assets/mony.png'
-
+import { Fontisto } from '@expo/vector-icons';
+import CurrencyDropdownListSearch from '../global/CurrencyDropdownList';
 function AddNewCustomerPopup({closePopCallBack}) {
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-
+    const [selectedCurrency, setSelectedCurrency] = useState('')
     const addNewCustomer = () => {
 
         console.log('Username:', username);
@@ -75,6 +76,28 @@ function AddNewCustomerPopup({closePopCallBack}) {
                         keyboardType="phone-pad"
                     />
                 </View>
+
+                <View style={styles.input_container}>
+                    
+                    <Fontisto 
+                        name="dollar" 
+                        size={24} 
+                        color="blue"
+                        style={styles.icon}  
+                    />
+                    
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Amount"
+                        onChangeText={(text) => setPhone(text)}
+                        keyboardType="phone-pad"
+                    />
+                </View>
+
+                <View style={styles.drop_down_container}>
+                    <CurrencyDropdownListSearch setSelected={setSelectedCurrency} selected={selectedCurrency}/>
+                </View>
+                
                 <Pressable
                     style={styles.add_new_customer_btn}
                     onPress={addNewCustomer}
@@ -123,7 +146,7 @@ const styles = StyleSheet.create({
     icon: {
         position: 'absolute',
         right: 10,
-        top: '10%', // Center the icon vertically
+        top: '10%',
         color: "black",
         zIndex: 1,
         backgroundColor: "white",
@@ -133,6 +156,10 @@ const styles = StyleSheet.create({
 
     image_container: {
         position: 'absolute',
+    },
+
+    drop_down_container: {
+       width: "80%",
     }
 });
 export default AddNewCustomerPopup
