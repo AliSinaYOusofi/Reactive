@@ -169,23 +169,51 @@ export default function CurrencyDropdownListSearch({setSelected, selected}) {
 
     return (
         <View style={styles.drop_down_container}>
-            <RNPickerSelect
-                placeholder={placeholder}
-                onValueChange={(value) => setSelected(value.value)}
-                items={options}
-                value={selected}
-                style={styles.picker_style}
-            />
-            <Text> {selected} </Text>
+
+            <View style={styles.dropdown_}>
+                <RNPickerSelect
+                    placeholder={placeholder}
+                    onValueChange={(value) => setSelected(value)}
+                    items={options}
+                    value={selected}
+                    style={styles.picker_style}
+                />
+            </View>
+            
+            <View style={styles.currency_abber}>
+                <Text>
+                    {
+                        selected ? options.filter(item => item.value === selected)[0].value : ""
+                    }
+                </Text>
+            </View>
         </View>
     )
 }
 
 
 const styles = StyleSheet.create({
+    
     drop_down_container: {
-       backgroundColor: "#FDFCFA",
+       backgroundColor: "white",
        borderRadius: 5,
        width: "100%",
+       flexDirection: "row",
+       justifyContent: "center",
+       alignItems: "center",
+       columnGap: 2
     },
+
+    currency_abber: {
+        padding: 10,
+        borderRadius: 10,
+        marginLeft: 5,
+        width: "20%",
+        borderLeftColor: "black",
+        borderLeftWidth: 1,
+    },
+
+    dropdown_ : {
+        width: "80%"
+    }
 })
