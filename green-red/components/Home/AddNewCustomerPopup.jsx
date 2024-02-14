@@ -5,17 +5,44 @@ import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../../assets/mony.png'
 import { Fontisto } from '@expo/vector-icons';
 import CurrencyDropdownListSearch from '../global/CurrencyDropdownList';
+import { validateUsername } from '../../utils/validators/usernameValidator';
+import { isEmailValid } from '../../utils/validators/emailValidator';
+import { phoneNumberValidator } from '../../utils/validators/phoneNumberValidator';
+import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
+import { RadioButton } from 'react-native-paper';
+
 function AddNewCustomerPopup({closePopCallBack}) {
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [amountOfMoney, setAmountOfMoney] = useState('')
+    const [paymentStatus, setPaymentStatus] = useState('')
     const [selectedCurrency, setSelectedCurrency] = useState('')
+    
     const addNewCustomer = () => {
 
         console.log('Username:', username);
         console.log('Email:', email);
         console.log('Phone:', phone);
+
+        if ( ! validateUsername(username) ) {
+            alert('Username is not valid')
+            return
+        }
+
+        else if ( ! isEmailValid(email)) {
+            alert('Email is not valid')
+            return
+        }
+
+        else if (! phoneNumberValidator(phone)) {
+            return alert('Phone number is not valid')
+        }
+        
+        else if (amountOfMoneyValidator(amountOfMoney)) {
+            return alert('Amount of money is not valid')
+        }
         closePopCallBack(false)
     };
 
@@ -89,13 +116,29 @@ function AddNewCustomerPopup({closePopCallBack}) {
                     <TextInput
                         style={styles.input}
                         placeholder="Amount"
-                        onChangeText={(text) => setPhone(text)}
+                        onChangeText={(text) => setAmountOfMoney(text)}
                         keyboardType="phone-pad"
                     />
                 </View>
 
                 <View style={styles.drop_down_container}>
                     <CurrencyDropdownListSearch setSelected={setSelectedCurrency} selected={selectedCurrency}/>
+                </View>
+
+                <View>
+                    
+                    <RadioButton.Group onValueChange={newValue => setValue(newValue)} value={value}>
+                    
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <RadioButton value="received" />
+                            <Text>Received</Text>
+                        </View>
+                        
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <RadioButton value="paid" />
+                            <Text>Paid</Text>
+                        </View>
+                    </RadioButton.Group>
                 </View>
                 
                 <Pressable
