@@ -134,7 +134,8 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         height: 'auto',
         paddingHorizontal: 20,
-        paddingVertical: 10
+        paddingVertical: 10,
+        marginTop: 10,
     },
 
     input_container: {
