@@ -2,22 +2,25 @@ import React, { useState } from 'react'
 import { Text, Button, View, StyleSheet, Modal, Pressable, } from 'react-native'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import AddNewCustomerPopup from '../Home/AddNewCustomerPopup'
-export default function AddNewCustomer() {
+import { useNavigation } from '@react-navigation/native'
+
+export default function AddNewCustomer({}) {
     const [isModal, setIsModal] = useState(false)
+    const navigation = useNavigation()
     return (
         <View>
 
             <View>
                 <Pressable
                     style={style.add_new_customer_btn}
-                    onPress={() => setIsModal(true)}
+                    onPress={() => navigation.navigate("Add Customer")}
                     title='add new customer'
                 >
                     <Text style={{color: "white"}}>Add New Customer</Text>
                 </Pressable>
             </View>
             
-            <Modal
+            {/* <Modal
                 visible={isModal}
                 animationType={'slide'}
                 onRequestClose={() => setIsModal(false)}
@@ -25,7 +28,7 @@ export default function AddNewCustomer() {
                 transparent={false}
             >
                 <AddNewCustomerPopup closePopCallBack={setIsModal}/>
-            </Modal>
+            </Modal> */}
         </View>
     )
 }
