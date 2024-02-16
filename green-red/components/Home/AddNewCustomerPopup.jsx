@@ -11,6 +11,7 @@ import { phoneNumberValidator } from '../../utils/validators/phoneNumberValidato
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { RadioButton } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
+import * as SQLite from 'expo-sqlite'
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -20,13 +21,9 @@ function AddNewCustomerPopup({}) {
     const [paymentStatus, setPaymentStatus] = useState('')
     const [selectedCurrency, setSelectedCurrency] = useState('')
     
-    const addNewCustomer = () => {
+    const db = SQLite.openDatabase('green-red.db')
 
-        console.log('Username:', username);
-        console.log('Email:', email);
-        console.log('Phone:', phone);
-        console.log('Amount of money:', amountOfMoney);
-        console.log('Payment status:', paymentStatus);
+    const addNewCustomer = () => {
 
         if ( ! validateUsername(username) ) {
             return Toast.show({
@@ -45,7 +42,7 @@ function AddNewCustomerPopup({}) {
             if ( ! isEmailValid(email)) {
                 return Toast.show({
                     type: 'error',
-                    text1: 'Username is not valid',
+                    text1: 'Email is not valid',
                     position: "top",
                     onPress: () => Toast.hide(),
                     swipeable: true,
@@ -59,7 +56,7 @@ function AddNewCustomerPopup({}) {
             if (! phoneNumberValidator(phone)) {
                 return Toast.show({
                     type: 'error',
-                    text1: 'Username is not valid',
+                    text1: 'Phone number is not valid',
                     position: "top",
                     onPress: () => Toast.hide(),
                     swipeable: true,
@@ -73,7 +70,7 @@ function AddNewCustomerPopup({}) {
             if (!amountOfMoneyValidator(amountOfMoney)) 
                 return Toast.show({
                     type: 'error',
-                    text1: 'Username is not valid',
+                    text1: 'Amount of money is not valid',
                     position: "top",
                     onPress: () => Toast.hide(),
                     swipeable: true,
@@ -81,6 +78,93 @@ function AddNewCustomerPopup({}) {
                 })
         }
 
+        else if ( ! paymentStatus ) {
+            return Toast.show({
+                type: 'error',
+                text1: 'Please select payment status',
+                position: "top",
+                onPress: () => Toast.hide(),
+                swipeable: true,
+                topOffset: 100
+            })
+        }
+
+        else if (! selectedCurrency) {
+            return Toast.show({
+                type: 'error',
+                text1: 'Please select currency',
+                position: "top",
+                onPress: () => Toast.hide(),
+                swipeable: true,
+                topOffset: 100
+            })
+        }
+
+        db.transaction(tx => {
+            tx.executeSql(
+                "CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, email TEXT, phone TEXT, amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, at DATETIME DEFAULT CURRENT_TIMESTAMP);", 
+                
+                [], 
+                
+                () => console.log("Table created"), 
+                
+                (_, error) => {
+                    console.error("Error while creating table =>: ", error)
+                    Toast.show (
+                        {
+                            type: 'error',
+                            text1: 'Failed to add customer',
+                            position: "top",
+                            onPress: () => Toast.hide(),
+                            swipeable: true,
+                            topOffset: 100
+                        }
+                    )
+                }
+            )
+        })
+
+
+        try {
+            
+            db.transaction(tx => {
+                tx.executeSql("INSERT INTO customers (username, email, phone, amount, transaction_type, currency) VALUES (?, ?, ?, ?, ?, ?)", [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency], 
+                (_,success) => {
+                    console.log('inserted the data')
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Customer added successfully',
+                        position: "top",
+                        onPress: () => Toast.hide(),
+                        swipeable: true,
+                        topOffset: 100
+                    })
+                },
+                
+                (_, error) => Toast.show({
+                    type: 'error',
+                    text1: 'Failed to add customer',
+                    position: "top",
+                    onPress: () => Toast.hide(),
+                    swipeable: true,
+                    topOffset: 100
+                }))
+            })
+        }
+
+        catch (error) {
+            
+            console.error("Error while inserting new user =>: ", error)
+            
+            Toast.show({
+                type: 'error',
+                text1: 'Failed to add customer',
+                position: "top",
+                onPress: () => Toast.hide(),
+                swipeable: true,
+                topOffset: 100
+            })
+        }
     };
 
     return (
@@ -112,7 +196,7 @@ function AddNewCustomerPopup({}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder="Email"
+                        placeholder="Email (optional)"
                         onChangeText={(text) => setEmail(text)}
                         keyboardType="email-address"
                     />
@@ -135,7 +219,7 @@ function AddNewCustomerPopup({}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder="Phone"
+                        placeholder="Phone (optional)"
                         onChangeText={(text) => setPhone(text)}
                         keyboardType="phone-pad"
                     />
