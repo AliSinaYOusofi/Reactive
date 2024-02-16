@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, TextInput, StyleSheet, Pressable, Text, Image } from 'react-native'
+import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
 import { EvilIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../../assets/mony.png'
@@ -10,8 +10,8 @@ import { isEmailValid } from '../../utils/validators/emailValidator';
 import { phoneNumberValidator } from '../../utils/validators/phoneNumberValidator';
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { RadioButton } from 'react-native-paper';
-
-function AddNewCustomerPopup({closePopCallBack}) {
+import Toast from 'react-native-toast-message';
+function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -25,25 +25,62 @@ function AddNewCustomerPopup({closePopCallBack}) {
         console.log('Username:', username);
         console.log('Email:', email);
         console.log('Phone:', phone);
+        console.log('Amount of money:', amountOfMoney);
+        console.log('Payment status:', paymentStatus);
 
         if ( ! validateUsername(username) ) {
-            alert('Username is not valid')
-            return
-        }
-
-        else if ( ! isEmailValid(email)) {
-            alert('Email is not valid')
-            return
-        }
-
-        else if (! phoneNumberValidator(phone)) {
-            return alert('Phone number is not valid')
+            return Toast.show({
+                type: 'error',
+                text1: 'Username is not valid',
+                position: "top",
+                onPress: () => Toast.hide(),
+                swipeable: true,
+                topOffset: 100
+            })
         }
         
-        else if (amountOfMoneyValidator(amountOfMoney)) {
-            return alert('Amount of money is not valid')
+
+        else if (email) {
+
+            if ( ! isEmailValid(email)) {
+                return Toast.show({
+                    type: 'error',
+                    text1: 'Username is not valid',
+                    position: "top",
+                    onPress: () => Toast.hide(),
+                    swipeable: true,
+                    topOffset: 100
+                })
+            }
         }
-        closePopCallBack(false)
+
+        else if (phone) {
+            
+            if (! phoneNumberValidator(phone)) {
+                return Toast.show({
+                    type: 'error',
+                    text1: 'Username is not valid',
+                    position: "top",
+                    onPress: () => Toast.hide(),
+                    swipeable: true,
+                    topOffset: 100
+                })
+            }
+        }
+        
+        else if (amountOfMoney.length) {
+            
+            if (!amountOfMoneyValidator(amountOfMoney)) 
+                return Toast.show({
+                    type: 'error',
+                    text1: 'Username is not valid',
+                    position: "top",
+                    onPress: () => Toast.hide(),
+                    swipeable: true,
+                    topOffset: 100
+                })
+        }
+
     };
 
     return (
@@ -120,27 +157,35 @@ function AddNewCustomerPopup({closePopCallBack}) {
                         keyboardType="phone-pad"
                     />
                 </View>
+                
+                <View style={styles.payment_status}>
+                    
+                    <View >
+                        <Text style={styles.payment_text}> Money : </Text>
+                    </View>
+                    
+                    <RadioButton.Group  onValueChange={newValue => setPaymentStatus(newValue)} value={paymentStatus}>
+
+                        <View style={styles.payment_status}>
+
+                            
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <RadioButton color="green" value="received" />
+                                <Text>Received</Text>
+                            </View>
+                            
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <RadioButton value="paid" color="red"/>
+                                <Text>Paid</Text>
+                            </View>
+                        </View>
+                    </RadioButton.Group>
+                </View>
 
                 <View style={styles.drop_down_container}>
                     <CurrencyDropdownListSearch setSelected={setSelectedCurrency} selected={selectedCurrency}/>
                 </View>
 
-                <View>
-                    
-                    <RadioButton.Group onValueChange={newValue => setValue(newValue)} value={value}>
-                    
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <RadioButton value="received" />
-                            <Text>Received</Text>
-                        </View>
-                        
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <RadioButton value="paid" />
-                            <Text>Paid</Text>
-                        </View>
-                    </RadioButton.Group>
-                </View>
-                
                 <Pressable
                     style={styles.add_new_customer_btn}
                     onPress={addNewCustomer}
@@ -159,7 +204,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 22,
         
     },
     input: {
@@ -204,6 +248,21 @@ const styles = StyleSheet.create({
 
     drop_down_container: {
        width: "80%",
+       marginTop: 20
+    },
+
+    payment_status: {
+        flexDirection: "row",
+        width: "80%",
+        backgroundColor: "#FDFCFA",
+        borderRadius: 5,
+        justifyContent: "space-evenly",
+        alignItems: "center",
+    },
+    payment_text: {
+        fontSize: 14,
+        fontWeight: "bold",
+        marginLeft: 4
     }
 });
 export default AddNewCustomerPopup

@@ -206,7 +206,6 @@ const styles = StyleSheet.create({
 
     currency_abber: {
         padding: 10,
-        borderRadius: 10,
         marginLeft: 5,
         width: "20%",
         borderLeftColor: "black",
