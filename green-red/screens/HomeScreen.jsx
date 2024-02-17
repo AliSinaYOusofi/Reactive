@@ -18,8 +18,35 @@ export default function HomeScreen() {
 
             try {
                 await db.transactionAsync( async tx => {
+                    
                     const result = await tx.executeSqlAsync("SELECT * FROM customers", [])
-                    setCustomers(result.rows)
+                    
+                    if (! result.rows) {
+                        setCustomers([])
+                        return
+                    }
+
+                    await Promise.all(
+                        result.rows.map( async (item, index) => {
+                            
+                            let received_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'received' AND username = ?", [item.username])
+
+                            let paid_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'paid' AND username = ?", [item.username])
+                            
+                            let received_amount_total, paid_amount_total
+
+                            received_amount_total = received_amount.rows[0]["SUM(amount)"] ? received_amount.rows[0]["SUM(amount)"] : 0
+                            paid_amount_total = paid_amount.rows[0]["SUM(amount)"] ? paid_amount.rows[0]["SUM(amount)"] : 0
+
+                            border_color_status = parseFloat(received_amount_total) > parseFloat(paid_amount_total) ? "green" : "red"
+                            let current_total_amount_status_count = parseFloat(received_amount_total) - parseFloat(paid_amount_total)
+                            
+                            item.amount = current_total_amount_status_count < 0  ? current_total_amount_status_count * -1 : current_total_amount_status_count
+                            item.border_color = border_color_status
+                            
+                            setCustomers( prevState => [...prevState, item]) 
+                        })
+                    )
                 }) 
             }
             
@@ -30,6 +57,7 @@ export default function HomeScreen() {
         loadCustomerDataList()
     }, [])
     
+
     return (
         <>
             <View style={style.container}>
@@ -51,6 +79,7 @@ export default function HomeScreen() {
                                     transaction_type={item.transaction_type}
                                     currency={item.currency}
                                     at={item.at}
+                                    border_color={item.border_color}
                                 />
                             </View>
                     )
@@ -71,8 +100,8 @@ const style = StyleSheet.create({
         fontFamily: "Roboto",
     },
     item: {
-        flex: 1, // This will make the components equally spaced
-        marginHorizontal: 10, // Adjust spacing between components
+        flex: 1,
+        marginHorizontal: 10,
         fontFamily: "Roboto",
     },
 })
