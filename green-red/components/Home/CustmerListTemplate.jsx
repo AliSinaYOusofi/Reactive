@@ -1,12 +1,18 @@
 import React from 'react'
-import { View, StyleSheet, Text } from 'react-native'
+import { View, StyleSheet, Text, Pressable } from 'react-native'
+import { useNavigation } from '@react-navigation/native';
 
-export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at}) {
+export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at, border_color}) {
     
+    const navigator = useNavigation();
+    
+    const handleCustomerViewClick = () => {
+        navigator.navigate("CustomerData", {username})    
+    }
     return (
         <>
 
-            <View style={[styles.container, {borderWidth: 1, borderRadius: 5, borderColor: transaction_type !== "paid" ? "green" : 'red'}]}>
+            <Pressable onPress={handleCustomerViewClick} style={[styles.container, {borderWidth: 1, borderRadius: 5, borderColor: border_color}]}>
                 
                 <View style={styles.username_and_shortcut_container}>
                     <View style={styles.usernameShortCutStyle}>
@@ -21,7 +27,7 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
                 <View>
                     <Text>  {totalAmount} {currency} </Text>
                 </View>                
-            </View>
+            </Pressable>
         </>
     )
 }

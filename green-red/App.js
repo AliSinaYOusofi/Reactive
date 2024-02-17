@@ -6,6 +6,7 @@ import HomeScreen from './screens/HomeScreen';
 import Toast from 'react-native-toast-message';
 import AddNewCustomer from './components/global/AddNewCustomerButton';
 import AddUser from './screens/AddUser';
+import SingleCustomerView from './screens/SingleCustomerView';
 const StackNavigator = createNativeStackNavigator()
 
 export default function App() {
@@ -32,6 +33,12 @@ export default function App() {
           name={"Add Customer"}
           component={AddUser}
           options={{title: "Add Customer"}}
+        />
+
+        <StackNavigator.Screen
+          name={"CustomerData"}
+          component={SingleCustomerView}
+          options={{title: "Customer Data"}}
         />
       </StackNavigator.Navigator>
       <Toast />
