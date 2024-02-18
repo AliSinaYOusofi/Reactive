@@ -5,13 +5,13 @@ import SearchCustomers from '../components/Home/SearchCustomers'
 import CustomerListTemplate from '../components/Home/CustmerListTemplate'
 import AddNewCustomer from '../components/global/AddNewCustomerButton'
 import * as SQLite from 'expo-sqlite';
-import { useFocusEffect } from '@react-navigation/native'
-import { useFonts } from 'expo-font'
+import { useIsFocused } from '@react-navigation/native'
 
 export default function HomeScreen() {
     
     const [ customer, setCustomers ] = useState([])
     const db = SQLite.openDatabase('green-red.db')
+    const isFocused = useIsFocused()
     
     useEffect( () => {
         const loadCustomerDataList = async () => {
@@ -21,7 +21,7 @@ export default function HomeScreen() {
                     
                     const result = await tx.executeSqlAsync("SELECT * FROM customers", [])
                     
-                    if (! result.rows) {
+                    if (result.rows.length === 0) {
                         setCustomers([])
                         return
                     }
