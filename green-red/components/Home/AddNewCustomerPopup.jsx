@@ -24,148 +24,76 @@ function AddNewCustomerPopup({}) {
     const db = SQLite.openDatabase('green-red.db')
 
     const addNewCustomer = () => {
-
-        if ( ! validateUsername(username) ) {
-            return Toast.show({
-                type: 'error',
-                text1: 'Username is not valid',
-                position: "top",
-                onPress: () => Toast.hide(),
-                swipeable: true,
-                topOffset: 100
-            })
+        if (!validateUsername(username)) {
+            return showToast('Username is not valid');
         }
-        
-
-        else if (email) {
-
-            if ( ! isEmailValid(email)) {
-                return Toast.show({
-                    type: 'error',
-                    text1: 'Email is not valid',
-                    position: "top",
-                    onPress: () => Toast.hide(),
-                    swipeable: true,
-                    topOffset: 100
-                })
-            }
+    
+        if (email && !isEmailValid(email)) {
+            return showToast('Email is not valid');
         }
-
-        else if (phone) {
-            
-            if (! phoneNumberValidator(phone)) {
-                return Toast.show({
-                    type: 'error',
-                    text1: 'Phone number is not valid',
-                    position: "top",
-                    onPress: () => Toast.hide(),
-                    swipeable: true,
-                    topOffset: 100
-                })
-            }
+    
+        if (phone && !phoneNumberValidator(phone)) {
+            return showToast('Phone number is not valid');
         }
-        
-        else if (amountOfMoney.length) {
-            
-            if (!amountOfMoneyValidator(amountOfMoney)) 
-                return Toast.show({
-                    type: 'error',
-                    text1: 'Amount of money is not valid',
-                    position: "top",
-                    onPress: () => Toast.hide(),
-                    swipeable: true,
-                    topOffset: 100
-                })
+    
+        if (amountOfMoney.length && !amountOfMoneyValidator(amountOfMoney)) {
+            return showToast('Amount of money is not valid');
         }
-
-        else if ( ! paymentStatus ) {
-            return Toast.show({
-                type: 'error',
-                text1: 'Please select payment status',
-                position: "top",
-                onPress: () => Toast.hide(),
-                swipeable: true,
-                topOffset: 100
-            })
+    
+        if (!paymentStatus) {
+            return showToast('Please select payment status');
         }
-
-        else if (! selectedCurrency) {
-            return Toast.show({
-                type: 'error',
-                text1: 'Please select currency',
-                position: "top",
-                onPress: () => Toast.hide(),
-                swipeable: true,
-                topOffset: 100
-            })
+    
+        if (!selectedCurrency) {
+            return showToast('Please select currency');
         }
-
+    
         db.transaction(tx => {
             tx.executeSql(
-                "CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, email TEXT, phone TEXT, amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, at DATETIME DEFAULT CURRENT_TIMESTAMP);", 
-                
-                [], 
-                
-                () => console.log("Table created"), 
-                
-                (_, error) => {
-                    console.error("Error while creating table =>: ", error)
-                    Toast.show (
-                        {
-                            type: 'error',
-                            text1: 'Failed to add customer',
-                            position: "top",
-                            onPress: () => Toast.hide(),
-                            swipeable: true,
-                            topOffset: 100
-                        }
-                    )
+                "SELECT * FROM customers WHERE username = ?",
+                [username],
+                (_, result) => {
+                    if (result.rows._array.length) {
+                        showToast('Username already exists');
+                    } else {
+                        insertCustomer();
+                    }
                 }
-            )
-        })
-
-
-        try {
-            
-            db.transaction(tx => {
-                tx.executeSql("INSERT INTO customers (username, email, phone, amount, transaction_type, currency) VALUES (?, ?, ?, ?, ?, ?)", [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency], 
-                (_,success) => {
-                    console.log('inserted the data')
-                    Toast.show({
-                        type: 'success',
-                        text1: 'Customer added successfully',
-                        position: "top",
-                        onPress: () => Toast.hide(),
-                        swipeable: true,
-                        topOffset: 100
-                    })
+            );
+        });
+    
+        // Function to insert customer into the database
+        const insertCustomer = () => {
+            db.transaction(
+                tx => {
+                    tx.executeSql(
+                        "INSERT INTO customers (username, email, phone, amount, transaction_type, currency) VALUES (?, ?, ?, ?, ?, ?)",
+                        [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency],
+                        (_, success) => {
+                            showToast('Customer added successfully', 'success');
+                        },
+                        (_, error) => {
+                            showToast('Failed to add customer');
+                        }
+                    );
                 },
-                
-                (_, error) => Toast.show({
-                    type: 'error',
-                    text1: 'Failed to add customer',
-                    position: "top",
-                    onPress: () => Toast.hide(),
-                    swipeable: true,
-                    topOffset: 100
-                }))
-            })
-        }
-
-        catch (error) {
-            
-            console.error("Error while inserting new user =>: ", error)
-            
+                null,
+                null
+            );
+        };
+    
+        const showToast = (message, type = 'error') => {
             Toast.show({
-                type: 'error',
-                text1: 'Failed to add customer',
-                position: "top",
+                type: type,
+                text1: message,
+                position: 'top',
                 onPress: () => Toast.hide(),
                 swipeable: true,
-                topOffset: 100
-            })
-        }
+                topOffset: 100,
+            });
+        };
     };
+    
 
     return (
         <>

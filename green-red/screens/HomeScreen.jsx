@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, StyleSheet, Text } from 'react-native'
+import { View, StyleSheet, Text, ScrollView } from 'react-native'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import SearchCustomers from '../components/Home/SearchCustomers'
 import CustomerListTemplate from '../components/Home/CustmerListTemplate'
@@ -65,26 +65,28 @@ export default function HomeScreen() {
                 <TotalExpenses style={style.item}/>
                 
                 <SearchCustomers style={style.item}/>
-                
-                {
-                    customer.length ?
-                    customer.map( 
-                        (item, index) => 
-                            <View key={item.id}>
-                                <CustomerListTemplate 
-                                    username={item.username} 
-                                    usernameShortCut={"AS"} 
-                                    totalAmount={item.amount}
-                                    style={style.item}
-                                    transaction_type={item.transaction_type}
-                                    currency={item.currency}
-                                    at={item.at}
-                                    border_color={item.border_color}
-                                />
-                            </View>
-                    )
-                    : null
-                }
+                <ScrollView style={style.scroll_view}>
+
+                    {
+                        customer.length ?
+                        customer.map( 
+                            (item, index) => 
+                                <View key={item.id}>
+                                    <CustomerListTemplate 
+                                        username={item.username} 
+                                        usernameShortCut={"AS"} 
+                                        totalAmount={item.amount}
+                                        style={style.item}
+                                        transaction_type={item.transaction_type}
+                                        currency={item.currency}
+                                        at={item.at}
+                                        border_color={item.border_color}
+                                    />
+                                </View>
+                        )
+                        : null
+                    }
+                </ScrollView>
             </View>
             <AddNewCustomer />
         </>
@@ -104,4 +106,8 @@ const style = StyleSheet.create({
         marginHorizontal: 10,
         fontFamily: "Roboto",
     },
+
+    scroll_view: {
+        paddingHorizontal: 4
+    }
 })
