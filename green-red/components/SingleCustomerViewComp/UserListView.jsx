@@ -1,34 +1,61 @@
 import React, { useState } from 'react'
 import { Pressable, View, Text, StyleSheet, Modal } from 'react-native'
 import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DeleteRecordModal from '../global/DeleteRecordModal';
 
 export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone}) {
 
-    const [modal, setModal] = useState(false)
+    const [detailsModal, setDetailsModal] = useState(false)
+    const [ deleteModal, setDeleteModal] = useState(false)
 
     return (
         <>
-            <Pressable onPress={() => setModal(true)} style={[styles.container, {borderWidth: 1, borderRadius: 5, borderColor: transaction_type === 'received' ? 'green' : 'red'}]}>
-                
-                <View style={styles.username_and_shortcut_container}>
-                    <View style={styles.usernameShortCutStyle}>
-                        <Text >{username[0]}{username[1]}</Text>
-                    </View>
-                    <View>
-                        <Text> {username} </Text>
-                    </View>
-                </View>
 
-                <View>
-                    <Text>  {amount} {currency} </Text>
-                </View>                
-            </Pressable>
+            <View style={styles.container}>
+                <Pressable onPress={() => setDetailsModal(true)} style={[styles.container, { borderLeftWidth: 2, borderLeftColor: transaction_type === 'received' ? 'green' : 'red'}]}>
+                    
+                    <View style={styles.username_and_shortcut_container}>
+                        <View style={styles.usernameShortCutStyle}>
+                            <Text >{username[0]}{username[1]}</Text>
+                        </View>
+                        <View>
+                            <Text> {username} </Text>
+                        </View>
+                    </View>
+
+                    <View>
+                        <Text>  {amount} {currency} </Text>
+                    </View>                
+                </Pressable>
+                
+                <View style={styles.icon_container}>
+                    
+                    <Pressable onPress={() => setDeleteModal(true)}>
+                        <MaterialCommunityIcons 
+                            style={styles._icon} 
+                            name="delete-alert-outline" 
+                            size={24} 
+                            color="black" 
+                        />
+                    </Pressable>
+
+                    <Pressable>
+                        <MaterialCommunityIcons 
+                            style={styles._icon} 
+                            name="circle-edit-outline" 
+                            size={24} 
+                            color="black"
+                        />
+                    </Pressable>
+                </View>
+            </View>
 
             <Modal
-                visible={modal}
+                visible={detailsModal}
                 animationType='slide'
                 transparent={true}
-                onRequestClose={() => setModal(!modal)}
+                onRequestClose={() => setDetailsModal(!detailsModal)}
             >
                 <ShowTransactionDetailsModal 
                     username={username}
@@ -38,7 +65,20 @@ export default function UserListView({username, amount, currency, transaction_ty
                     transaction_date={transaction_date}
                     email={email}
                     phone={phone}
-                    closeModal={setModal}
+                    closeModal={setDetailsModal}
+                />
+            </Modal>
+
+            <Modal
+                visible={deleteModal}
+                animationType='slide'
+                transparent={true}
+                onRequestClose={() => setDeleteModal(false)}
+            >
+                <DeleteRecordModal 
+                    username={username}
+                    setCloseModal={setDeleteModal}
+                    message={"Are you sure you want to delete this record?"}
                 />
             </Modal>
         </>
@@ -53,6 +93,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 6,
+        marginVertical: 5,
     },
     
     usernameShortCutStyle: {
@@ -78,5 +119,18 @@ const styles = StyleSheet.create({
     
     username: {
 
+    },
+    _icon: {
+        backgroundColor: "white",
+        padding: 5,
+        borderRadius: 50,
+        
+    },
+
+    icon_container: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     }
 })

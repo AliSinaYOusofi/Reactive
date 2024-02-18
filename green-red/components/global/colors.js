@@ -1,3 +1,5 @@
 export const background_color = ''
 export const text_color = ''
 export const transaction_details_bg_color = ''
+export const cancel_button_color = '#50c878'
+export const delete_button_color = '#FF0000'
