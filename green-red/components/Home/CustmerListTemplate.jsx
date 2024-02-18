@@ -7,6 +7,7 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
     const navigator = useNavigation();
     
     const handleCustomerViewClick = () => {
+        // navigating to other screen and fetching based on those data
         navigator.navigate("CustomerData", {username})    
     }
     return (
