@@ -4,7 +4,7 @@ import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 
-export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone}) {
+export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone, record_id}) {
 
     const [detailsModal, setDetailsModal] = useState(false)
     const [ deleteModal, setDeleteModal] = useState(false)
@@ -63,8 +63,6 @@ export default function UserListView({username, amount, currency, transaction_ty
                     currency={currency}
                     transaction_type={transaction_type}
                     transaction_date={transaction_date}
-                    email={email}
-                    phone={phone}
                     closeModal={setDetailsModal}
                 />
             </Modal>
@@ -79,6 +77,7 @@ export default function UserListView({username, amount, currency, transaction_ty
                     username={username}
                     setCloseModal={setDeleteModal}
                     message={"Are you sure you want to delete this record?"}
+                    record_id={record_id}
                 />
             </Modal>
         </>

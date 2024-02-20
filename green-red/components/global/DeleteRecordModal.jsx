@@ -2,16 +2,53 @@ import React from 'react'
 import { View, StyleSheet, Text, Button, Pressable } from 'react-native'
 import { cancel_button_color, delete_button_color } from './colors'
 import { Ionicons } from '@expo/vector-icons'
+import * as SQLite from 'expo-sqlite'
+import Toast from 'react-native-toast-message';
 
-export default function DeleteRecordModal({message, setCloseModal, username}) {
+export default function DeleteRecordModal({message, setCloseModal, username, record_id}) {
+
+    const db = SQLite.openDatabase('green-red.db')
 
     const handleDelete = () => {
+        
+        try {
+            db.transaction(tx => {
+                tx.executeSql(`DELETE FROM customer__records WHERE id = ?;`, [record_id,],
+                (_, sucess) => {
+                    setCloseModal(false)
+                    showToast('Record deleted successfully', 'success')
+                },
 
+                (_, error) => {
+                    console.error("Failed to delete record", error.message)
+                    showToast("Failed to delete record")
+                }
+                
+                )
+            })
+        }
+        
+        catch(e) {
+            console.error("Failed to delete record", e.message)
+            showToast("Failed to delete record")
+        }
     }
 
     const handleCancel = () => {
         setCloseModal(false)
     }
+
+    const showToast = (message, type = 'error') => {
+        
+        Toast.show({
+            type: type,
+            text1: message,
+            position: 'top',
+            onPress: () => Toast.hide(),
+            swipeable: true,
+            topOffset: 100,
+        });
+    };
     
     return (
         <View style={styles.modalContainer}>

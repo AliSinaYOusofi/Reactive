@@ -22,13 +22,15 @@ export default function SingleCustomerView({navigation, route}) {
             
             try {
                 await db.transactionAsync(async tx => {
-                    const result = await tx.executeSqlAsync("SELECT * FROM customer_records WHERE username = ?", [username]);
+                    const result = await tx.executeSqlAsync("SELECT * FROM customer__records WHERE username = ?", [username]);
                     setCustomers(result.rows);
+                    console.log("result.rows", result.rows)
                 });
             } 
             
             catch (e) {
                 console.error("error while fetching users", e.message);
+                showToast("error while fetching users")
             }
         };
 
@@ -42,6 +44,18 @@ export default function SingleCustomerView({navigation, route}) {
         setAddNewRecordModal(true)
     }
 
+    const showToast = (message, type = 'error') => {
+        
+        Toast.show({
+            type: type,
+            text1: message,
+            position: 'top',
+            onPress: () => Toast.hide(),
+            swipeable: true,
+            topOffset: 100,
+        });
+    };
+
     return (
         <>
 
@@ -54,11 +68,10 @@ export default function SingleCustomerView({navigation, route}) {
                                 username={customer.username}
                                 amount={customer.amount}
                                 key={index}
-                                transaction_date={customer.at}
+                                transaction_date={customer.transaction_at}
                                 currency={customer.currency}
-                                email={customer.email}
-                                phone={customer.phone}
                                 transaction_type={customer.transaction_type}
+                                record_id={customer.id}
                             />
                         )
                     : 

@@ -45,16 +45,6 @@ Phone: ${phone || 'N/A'}
                     <Text style={styles.color}>On</Text>
                     <Text style={styles.transaction_date}> {transaction_date ? <DateDiffDetails date={transaction_date}/> : null}</Text>
                 </View>
-
-                <View style={styles.tow}>
-                    <Text style={styles.color}>Email:</Text>
-                    <Text style={styles.email_and_phone}> {email || "N/A"}</Text>
-                </View>
-
-                <View style={styles.tow}>
-                    <Text style={styles.color}>Phone:</Text>
-                    <Text style={styles.email_and_phone}> {phone || "N/A"}</Text>
-                </View>
                 
                 <Pressable onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
                     <Ionicons name="close-outline" size={24} color="black" />
