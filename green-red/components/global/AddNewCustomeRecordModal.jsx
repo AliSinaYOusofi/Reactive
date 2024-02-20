@@ -6,6 +6,8 @@ import CurrencyDropdownListSearch from './CurrencyDropdownList';
 import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
+import { format } from 'date-fns';
+
 export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
 
     const [amount, setAmount] = useState("")
@@ -28,10 +30,14 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
             return showToast('Please select a currency');
         }
 
+        // for testing tables and dropping if necessary
+        // db.transaction(tx => {
+        //     tx.executeSql("DROP TABLE IF EXISTS customer__records;", [], (_, result) => {console.log("Table deleted")})
+        // })
         // creating the table
         try {
 
-            const query = 'CREATE TABLE IF NOT EXISTS customer_records(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL , amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, transaction_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, transaction_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);'
+            const query = 'CREATE TABLE IF NOT EXISTS customer__records(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL , amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, transaction_at DATETIME NOT NULL, transaction_updated_at DATETIME NOT NULL);'
 
             db.transaction(tx => {
                 tx.executeSql(query, [], 
@@ -68,11 +74,11 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
     const insertToCustomerChild = () => {
         
         try {
-            const query = 'INSERT INTO customer_records (username, amount, transaction_type, currency) VALUES (?, ?, ?, ?);'
-
+            const query = 'INSERT INTO customer__records (username, amount, transaction_type, currency, transaction_at, transaction_updated_at) VALUES (?, ?, ?, ?, ?, ?);'
+            const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
             db.transaction(tx => {
                 
-                tx.executeSql(query, [username, amount, transactionType, currency], 
+                tx.executeSql(query, [username, amount, transactionType, currency, currentDateTime, currentDateTime], 
                     (tx, result) => {
                         showToast("User record added!", "success")
                         setAddNewRecordModal(false)
@@ -153,7 +159,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         onPress={handleAddNewRecord}
                         title='add new customer'
                     >
-                        <Text style={{color: "white"}}>Add</Text>
+                        <Text style={{color: "white"}}>Add new record</Text>
                     </Pressable>
                 </View>
             </View>
@@ -173,7 +179,6 @@ const styles = StyleSheet.create({
         borderColor: 'gray',
         padding: 10,
         marginBottom: 20,
-        width: '80%',
         borderRadius: 5,
         backgroundColor: "#FDFCFA",
         width: "100%"
@@ -202,7 +207,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         justifyContent: "center",
         alignItems: "center",
-        width: "100%"
+        width: "100%",
+        padding: 5
     },
 
     payment_text: {
@@ -213,26 +219,24 @@ const styles = StyleSheet.create({
     ,
     
     options_container: {
-        backgroundColor: "#282C35",
+        backgroundColor: "black",
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         width: '100%',
-        alignItems: 'flex-start',
         position: "relative",
     },
     add_new_customer_btn: {
-        backgroundColor: 'black',
+        backgroundColor: 'green',
         color: "white",
         borderRadius: 20,
-        height: 'auto',
         paddingHorizontal: 20,
         paddingVertical: 10,
-        alignSelf: "center",
         marginTop: 20,
-        marginHorizontal: "auto",
+        textAlign: 'center',
+        alignSelf: 'center'
     },
     drop_down_container: {
-        marginTop: 20
+        marginTop: 20,
      },
 })

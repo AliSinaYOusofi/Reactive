@@ -25,27 +25,27 @@ function AddNewCustomerPopup({}) {
 
     const addNewCustomer = () => {
         if (!validateUsername(username)) {
-            return showToast('Username is not valid');
+            return showToast('Username is invalid');
         }
     
         if (email && !isEmailValid(email)) {
-            return showToast('Email is not valid');
+            return showToast('Email is invalid');
         }
     
         if (phone && !phoneNumberValidator(phone)) {
-            return showToast('Phone number is not valid');
+            return showToast('Phone number is invalid');
         }
     
         if (amountOfMoney.length && !amountOfMoneyValidator(amountOfMoney)) {
-            return showToast('Amount of money is not valid');
+            return showToast('Amount of money is  invalid');
         }
     
         if (!paymentStatus) {
-            return showToast('Please select payment status');
+            return showToast('Please select a payment status');
         }
     
         if (!selectedCurrency) {
-            return showToast('Please select currency');
+            return showToast('Please select a currency');
         }
     
         db.transaction(tx => {
