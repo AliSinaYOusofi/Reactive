@@ -67,7 +67,7 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
                 <DeleteRecordModal 
                     username={username}
                     setCloseModal={setDeleteModal}
-                    message={`All data related to ${username} user will be deleted !`}
+                    message={`All data related to ${username} will be deleted !`}
                 />
             </Modal>
         </>

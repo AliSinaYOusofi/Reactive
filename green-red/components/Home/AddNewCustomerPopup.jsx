@@ -71,6 +71,7 @@ function AddNewCustomerPopup({}) {
                         [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency],
                         (_, success) => {
                             showToast('Customer added successfully', 'success');
+                            console.log('what the fuck')
                         },
                         (_, error) => {
                             showToast('Failed to add customer');
