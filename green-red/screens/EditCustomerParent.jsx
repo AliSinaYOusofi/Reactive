@@ -1,66 +1,66 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
 import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
-import money from '../../assets/mony.png'
+import money from '../assets/mony.png'
 import { Fontisto } from '@expo/vector-icons';
-import CurrencyDropdownListSearch from '../global/CurrencyDropdownList';
-import { validateUsername } from '../../utils/validators/usernameValidator';
-import { isEmailValid } from '../../utils/validators/emailValidator';
-import { phoneNumberValidator } from '../../utils/validators/phoneNumberValidator';
-import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
+import CurrencyDropdownListSearch from '../components/global/CurrencyDropdownList';
+import { validateUsername } from '../utils/validators/usernameValidator';
+import { isEmailValid } from '../utils/validators/emailValidator';
+import { phoneNumberValidator } from '../utils/validators/phoneNumberValidator';
+import { amountOfMoneyValidator } from '../utils/validators/amountOfMoneyValidator';
 import { RadioButton } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
-function AddNewCustomerPopup({}) {
+import { useNavigation } from '@react-navigation/native';
 
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [amountOfMoney, setAmountOfMoney] = useState('')
-    const [paymentStatus, setPaymentStatus] = useState('')
-    const [selectedCurrency, setSelectedCurrency] = useState('')
+
+export default function EditCustomerParent({navigation, route}) {
+
+    let {username: prev_username, email: prev_email, phone: prev_phone,  totalAmount: prev_amount_of_money, transaction_type: prev_payment_status, currency: prev_selected_currency} = route.params;
+    prev_amount_of_money = String(prev_amount_of_money)
+
+    const [updatedUsername, setUpdatedUsername] = useState(prev_username);
+    const [updatedEmail, setUpdatedEmail] = useState(prev_email);
+    const [updatedPhone, setUpdatedPhone] = useState(prev_phone);
+    const [updatedAmountOfMoney, setUpdatedAmountOfMoney] = useState(prev_amount_of_money)
+    const [updatedPaymentStatus, setUpdatedPaymentStatus] = useState(prev_payment_status)
+    const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState(prev_selected_currency)
     
+    const navigator = useNavigation();
+
     const db = SQLite.openDatabase('green-red.db')
 
-    const addNewCustomer = () => {
-        if (!validateUsername(username)) {
+    const handleUpdateCustomerParent = () => {
+        
+        if (!validateUsername(updatedUsername)) {
             return showToast('Username is invalid');
         }
     
-        if (email && !isEmailValid(email)) {
+        if (updatedEmail && !isEmailValid(updatedEmail)) {
             return showToast('Email is invalid');
         }
     
-        if (phone && !phoneNumberValidator(phone)) {
+        if (updatedPhone && !phoneNumberValidator(updatedPhone)) {
             return showToast('Phone number is invalid');
         }
     
-        if (amountOfMoney.length && !amountOfMoneyValidator(amountOfMoney)) {
+        if (updatedAmountOfMoney.length && !amountOfMoneyValidator(updatedAmountOfMoney)) {
             return showToast('Amount of money is  invalid');
         }
     
-        if (!paymentStatus) {
+        if (!updatedPaymentStatus) {
             return showToast('Please select a payment status');
         }
     
-        if (!selectedCurrency) {
+        if (!updatedSelectedCurrency) {
             return showToast('Please select a currency');
         }
-    
-        db.transaction(tx => {
-            tx.executeSql(
-                "SELECT * FROM customers WHERE username = ?",
-                [username],
-                (_, result) => {
-                    if (result.rows._array.length) {
-                        showToast('Username already exists');
-                    } else {
-                        insertCustomer();
-                    }
-                }
-            );
-        });
+        
+        console.log(updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency)
+        updateParentCustomer()
+        updateParentChildren();
+
     };
     
     const showToast = (message, type = 'error') => {
@@ -73,15 +73,36 @@ function AddNewCustomerPopup({}) {
             topOffset: 100,
         });
     };
-
-    const insertCustomer = () => {
+    
+    const updateParentCustomer = () => {
         db.transaction(
             tx => {
                 tx.executeSql(
-                    "INSERT INTO customers (username, email, phone, amount, transaction_type, currency) VALUES (?, ?, ?, ?, ?, ?)",
-                    [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency],
+                    "UPDATE customers SET username = ?, email = ?, phone=?, amount = ?, transaction_type = ?, currency = ?;",
+                    [updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency],
+                    (_, success) => {
+                        showToast('Customer updated successfully', 'success');
+                    },
+                    (_, error) => {
+                        showToast('Failed to add customer');
+                        console.log(error)
+                    }
+                );
+            },
+            null,
+            null
+        );
+    };
+
+    const updateParentChildren = () => {
+        db.transaction(
+            tx => {
+                tx.executeSql(
+                    "UPDATE customer__records SET username = ? WHERE username = ?;",
+                    [updatedUsername, prev_username],
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
+                        setTimeout( () => navigator.navigate("homescreen"), 2000)
                     },
                     (_, error) => {
                         showToast('Failed to add customer');
@@ -91,7 +112,8 @@ function AddNewCustomerPopup({}) {
             null,
             null
         );
-    };
+    }
+    
 
     return (
         <>
@@ -106,8 +128,8 @@ function AddNewCustomerPopup({}) {
 
                     <TextInput
                         style={styles.input}
-                        placeholder="Username"
-                        onChangeText={(text) => setUsername(text)}
+                        placeholder={prev_username}
+                        onChangeText={(text) => setUpdatedUsername(text)}
                     />
 
                     <EvilIcons 
@@ -122,8 +144,8 @@ function AddNewCustomerPopup({}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder="Email (optional)"
-                        onChangeText={(text) => setEmail(text)}
+                        placeholder={prev_email || "N/A"}
+                        onChangeText={(text) => setUpdatedEmail(text)}
                         keyboardType="email-address"
                     />
                     <EvilIcons 
@@ -145,8 +167,8 @@ function AddNewCustomerPopup({}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder="Phone (optional)"
-                        onChangeText={(text) => setPhone(text)}
+                        placeholder={prev_phone || "N/A"}
+                        onChangeText={(text) => setUpdatedPhone(text)}
                         keyboardType="phone-pad"
                     />
                 </View>
@@ -162,8 +184,8 @@ function AddNewCustomerPopup({}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder="Amount"
-                        onChangeText={(text) => setAmountOfMoney(text)}
+                        placeholder={prev_amount_of_money}
+                        onChangeText={(text) => setUpdatedAmountOfMoney(text)}
                         keyboardType="phone-pad"
                     />
                 </View>
@@ -174,11 +196,10 @@ function AddNewCustomerPopup({}) {
                         <Text style={styles.payment_text}> Money : </Text>
                     </View>
                     
-                    <RadioButton.Group  onValueChange={newValue => setPaymentStatus(newValue)} value={paymentStatus}>
+                    <RadioButton.Group  onValueChange={newValue => setUpdatedPaymentStatus(newValue)} value={updatedPaymentStatus}>
 
                         <View style={styles.payment_status}>
 
-                            
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <RadioButton color="green" value="received" />
                                 <Text>Received</Text>
@@ -193,15 +214,14 @@ function AddNewCustomerPopup({}) {
                 </View>
 
                 <View style={styles.drop_down_container}>
-                    <CurrencyDropdownListSearch setSelected={setSelectedCurrency} selected={selectedCurrency}/>
+                    <CurrencyDropdownListSearch setSelected={setUpdatedSelectedCurrency} selected={updatedSelectedCurrency}/>
                 </View>
 
                 <Pressable
                     style={styles.add_new_customer_btn}
-                    onPress={addNewCustomer}
-                    title='add new customer'
+                    onPress={handleUpdateCustomerParent}
                 >
-                    <Text style={{color: "white"}}>Add Customer</Text>
+                    <Text style={{color: "white"}}>Update</Text>
                 </Pressable>
             </View>
         </>
@@ -276,4 +296,3 @@ const styles = StyleSheet.create({
         marginLeft: 4
     }
 });
-export default AddNewCustomerPopup
