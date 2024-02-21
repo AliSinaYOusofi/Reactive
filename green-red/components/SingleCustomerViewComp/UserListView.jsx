@@ -3,12 +3,13 @@ import { Pressable, View, Text, StyleSheet, Modal } from 'react-native'
 import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
+import EditCustomerRecordModal from '../global/EditCustomerRecordModal';
 
 export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone, record_id}) {
 
     const [detailsModal, setDetailsModal] = useState(false)
     const [ deleteModal, setDeleteModal] = useState(false)
-
+    const [editModal, setEditModal] = useState(false)
     return (
         <>
 
@@ -40,7 +41,7 @@ export default function UserListView({username, amount, currency, transaction_ty
                         />
                     </Pressable>
 
-                    <Pressable>
+                    <Pressable onPress={() => setEditModal(true)}>
                         <MaterialCommunityIcons 
                             style={styles._icon} 
                             name="circle-edit-outline" 
@@ -78,6 +79,22 @@ export default function UserListView({username, amount, currency, transaction_ty
                     setCloseModal={setDeleteModal}
                     message={"Are you sure you want to delete this record?"}
                     record_id={record_id}
+                />
+            </Modal>
+            
+            <Modal
+                visible={editModal}
+                animationType='slide'
+                transparent={true}
+                onRequestClose={() => setEditModal(false)}
+            >
+                <EditCustomerRecordModal 
+                    username={username}
+                    setUpdateRecordModal={setEditModal}
+                    record_id={record_id}
+                    amount={amount}
+                    currency={currency}
+                    transaction_type={transaction_type}
                 />
             </Modal>
         </>

@@ -1,5 +1,5 @@
-import React, {useState} from 'react'
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import React, {useEffect, useState} from 'react'
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -7,56 +7,34 @@ import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
+export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {
 
-    const [amount, setAmount] = useState("")
-    const [transactionType, setTransactionType] = useState("")
-    const [currency, setCurrency] = useState("")
+    const [newAmount, setNewAmount] = useState("")
+    const [newTransactionType, setNewTransactionType] = useState("")
+    const [newCurrency, setNewCurrency] = useState("")
 
     const db = SQLite.openDatabase('green-red.db')
 
     const handleAddNewRecord = () => {
         
-        if (!amountOfMoneyValidator(amount)) {
+        if (!amountOfMoneyValidator(newAmount)) {
             return showToast('Amount of money is not valid');
         }
     
-        if (!transactionType) {
+        if (!newTransactionType) {
             return showToast('Please select a payment status');
         }
     
-        if (!currency) {
+        if (!newCurrency) {
             return showToast('Please select a currency');
         }
 
-        // for testing tables and dropping if necessary
-        // db.transaction(tx => {
-        //     tx.executeSql("DROP TABLE IF EXISTS customer__records;", [], (_, result) => {console.log("Table deleted")})
-        // })
-        // creating the table
-        try {
+        // updating the customer record
 
-            const query = 'CREATE TABLE IF NOT EXISTS customer__records(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL , amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, transaction_at DATETIME NOT NULL, transaction_updated_at DATETIME NOT NULL);'
-
-            db.transaction(tx => {
-                tx.executeSql(query, [], 
-                    (tx, result) => {
-                        if (result) insertToCustomerChild()
-                    },
-                    (_, error) => {
-                        console.error("Error While creating table", error)
-                        showToast("Error While creating table")
-                    }
-                )
-            })
-        } catch( e ) {
-            console.error("error while adding new customer", e.message)
-            Toast.show({
-                type: 'error',
-                text1: 'error while adding new customer',
-            })
-        }
+        console.log(newAmount, newCurrency, newTransactionType, record_id)
+        insertToCustomerChild()
     }
 
     const showToast = (message, type = 'error') => {
@@ -74,18 +52,20 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
     const insertToCustomerChild = () => {
         
         try {
-            const query = 'INSERT INTO customer__records (username, amount, transaction_type, currency, transaction_at, transaction_updated_at) VALUES (?, ?, ?, ?, ?, ?);'
+            
+            const query = 'UPDATE customer__records SET amount = ?, transaction_type = ?, currency = ?, transaction_updated_at = ? WHERE id = ?'
             const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+            
             db.transaction(tx => {
                 
-                tx.executeSql(query, [username, amount, transactionType, currency, currentDateTime, currentDateTime], 
+                tx.executeSql(query, [newAmount, newTransactionType, newCurrency, currentDateTime, record_id], 
                     (tx, result) => {
-                        showToast("User record added!", "success")
-                        setAddNewRecordModal(false)
+                        showToast("User record updated!", "success")
+                        setUpdateRecordModal(false)
                     },
                     (_, e) => {
                         console.error("Error While inserting new record", e.message)
-                        showToast("Error While inserting new record")
+                        showToast("Failed to update record")
                     }
                 )
             })
@@ -93,16 +73,21 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
         
         catch( e ) {
             console.error("error while adding new customer", e.message)
-            Toast.show({
-                type: 'error',
-                text1: 'error while adding new customer',
-            })
-        } finally {
-            setAmount("")
-            setTransactionType("")
-            setCurrency("")
+            showToast("Failed to update record")
+        } 
+        
+        finally {
+            setNewAmount("")
+            setNewTransactionType("")
+            setNewCurrency("")
         }
     }
+
+    useEffect( () => {
+        setNewCurrency(currency)
+        setNewAmount(amount)
+        setNewTransactionType(transaction_type)
+    }, [])
 
     return (
         <View style={styles.modalView}>
@@ -113,8 +98,8 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
 
                     <TextInput
                         style={styles.input}
-                        placeholder="amount"
-                        onChangeText={(text) => setAmount(text)}
+                        placeholder={String(amount)}
+                        onChangeText={(text) => setNewAmount(text)}
                         keyboardType='phone-pad'
                     />
 
@@ -132,7 +117,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         <Text style={styles.payment_text}> Money : </Text>
                     </View>
                     
-                    <RadioButton.Group  onValueChange={newValue => setTransactionType(newValue)} value={transactionType}>
+                    <RadioButton.Group  onValueChange={newValue => setNewTransactionType(newValue)} value={newTransactionType}>
 
                         <View style={styles.payment_status}>
 
@@ -150,7 +135,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                 </View>
 
                 <View style={styles.drop_down_container}>
-                    <CurrencyDropdownListSearch setSelected={setCurrency} selected={currency}/>
+                    <CurrencyDropdownListSearch setSelected={setNewCurrency} selected={newCurrency}/>
                 </View>
 
                 <View>
@@ -159,12 +144,11 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         onPress={handleAddNewRecord}
                         title='add new customer'
                     >
-                        <Text style={{color: "white"}}>Add new record</Text>
+                        <Text style={{color: "white"}}>Update record</Text>
                     </Pressable>
                 </View>
-
                 <Pressable 
-                    onPress={() => setAddNewRecordModal(false)} 
+                    onPress={() => setUpdateRecordModal(false)} 
                     style={[styles.pressable, styles.pressable_close]}
                 >
                     <Ionicons 
@@ -192,7 +176,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         borderRadius: 5,
         backgroundColor: "#FDFCFA",
-        width: "100%"
+        width: "100%",
     },
     input_container: {
         flexDirection: 'row',
@@ -250,7 +234,7 @@ const styles = StyleSheet.create({
     },
     drop_down_container: {
         marginTop: 20,
-    },
+     },
 
     pressable: {
         position: 'absolute',
