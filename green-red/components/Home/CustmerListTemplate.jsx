@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 
-export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at, border_color}) {
+export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at, border_color, phone, email}) {
     
     const navigator = useNavigation();
     const [ deleteModal, setDeleteModal] = useState(false)
@@ -46,7 +46,7 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
                         />
                     </Pressable>
 
-                    <Pressable>
+                    <Pressable onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type, email, phone})}>
                         <MaterialCommunityIcons 
                             style={styles._icon} 
                             name="circle-edit-outline" 

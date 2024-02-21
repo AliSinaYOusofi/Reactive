@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 import AddNewCustomer from './components/global/AddNewCustomerButton';
 import AddUser from './screens/AddUser';
 import SingleCustomerView from './screens/SingleCustomerView';
+import EditCustomerParent from './screens/EditCustomerParent';
 const StackNavigator = createNativeStackNavigator()
 
 export default function App() {
@@ -39,6 +40,11 @@ export default function App() {
           name={"CustomerData"}
           component={SingleCustomerView}
           options={{title: "Customer Data"}}
+        />
+        <StackNavigator.Screen
+          name={"EditCustomer"}
+          component={EditCustomerParent}
+          options={{title: "Edit Custome Data"}}
         />
       </StackNavigator.Navigator>
       <Toast />

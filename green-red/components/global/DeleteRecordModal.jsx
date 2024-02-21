@@ -11,6 +11,34 @@ export default function DeleteRecordModal({message, setCloseModal, username, rec
 
     const handleDelete = () => {
         
+        if (record_id) {
+            console.log("deleting by record_id", record_id)
+            deleteByRecoredId()
+        }
+        
+        else {
+            console.log("deleting by username", username)
+            deleteByUsername()
+        }
+    }
+
+    const handleCancel = () => {
+        setCloseModal(false)
+    }
+
+    const showToast = (message, type = 'error') => {
+        
+        Toast.show({
+            type: type,
+            text1: message,
+            position: 'top',
+            onPress: () => Toast.hide(),
+            swipeable: true,
+            topOffset: 100,
+        });
+    };
+
+    const deleteByRecoredId = () => {
         try {
             db.transaction(tx => {
                 tx.executeSql(`DELETE FROM customer__records WHERE id = ?;`, [record_id,],
@@ -34,21 +62,37 @@ export default function DeleteRecordModal({message, setCloseModal, username, rec
         }
     }
 
-    const handleCancel = () => {
-        setCloseModal(false)
-    }
+    const deleteByUsername = () => {
+        try {
+            db.transaction(tx => {
+                tx.executeSql(`DELETE FROM customers WHERE username = ?;`, [username,],
+                (_, sucess) => {
+                    tx.executeSql("DELETE FROM customer__records WHERE username = ?;", [username],
+                    (_, succ) => {
+                        setCloseModal(false)
+                        showToast('Record deleted successfully', 'success')
+                    },
+                    (_, err) => {
+                        console.error("Failed to delete user", err.message)
+                        showToast("Failed to delete user")
+                    }
+                    )
+                },
 
-    const showToast = (message, type = 'error') => {
-        
-        Toast.show({
-            type: type,
-            text1: message,
-            position: 'top',
-            onPress: () => Toast.hide(),
-            swipeable: true,
-            topOffset: 100,
-        });
-    };
+                (_, error) => {
+                    console.error("Failed to delete user", error.message)
+                    showToast("Failed to delete user")
+                }
+
+                )
+            })
+        }
+
+        catch(e) {
+            console.error("Failed to delete user", e.message)
+            showToast("Failed to delete user")
+        }
+    }
     
     return (
         <View style={styles.modalContainer}>

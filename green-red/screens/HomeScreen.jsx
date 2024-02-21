@@ -81,6 +81,8 @@ export default function HomeScreen() {
                                         currency={item.currency}
                                         at={item.at}
                                         border_color={item.border_color}
+                                        email={item.email}
+                                        phone={item.phone}
                                     />
                                 </View>
                         )
