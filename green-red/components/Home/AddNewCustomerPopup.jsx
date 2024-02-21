@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
-import { EvilIcons } from '@expo/vector-icons';
+import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../../assets/mony.png'
 import { Fontisto } from '@expo/vector-icons';
@@ -61,40 +61,38 @@ function AddNewCustomerPopup({}) {
                 }
             );
         });
-    
-        // Function to insert customer into the database
-        const insertCustomer = () => {
-            db.transaction(
-                tx => {
-                    tx.executeSql(
-                        "INSERT INTO customers (username, email, phone, amount, transaction_type, currency) VALUES (?, ?, ?, ?, ?, ?)",
-                        [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency],
-                        (_, success) => {
-                            showToast('Customer added successfully', 'success');
-                            console.log('what the fuck')
-                        },
-                        (_, error) => {
-                            showToast('Failed to add customer');
-                        }
-                    );
-                },
-                null,
-                null
-            );
-        };
-    
-        const showToast = (message, type = 'error') => {
-            Toast.show({
-                type: type,
-                text1: message,
-                position: 'top',
-                onPress: () => Toast.hide(),
-                swipeable: true,
-                topOffset: 100,
-            });
-        };
     };
     
+    const showToast = (message, type = 'error') => {
+        Toast.show({
+            type: type,
+            text1: message,
+            position: 'top',
+            onPress: () => Toast.hide(),
+            swipeable: true,
+            topOffset: 100,
+        });
+    };
+
+    const insertCustomer = () => {
+        db.transaction(
+            tx => {
+                tx.executeSql(
+                    "INSERT INTO customers (username, email, phone, amount, transaction_type, currency) VALUES (?, ?, ?, ?, ?, ?)",
+                    [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency],
+                    (_, success) => {
+                        showToast('Customer added successfully', 'success');
+                        console.log('what the fuck')
+                    },
+                    (_, error) => {
+                        showToast('Failed to add customer');
+                    }
+                );
+            },
+            null,
+            null
+        );
+    };
 
     return (
         <>
@@ -156,11 +154,11 @@ function AddNewCustomerPopup({}) {
 
                 <View style={styles.input_container}>
                     
-                    <Fontisto 
-                        name="dollar" 
+                    <MaterialCommunityIcons 
+                        name="currency-sign" 
                         size={24} 
-                        color="blue"
-                        style={styles.icon}  
+                        color="black" 
+                        style={styles.icon}
                     />
                     
                     <TextInput
@@ -271,6 +269,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         justifyContent: "space-evenly",
         alignItems: "center",
+        padding: 5
     },
     payment_text: {
         fontSize: 14,
