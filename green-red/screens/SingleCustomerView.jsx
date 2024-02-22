@@ -5,6 +5,7 @@ import * as SQLite from 'expo-sqlite'
 import UserListView from '../components/SingleCustomerViewComp/UserListView'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
+import { useAppContext } from '../context/useAppContext'
 
 
 export default function SingleCustomerView({navigation, route}) {
@@ -13,6 +14,7 @@ export default function SingleCustomerView({navigation, route}) {
     const isFocused = useIsFocused()
     const username = route.params.username;
     const [addNewRecordModal, setAddNewRecordModal] = useState(false)
+    const { refreshSingelViewChangeDatabase } = useAppContext()
 
     const db = SQLite.openDatabase('green-red.db')
     
@@ -24,7 +26,6 @@ export default function SingleCustomerView({navigation, route}) {
                 await db.transactionAsync(async tx => {
                     const result = await tx.executeSqlAsync("SELECT * FROM customer__records WHERE username = ?", [username]);
                     setCustomers(result.rows);
-                    console.log("result.rows", result.rows)
                 });
             } 
             
@@ -35,7 +36,7 @@ export default function SingleCustomerView({navigation, route}) {
         };
 
         loadCustomerDataList();
-    },  [isFocused])
+    },  [isFocused, refreshSingelViewChangeDatabase])
     
     const handleAddNewCustomer = () => {
         // a table should be created since username is unique

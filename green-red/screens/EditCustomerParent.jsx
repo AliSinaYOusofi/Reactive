@@ -13,6 +13,7 @@ import { RadioButton } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
+import { useAppContext } from '../context/useAppContext';
 
 
 export default function EditCustomerParent({navigation, route}) {
@@ -28,7 +29,7 @@ export default function EditCustomerParent({navigation, route}) {
     const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState(prev_selected_currency)
     
     const navigator = useNavigation();
-
+    const {setRefreshHomeScreenOnChangeDatabase} = useAppContext()
     const db = SQLite.openDatabase('green-red.db')
 
     const handleUpdateCustomerParent = () => {
@@ -59,7 +60,7 @@ export default function EditCustomerParent({navigation, route}) {
         
         console.log(updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency)
         updateParentCustomer()
-        updateParentChildren();
+        updateParentChildren()
 
     };
     
@@ -103,6 +104,7 @@ export default function EditCustomerParent({navigation, route}) {
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
                         setTimeout( () => navigator.navigate("homescreen"), 2000)
+                        // setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },
                     (_, error) => {
                         showToast('Failed to add customer');
@@ -114,7 +116,6 @@ export default function EditCustomerParent({navigation, route}) {
         );
     }
     
-
     return (
         <>
             <View style={styles.modalView}>

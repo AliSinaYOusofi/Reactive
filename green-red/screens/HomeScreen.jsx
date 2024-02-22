@@ -6,12 +6,15 @@ import CustomerListTemplate from '../components/Home/CustmerListTemplate'
 import AddNewCustomer from '../components/global/AddNewCustomerButton'
 import * as SQLite from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native'
+import { useAppContext } from '../context/useAppContext'
+import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 
 export default function HomeScreen() {
     
     const [ customer, setCustomers ] = useState([])
     const db = SQLite.openDatabase('green-red.db')
     const isFocused = useIsFocused()
+    const { refreshHomeScreenOnChangeDatabase } = useAppContext()
     
     useEffect( () => {
         const loadCustomerDataList = async () => {
@@ -55,7 +58,7 @@ export default function HomeScreen() {
             }
         }
         loadCustomerDataList()
-    }, [])
+    }, [refreshHomeScreenOnChangeDatabase])
     
 
     return (
@@ -86,7 +89,7 @@ export default function HomeScreen() {
                                     />
                                 </View>
                         )
-                        : null
+                        : <NoUserAddedInfo />
                     }
                 </ScrollView>
             </View>

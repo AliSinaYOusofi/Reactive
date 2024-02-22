@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
+import { useAppContext } from '../../context/useAppContext';
 
 export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
 
@@ -15,6 +16,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
     const [currency, setCurrency] = useState("")
 
     const db = SQLite.openDatabase('green-red.db')
+    const { setRefreshSingleViewChangeDatabase } = useAppContext()
 
     const handleAddNewRecord = () => {
         
@@ -82,6 +84,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                     (tx, result) => {
                         showToast("User record added!", "success")
                         setAddNewRecordModal(false)
+                        setRefreshSingleViewChangeDatabase( prev => ! prev)
                     },
                     (_, e) => {
                         console.error("Error While inserting new record", e.message)
