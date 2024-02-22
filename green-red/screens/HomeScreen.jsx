@@ -8,10 +8,13 @@ import * as SQLite from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native'
 import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
+import ZeroSearchResult from '../components/global/ZeroSearchResult'
 
 export default function HomeScreen() {
     
     const [ customer, setCustomers ] = useState([])
+    const [filteredCustomers, setFilteredCustomers] = useState([]);
+    const [parentSearchTerm, setParentSearchTerm] = useState("")
     const db = SQLite.openDatabase('green-red.db')
     const isFocused = useIsFocused()
     const { refreshHomeScreenOnChangeDatabase } = useAppContext()
@@ -60,6 +63,19 @@ export default function HomeScreen() {
         loadCustomerDataList()
     }, [refreshHomeScreenOnChangeDatabase])
     
+    const handleSearch = (searchTerm) => {
+        
+        setParentSearchTerm(searchTerm)
+        
+        const filtered = customer.filter((item) => {
+            if (searchTerm) {
+                return item.username.toLowerCase().includes(searchTerm.toLowerCase())
+            }
+        }
+        );
+        
+        setFilteredCustomers(filtered);
+    };
 
     return (
         <>
@@ -67,11 +83,42 @@ export default function HomeScreen() {
                 
                 <TotalExpenses style={style.item}/>
                 
-                <SearchCustomers style={style.item}/>
+                <SearchCustomers style={style.item} handleSearch={handleSearch}/>
+                
                 <ScrollView style={style.scroll_view}>
 
                     {
                         customer.length ?
+
+                        parentSearchTerm ?
+                        (
+                            filteredCustomers.length ?
+                            filteredCustomers.map( item => 
+
+                               {
+
+                                    return(
+                                        <View key={item.id}>
+                                            <CustomerListTemplate 
+                                                username={item.username} 
+                                                usernameShortCut={"AS"} 
+                                                totalAmount={item.amount}
+                                                style={style.item}
+                                                transaction_type={item.transaction_type}
+                                                currency={item.currency}
+                                                at={item.at}
+                                                border_color={item.border_color}
+                                                email={item.email}
+                                                phone={item.phone}
+                                                isSearchComponent={true}
+                                                searchResultLength={filteredCustomers.length}
+                                            />
+                                        </View>
+                                    )
+                               }
+                            ): <ZeroSearchResult />
+                        )
+                        :
                         customer.map( 
                             (item, index) => 
                                 <View key={item.id}>
@@ -86,6 +133,7 @@ export default function HomeScreen() {
                                         border_color={item.border_color}
                                         email={item.email}
                                         phone={item.phone}
+                                        isSearchComponent={false}
                                     />
                                 </View>
                         )

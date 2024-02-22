@@ -5,9 +5,22 @@ import { EvilIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 
-export default function SearchCustomers() {
+export default function SearchCustomers({handleSearch}) {
     
     const [currentSearchTerm, setCurrentSearchTerm] = useState('');
+
+    const handleSearchCustomers = (search_this) => {
+        setCurrentSearchTerm(search_this)
+        handleSearch(search_this)
+    }
+
+    const handleSort = () => {
+
+    }
+
+    const handlePdf = () => {
+
+    }
 
     return (
         <View style={styles.container}>
@@ -20,7 +33,7 @@ export default function SearchCustomers() {
                     style={styles.input}
                     placeholder="Search"
                     value={currentSearchTerm}
-                    onChangeText={text => setCurrentSearchTerm(text)}
+                    onChangeText={text => handleSearchCustomers(text)}
                 />
             </View>
 

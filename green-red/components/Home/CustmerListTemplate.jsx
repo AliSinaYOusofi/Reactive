@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 
-export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at, border_color, phone, email}) {
+export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at, border_color, phone, email, isSearchComponent, searchResultLength}) {
     
     const navigator = useNavigation();
     const [ deleteModal, setDeleteModal] = useState(false)
@@ -15,6 +15,14 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
     }
     return (
         <>
+            {
+                isSearchComponent
+                ?
+                <Text style={styles.search_header}>
+                    Search Results: {searchResultLength}
+                </Text>
+                : null
+            }
             <View style={styles.container}>
 
                 <Pressable onPress={handleCustomerViewClick} style={[styles.container, { borderLeftColor: border_color, borderLeftWidth: 2}]}>
@@ -122,5 +130,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         columnGap: 10,
+    },
+
+    search_header: {
+        fontSize: 17,
+        fontWeight: "bold",
+        marginTop: 10,
     }
 })
