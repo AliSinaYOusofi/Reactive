@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate, Easing, withRepeat, withTiming } from 'react-native-reanimated';
 import { AntDesign } from '@expo/vector-icons';
+import { Fontisto } from '@expo/vector-icons';
 
-export default function NoUserAddedInfo() {
-
+export default function ZeroSearchResult() {
     const offset = useSharedValue(10);
 
     const animatedStyle = useAnimatedStyle( () => (
@@ -16,17 +16,16 @@ export default function NoUserAddedInfo() {
     
     React.useEffect( () => {
         offset.value = withRepeat(
-            withTiming(-offset.value, { duration: 410}), -1, true
+            withTiming(-offset.value, { duration: 470}), -1, true
         )
     })
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text_big}>No customers added.</Text>
-            <Text style={styles.text}>Add a new customer by clicking the button below</Text>
+            <Text style={styles.text_big}>Your search retunred zero results</Text>
             
             <Animated.View style={[styles.iconContainer, styles.icon, animatedStyle]}>
-                <AntDesign name="arrowdown" size={24} color="black" />
+                <Fontisto name="confused" size={24} color="black" />
             </Animated.View>
         </View>
     );
