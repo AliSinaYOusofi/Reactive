@@ -4,21 +4,25 @@ import { cancel_button_color, delete_button_color } from './colors'
 import { Ionicons } from '@expo/vector-icons'
 import * as SQLite from 'expo-sqlite'
 import Toast from 'react-native-toast-message';
+import { useAppContext } from '../../context/useAppContext'
 
 export default function DeleteRecordModal({message, setCloseModal, username, record_id}) {
 
     const db = SQLite.openDatabase('green-red.db')
+    const { setRefreshHomeScreenOnChangeDatabase, setRefreshSingleViewChangeDatabase } = useAppContext()
 
     const handleDelete = () => {
         
         if (record_id) {
             console.log("deleting by record_id", record_id)
             deleteByRecoredId()
+            setRefreshSingleViewChangeDatabase(prev => ! prev)
         }
         
         else {
             console.log("deleting by username", username)
             deleteByUsername()
+            setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
         }
     }
 
@@ -45,6 +49,7 @@ export default function DeleteRecordModal({message, setCloseModal, username, rec
                 (_, sucess) => {
                     setCloseModal(false)
                     showToast('Record deleted successfully', 'success')
+                    
                 },
 
                 (_, error) => {

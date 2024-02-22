@@ -8,6 +8,7 @@ import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAppContext } from '../../context/useAppContext';
 
 export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {
 
@@ -16,6 +17,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
     const [newCurrency, setNewCurrency] = useState("")
 
     const db = SQLite.openDatabase('green-red.db')
+    const { setRefreshSingleViewChangeDatabase } = useAppContext()
 
     const handleAddNewRecord = () => {
         
@@ -32,9 +34,8 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
         }
 
         // updating the customer record
-
-        console.log(newAmount, newCurrency, newTransactionType, record_id)
         insertToCustomerChild()
+
     }
 
     const showToast = (message, type = 'error') => {
@@ -62,6 +63,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                     (tx, result) => {
                         showToast("User record updated!", "success")
                         setUpdateRecordModal(false)
+                        setRefreshSingleViewChangeDatabase(prev => ! prev)
                     },
                     (_, e) => {
                         console.error("Error While inserting new record", e.message)

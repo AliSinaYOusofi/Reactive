@@ -12,6 +12,8 @@ import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyVali
 import { RadioButton } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
+import { useNavigation } from '@react-navigation/native';
+import { useAppContext } from '../../context/useAppContext';
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -21,6 +23,8 @@ function AddNewCustomerPopup({}) {
     const [paymentStatus, setPaymentStatus] = useState('')
     const [selectedCurrency, setSelectedCurrency] = useState('')
     
+    const { setRefreshHomeScreenOnChangeDatabase } = useAppContext()
+    const navigator = useNavigation()
     const db = SQLite.openDatabase('green-red.db')
 
     const addNewCustomer = () => {
@@ -82,6 +86,8 @@ function AddNewCustomerPopup({}) {
                     [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency],
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
+                        setTimeout( () => navigator.navigate("homescreen"), 2000)
+                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },
                     (_, error) => {
                         showToast('Failed to add customer');
