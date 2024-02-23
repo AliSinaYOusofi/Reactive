@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, StyleSheet, Pressable, Modal } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { EvilIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -117,26 +116,36 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
             AllCustomersData()
             
             const customerDataDiv = allCustomersDataToConvert.map(customer => {
-                const recordRows = customer.records.map(record => {
-                    return `
-                        <tr>
-                            <td>${record.transaction_type}</td>
-                            <td>${record.amount} ${record.currency}</td>
-                            <td>${record.transaction_at} (${formatDistanceToNowStrict(parseISO(record.transaction_at))} ago)</td>
-                        </tr>
-                    `;
-                }).join('');
-            
-                return `
+
+                const customersDetailsParent = `
                     <tr>
                         <td rowspan="${customer.records.length + 1}">${customer.username}</td>
                         <td rowspan="${customer.records.length + 1}">${customer.email}</td>
                         <td rowspan="${customer.records.length + 1}">${customer.phone}</td>
+                        <td rowspan="${customer.records.length + 1}">${customer.transaction_type}</td>
                         <td rowspan="${customer.records.length + 1}">${customer.amount} ${customer.currency}</td>
                         <td rowspan="${customer.records.length + 1}">${customer.at} (${formatDistanceToNowStrict(parseISO(customer.at))} ago)</td>
                     </tr>
-                    ${recordRows}
                 `;
+
+                let recordRows
+
+                if (customer.records.length) {
+                    recordRows = customer.records.map(record => {
+                        return `
+                            <tr>
+                                <td>${record.transaction_type}</td>
+                                <td>${record.amount} ${record.currency}</td>
+                                <td>${record.transaction_at} (${formatDistanceToNowStrict(parseISO(record.transaction_at))} ago)</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                return `
+                    ${customersDetailsParent}
+                    ${recordRows}
+                `
             }).join('');
             
             const customerHtml = `
@@ -165,6 +174,10 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
                                     <th>Username</th>
                                     <th>Email</th>
                                     <th>Phone</th>
+                                    <th> Transaction type </th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th> Transaction type </th>
                                     <th>Amount</th>
                                     <th>Date</th>
                                 </tr>
@@ -185,6 +198,7 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
             console.error("error while gening pdf => ", e.message)
         }
     }
+    
     return (
         <>
             <View style={styles.container}>
