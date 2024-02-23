@@ -6,12 +6,17 @@ import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import SortOptionsDropDownModal from '../global/SortOptionsDropDownModal';
 import { parseISO } from 'date-fns';
+import * as Print from 'expo-print'
+import * as SQLite from 'expo-sqlite'
+import * as Sharing from 'expo-sharing';
+import { formatDistanceToNowStrict } from 'date-fns';
 
 export default function SearchCustomers({handleSearch, setCustomers}) {
     
     const [currentSearchTerm, setCurrentSearchTerm] = useState('');
     const [sortModalVisible, setSortModalVisible] = useState(false);
     const [selectedSortOption, setSelectedSortOption] = useState('NEWEST')
+    const [allCustomersDataToConvert, setAllCustomersDataToConvert] = useState([])
 
     const handleSearchCustomers = (search_this) => {
         setCurrentSearchTerm(search_this)
@@ -53,9 +58,36 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
     }
 
 
-    const handlePdf = () => {
+    const AllCustomersData = () => {
+        const db = SQLite.openDatabase("green-red.db");
+    
+        db.transaction(tx => {
+            
+            tx.executeSql("SELECT * FROM customers", [], (_, success) => {
+            
+                let allCustomersWithFullInfo = success.rows._array
 
-    }
+                allCustomersWithFullInfo.forEach(customer => {
+            
+                    tx.executeSql("SELECT * FROM customer__records WHERE username = ?", [customer.username], (_, succ) => {
+            
+                        let customerRecords = succ.rows._array
+            
+                        let customerWithFullInfo = {
+            
+                            ...customer,
+                            records: customerRecords
+                        };
+                        
+                        setAllCustomersDataToConvert(prevAllCustomersDataToConvert => [...prevAllCustomersDataToConvert, customerWithFullInfo]);
+                    });
+                });
+            });
+        }, (error) => {
+            console.error("error while generating pdf", error);
+        });
+    };
+    
 
 
     useEffect( () => {
@@ -79,6 +111,80 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
         handleSortOptionsChange()
     }, [selectedSortOption])
 
+    const convertQueryResultToPdf = async () => {
+        try {
+            
+            AllCustomersData()
+            
+            const customerDataDiv = allCustomersDataToConvert.map(customer => {
+                const recordRows = customer.records.map(record => {
+                    return `
+                        <tr>
+                            <td>${record.transaction_type}</td>
+                            <td>${record.amount} ${record.currency}</td>
+                            <td>${record.transaction_at} (${formatDistanceToNowStrict(parseISO(record.transaction_at))} ago)</td>
+                        </tr>
+                    `;
+                }).join('');
+            
+                return `
+                    <tr>
+                        <td rowspan="${customer.records.length + 1}">${customer.username}</td>
+                        <td rowspan="${customer.records.length + 1}">${customer.email}</td>
+                        <td rowspan="${customer.records.length + 1}">${customer.phone}</td>
+                        <td rowspan="${customer.records.length + 1}">${customer.amount} ${customer.currency}</td>
+                        <td rowspan="${customer.records.length + 1}">${customer.at} (${formatDistanceToNowStrict(parseISO(customer.at))} ago)</td>
+                    </tr>
+                    ${recordRows}
+                `;
+            }).join('');
+            
+            const customerHtml = `
+                <html>
+                    <head>
+                        <style>
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                            }
+                            th, td {
+                                border: 1px solid #dddddd;
+                                text-align: left;
+                                padding: 8px;
+                            }
+                            th {
+                                background-color: #f2f2f2;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Customers Data</h1>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${customerDataDiv}
+                            </tbody>
+                        </table>
+                    </body>
+                </html>
+            `;
+            
+            const { uri } = await Print.printToFileAsync({ html: customerHtml });
+            
+            Sharing.shareAsync(uri, { dialogTitle: 'Customers Data' });            
+            
+        } catch( e ) {
+            console.error("error while gening pdf => ", e.message)
+        }
+    }
     return (
         <>
             <View style={styles.container}>
@@ -100,7 +206,7 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
                         <MaterialIcons name="sort" size={24} color="black" style={styles.icon}/>
                     </Pressable>
 
-                    <Pressable>
+                    <Pressable onPress={ () => convertQueryResultToPdf()}>
                         <AntDesign name="pdffile1" size={24} color="black" style={styles.icon}/>
                     </Pressable>
                 </View>

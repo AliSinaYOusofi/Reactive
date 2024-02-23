@@ -83,7 +83,12 @@ export default function HomeScreen() {
                 
                 <TotalExpenses style={style.item}/>
                 
-                <SearchCustomers style={style.item} handleSearch={handleSearch} setCustomers={setCustomers}/>
+                <SearchCustomers 
+                    style={style.item} 
+                    handleSearch={handleSearch} 
+                    setCustomers={setCustomers}
+                    customersToConvert={customer}
+                />
                 
                 <ScrollView style={style.scroll_view}>
 
