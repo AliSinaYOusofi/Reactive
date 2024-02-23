@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../../context/useAppContext';
+import { format } from 'date-fns';
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -51,6 +52,27 @@ function AddNewCustomerPopup({}) {
         if (!selectedCurrency) {
             return showToast('Please select a currency');
         }
+
+
+        // db.transaction(tx => {
+            
+        //     tx.executeSql(
+        //         'DROP TABLE IF EXISTS customers;',
+        //         [],
+        //         () => console.log('Table created successfully'),
+        //         (_, error) => console.error('Error creating table: ', error)
+        //     );
+        // });
+
+        db.transaction(tx => {
+            
+            tx.executeSql(
+                'CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, email TEXT, phone TEXT, amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, at DATETIME NOT NULL);',
+                [],
+                () => console.log('Table created successfully'),
+                (_, error) => console.error('Error creating table: ', error)
+            );
+        });
     
         db.transaction(tx => {
             tx.executeSql(
@@ -62,7 +84,11 @@ function AddNewCustomerPopup({}) {
                     } else {
                         insertCustomer();
                     }
-                }
+                },
+                (_, error) => {
+                    console.error("error while checking if username exists", error.message)
+                    showToast('Failed to add new customer')
+                }   
             );
         });
     };
@@ -79,11 +105,14 @@ function AddNewCustomerPopup({}) {
     };
 
     const insertCustomer = () => {
+
+        const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+
         db.transaction(
             tx => {
                 tx.executeSql(
-                    "INSERT INTO customers (username, email, phone, amount, transaction_type, currency) VALUES (?, ?, ?, ?, ?, ?)",
-                    [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency],
+                    "INSERT INTO customers (username, email, phone, amount, transaction_type, currency, at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency, currentDateTime],
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
                         setTimeout( () => navigator.navigate("homescreen"), 2000)
@@ -91,11 +120,10 @@ function AddNewCustomerPopup({}) {
                     },
                     (_, error) => {
                         showToast('Failed to add customer');
+                        console.error("error while adding new user", error.message)
                     }
                 );
             },
-            null,
-            null
         );
     };
 
