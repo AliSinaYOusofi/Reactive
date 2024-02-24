@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -8,6 +8,7 @@ import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
+import { background_color } from './colors';
 
 export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
 
@@ -121,8 +122,8 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         keyboardType='phone-pad'
                     />
 
-                    <MaterialCommunityIcons 
-                        name="currency-sign" 
+                    <FontAwesome 
+                        name="money" 
                         size={24} 
                         color="black" 
                         style={styles.icon}
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     ,
     
     options_container: {
-        backgroundColor: "black",
+        backgroundColor: background_color,
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,

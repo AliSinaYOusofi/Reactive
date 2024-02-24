@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -105,8 +105,8 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                         keyboardType='phone-pad'
                     />
 
-                    <MaterialCommunityIcons 
-                        name="currency-sign" 
+                    <FontAwesome 
+                        name="money" 
                         size={24} 
                         color="black" 
                         style={styles.icon}
@@ -128,7 +128,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                                 <Text>Received</Text>
                             </View>
                             
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
                                 <RadioButton value="paid" color="red"/>
                                 <Text>Paid</Text>
                             </View>
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         borderColor: 'gray',
         padding: 10,
         marginBottom: 20,
-        borderRadius: 5,
+        borderRadius: 10,
         backgroundColor: "#FDFCFA",
         width: "100%",
     },
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     payment_status: {
         flexDirection: "row",
         backgroundColor: "#FDFCFA",
-        borderRadius: 5,
+        borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
         width: "100%",

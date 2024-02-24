@@ -81,8 +81,6 @@ export default function HomeScreen() {
         <>
             <View style={style.container}>
                 
-                <TotalExpenses style={style.item}/>
-                
                 <SearchCustomers 
                     style={style.item} 
                     handleSearch={handleSearch} 

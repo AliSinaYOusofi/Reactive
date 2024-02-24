@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
-import { EvilIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { EvilIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../assets/mony.png'
 import { Fontisto } from '@expo/vector-icons';
@@ -176,8 +176,8 @@ export default function EditCustomerParent({navigation, route}) {
 
                 <View style={styles.input_container}>
                     
-                    <MaterialCommunityIcons 
-                        name="currency-sign" 
+                    <FontAwesome 
+                        name="money" 
                         size={24} 
                         color="black" 
                         style={styles.icon}
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 20,
         width: '80%',
-        borderRadius: 5,
+        borderRadius: 10,
         backgroundColor: "#FDFCFA"
     },
     add_new_customer_btn: {
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         width: "80%",
         backgroundColor: "#FDFCFA",
-        borderRadius: 5,
+        borderRadius: 10,
         justifyContent: "space-evenly",
         alignItems: "center",
         padding: 5

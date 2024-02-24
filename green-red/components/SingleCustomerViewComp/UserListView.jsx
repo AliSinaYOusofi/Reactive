@@ -4,21 +4,24 @@ import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import EditCustomerRecordModal from '../global/EditCustomerRecordModal';
+import { format_username } from '../../utils/username_shortcut';
+import { padi_color, received_color } from '../global/colors';
 
 export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone, record_id}) {
 
     const [detailsModal, setDetailsModal] = useState(false)
     const [ deleteModal, setDeleteModal] = useState(false)
     const [editModal, setEditModal] = useState(false)
+    
     return (
         <>
 
-            <View style={styles.container}>
-                <Pressable onPress={() => setDetailsModal(true)} style={[styles.container, { borderLeftWidth: 2, borderLeftColor: transaction_type === 'received' ? 'green' : 'red'}]}>
+            <View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}]}>
+                <Pressable onPress={() => setDetailsModal(true)} style={[styles.container]}>
                     
                     <View style={styles.username_and_shortcut_container}>
                         <View style={styles.usernameShortCutStyle}>
-                            <Text >{username[0]}{username[1]}</Text>
+                            <Text >{format_username(username)}</Text>
                         </View>
                         <View>
                             <Text> {username} </Text>
@@ -108,12 +111,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 6,
+        padding: 4,
         marginVertical: 5,
+        borderRadius: 10
     },
     
     usernameShortCutStyle: {
-        backgroundColor: "#F8F8FF", // the bg-color
+        backgroundColor: "white", // the bg-color
         borderRadius: 50,
         padding: 8
     },
@@ -140,6 +144,9 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         padding: 5,
         borderRadius: 50,
+        backgroundColor: "white", // the bg-color
+        borderRadius: 50,
+        padding: 8
         
     },
 
@@ -148,5 +155,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        columnGap: 10,
     }
 })

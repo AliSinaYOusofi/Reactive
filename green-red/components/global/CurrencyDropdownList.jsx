@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     
     drop_down_container: {
        backgroundColor: "white",
-       borderRadius: 5,
+       borderRadius: 10,
        width: "100%",
        flexDirection: "row",
        justifyContent: "center",

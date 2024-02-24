@@ -3,6 +3,8 @@ import { View, StyleSheet, Text, Pressable, Modal } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
+import { format_username } from '../../utils/username_shortcut';
+import { padi_color, received_color } from '../global/colors';
 
 export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at, border_color, phone, email, isSearchComponent, searchResultLength}) {
     
@@ -23,13 +25,13 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
                 </Text>
                 : null
             }
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}]}>
 
-                <Pressable onPress={handleCustomerViewClick} style={[styles.container, { borderLeftColor: border_color, borderLeftWidth: 2}]}>
+                <Pressable onPress={handleCustomerViewClick} style={[styles.container]}>
                     
                     <View style={styles.username_and_shortcut_container}>
                         <View style={styles.usernameShortCutStyle}>
-                            <Text >{usernameShortCut}</Text>
+                            <Text >{format_username(username)}</Text>
                         </View>
                         <View>
                             <Text> {username} </Text>
@@ -56,7 +58,7 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
 
                     <Pressable onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type, email, phone})}>
                         <MaterialCommunityIcons 
-                            style={styles._icon} 
+                            style={styles.pdf_icon} 
                             name="circle-edit-outline" 
                             size={24} 
                             color="black"
@@ -88,12 +90,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 6,
+        padding: 5,
         marginVertical: 5,
+        borderRadius: 10
     },
     
     usernameShortCutStyle: {
-        backgroundColor: "#F8F8FF", // the bg-color
+        backgroundColor: "white", // the bg-color
         borderRadius: 50,
         padding: 8
     },
@@ -121,7 +124,9 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         padding: 5,
         borderRadius: 50,
-        color: "white"
+        color: "white",
+        borderRadius: 50,
+        padding: 8
     },
     
     _icons_container: {
@@ -136,5 +141,13 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: "bold",
         marginTop: 10,
+    },
+
+    pdf_icon: {
+        padding: 5,
+        borderRadius: 50,
+        backgroundColor: "white", // the bg-color
+        borderRadius: 50,
+        padding: 8
     }
 })
