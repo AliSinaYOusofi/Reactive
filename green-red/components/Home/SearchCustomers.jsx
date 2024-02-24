@@ -9,6 +9,7 @@ import * as Print from 'expo-print'
 import * as SQLite from 'expo-sqlite'
 import * as Sharing from 'expo-sharing';
 import { formatDistanceToNowStrict } from 'date-fns';
+import Toast from 'react-native-toast-message';
 
 export default function SearchCustomers({handleSearch, setCustomers}) {
     
@@ -57,37 +58,57 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
     }
 
 
-    const AllCustomersData = () => {
+    const AllCustomersData = async () => {
+        
         const db = SQLite.openDatabase("green-red.db");
     
-        db.transaction(tx => {
-            
-            tx.executeSql("SELECT * FROM customers", [], (_, success) => {
-            
-                let allCustomersWithFullInfo = success.rows._array
-
-                allCustomersWithFullInfo.forEach(customer => {
-            
-                    tx.executeSql("SELECT * FROM customer__records WHERE username = ?", [customer.username], (_, succ) => {
-            
-                        let customerRecords = succ.rows._array
-            
-                        let customerWithFullInfo = {
-            
-                            ...customer,
-                            records: customerRecords
-                        };
-                        
-                        setAllCustomersDataToConvert(prevAllCustomersDataToConvert => [...prevAllCustomersDataToConvert, customerWithFullInfo]);
+        try {
+            let allCustomersDataToConvert = [];
+    
+            await new Promise((resolve, reject) => {
+                
+                db.transaction(tx => {
+                
+                    tx.executeSql("SELECT * FROM customers", [], async (_, customerParent) => {
+                
+                        await Promise.all(
+                
+                            Array.from(customerParent.rows._array).map(async (customer) => {
+                
+                                const other_customer_records = await new Promise((resolve, reject) => {
+                
+                                    tx.executeSql("SELECT * FROM customer__records WHERE username = ?;", [customer.username], (_, other_customer_records) => {
+                
+                                        resolve(other_customer_records);
+                                    }, (_, error) => {
+                
+                                        reject(error);
+                                    });
+                                });
+                                
+                                const customers_with_relevant_records = {
+                                    ...customer,
+                                    records: Array.from(other_customer_records.rows._array),
+                                };
+    
+                                allCustomersDataToConvert.push(customers_with_relevant_records);
+                            })
+                        );
+    
+                        resolve();
+                    }, (_, error) => {
+                        reject(error);
                     });
                 });
             });
-        }, (error) => {
+    
+            return allCustomersDataToConvert
+        } catch (error) {
             console.error("error while generating pdf", error);
-        });
+        }
     };
     
-
+    
 
     useEffect( () => {
         
@@ -110,11 +131,27 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
         handleSortOptionsChange()
     }, [selectedSortOption])
 
+
+    const showToast = (message, type = 'error') => {
+        
+        Toast.show({
+            type: type,
+            text1: message,
+            position: 'top',
+            onPress: () => Toast.hide(),
+            swipeable: true,
+            topOffset: 100,
+        });
+    };
+
     const convertQueryResultToPdf = async () => {
         try {
             
-            AllCustomersData()
-            
+            let allCustomersDataToConvert = await AllCustomersData()
+            console.log(allCustomersDataToConvert, 'all')
+            if (! allCustomersDataToConvert.length) {
+                return showToast('No customers found')
+            }
             const customerDataDiv = allCustomersDataToConvert.map(customer => {
 
                 const customersDetailsParent = `
@@ -250,12 +287,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         columnGap: 10,
-        backgroundColor: "#f5f5f5"
+        backgroundColor: "#f5f5f5",
+        padding: 3,
+        borderRadius: 10,
     },
 
     icon: {
         marginRight: 10,
-        color: "black"
+        color: "black",
+        backgroundColor: "#F8F8FF", // the bg-color
+        borderRadius: 50,
+        padding: 8
     },
 
     input: {
@@ -275,7 +317,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        borderRadius: 5,
+        borderRadius: 10,
         padding: 5,
     },
 });
