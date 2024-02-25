@@ -25,7 +25,8 @@ export default function SingleCustomerView({navigation, route}) {
             try {
                 await db.transactionAsync(async tx => {
                     const result = await tx.executeSqlAsync("SELECT * FROM customer__records WHERE username = ?", [username]);
-                    setCustomers(result.rows);
+                    
+                    setCustomers(result.rows.sort( (a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)));
                 });
             } 
             

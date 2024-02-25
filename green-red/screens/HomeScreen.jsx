@@ -9,12 +9,14 @@ import { useIsFocused } from '@react-navigation/native'
 import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
+import { set } from 'date-fns'
 
 export default function HomeScreen() {
     
     const [ customer, setCustomers ] = useState([])
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("")
+    const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([])
     const db = SQLite.openDatabase('green-red.db')
     const isFocused = useIsFocused()
     const { refreshHomeScreenOnChangeDatabase } = useAppContext()
@@ -77,10 +79,83 @@ export default function HomeScreen() {
         setFilteredCustomers(filtered);
     };
 
+    useEffect(() => {
+        const fetchTotalOfAmountsBasedOnCurrency = async () => {
+            
+            let total_expense_data_of_customers = [];
+            let unique_currencies = new Set()
+
+            await Promise.all(
+                
+                customer.map(async (customerr) => {
+                
+                    await db.transactionAsync(async tx => {
+                
+                        const recordsOfUser = await tx.executeSqlAsync("SELECT * FROM customer__records WHERE username = ?", [customerr.username]);
+                        
+                        
+                        if (! recordsOfUser.rows.length ) {
+                            return console.log("not records for this user")
+                        }
+                        
+                        for (const record of recordsOfUser.rows) {
+                
+                            const currency = record.currency;
+                            current_currency = record.currency
+
+                            if (unique_currencies.has(currency)) {
+                                continue
+                            }
+
+                            unique_currencies.add(currency)
+
+                            //TODO: make this query more efficient
+                            // also i need the sum from the customers table
+                            
+                            const totalAmountBasedOnCurrencyToTakeDBResult = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'received' AND currency = ?", [currency]);
+                            const totalAmountBasedOnCurrencyToGiveDBResult = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'paid' AND currency = ?", [currency]);
+                            
+                            let plainTotalAmountToGive
+                            let plainTotalAmountToTake
+
+                            if (totalAmountBasedOnCurrencyToGiveDBResult.rows.length < 0 || totalAmountBasedOnCurrencyToGiveDBResult.rows[0]['SUM(amount)'] === null) {
+                                plainTotalAmountToGive = 0
+                            } else {
+                                plainTotalAmountToGive = totalAmountBasedOnCurrencyToGiveDBResult.rows[0]['SUM(amount)']
+                            }
+
+                            if (totalAmountBasedOnCurrencyToTakeDBResult.rows.length < 0 || totalAmountBasedOnCurrencyToTakeDBResult.rows[0]['SUM(amount)'] === null) {
+                                plainTotalAmountToTake = 0
+                            } else {
+                                plainTotalAmountToTake = totalAmountBasedOnCurrencyToTakeDBResult.rows[0]['SUM(amount)']
+                            }
+
+                            const total_expense_data = {
+                                currency,
+                                totalAmountBasedOnCurrencyToGive: plainTotalAmountToGive,
+                                totalAmountBasedOnCurrencyToTake: plainTotalAmountToTake
+                            };
+        
+                            total_expense_data_of_customers.push(total_expense_data)
+                        }
+                    })
+                })
+            );
+            
+            console.log(total_expense_data_of_customers, 'customers')
+            return total_expense_data_of_customers;
+        };
+        
+        fetchTotalOfAmountsBasedOnCurrency();
+    });
+    
+
+    console.log(totalExpenseOfCustomer)
     return (
         <>
             <View style={style.container}>
                 
+                <TotalExpenses />
                 <SearchCustomers 
                     style={style.item} 
                     handleSearch={handleSearch} 
