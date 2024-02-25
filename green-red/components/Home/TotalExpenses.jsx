@@ -21,7 +21,7 @@ export default function TotalExpenses({totalAmountToGive, totalAmountToTake, cur
                 </View>
 
                 <View>
-                    <Text style={[styles.to_give_text, styles.money]}>10000 <Text style={styles.currency}>AFG</Text></Text>
+                    <Text style={[styles.to_give_text, styles.money]}>{totalAmountToGive} <Text style={styles.currency}>{currency}</Text></Text>
                     <Text style={styles.to_give_text}>I have to give</Text>
                 </View>
             </View>
@@ -36,7 +36,7 @@ export default function TotalExpenses({totalAmountToGive, totalAmountToTake, cur
                     />
                 </View>
                 <View>
-                    <Text style={[styles.to_take_text, styles.money]}>200000 <Text style={styles.currency}> AFG</Text></Text>
+                    <Text style={[styles.to_take_text, styles.money]}>{totalAmountToTake} <Text style={styles.currency}> {currency}</Text></Text>
                     <Text style={styles.to_take_text}>I have to take</Text>
                 </View>
             </View>
