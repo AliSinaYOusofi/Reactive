@@ -2,7 +2,8 @@ import React from 'react'
 import { Image, Text, View, StyleSheet } from 'react-native'
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { FontAwesome6 } from '@expo/vector-icons';
-export default function TotalExpenses() {
+
+export default function TotalExpenses({totalAmountToGive, totalAmountToTake, currency}) {
 
     return (
         <>
@@ -13,14 +14,14 @@ export default function TotalExpenses() {
                 <View  style={styles.carets}>
                     
                     <FontAwesome 
-                        name="arrow-circle-down" 
+                        name="arrow-circle-up" 
                         size={28} 
                         color="red" 
                     />
                 </View>
 
                 <View>
-                    <Text style={styles.to_give_text}>10000 AFG</Text>
+                    <Text style={[styles.to_give_text, styles.money]}>10000 <Text style={styles.currency}>AFG</Text></Text>
                     <Text style={styles.to_give_text}>I have to give</Text>
                 </View>
             </View>
@@ -29,13 +30,13 @@ export default function TotalExpenses() {
                 
                 <View style={styles.carets}>
                     <FontAwesome 
-                        name="arrow-circle-up" 
+                        name="arrow-circle-down" 
                         size={28} 
                         color="green" 
                     />
                 </View>
                 <View>
-                    <Text style={styles.to_take_text}>200000 AFG</Text>
+                    <Text style={[styles.to_take_text, styles.money]}>200000 <Text style={styles.currency}> AFG</Text></Text>
                     <Text style={styles.to_take_text}>I have to take</Text>
                 </View>
             </View>
@@ -65,32 +66,44 @@ const styles = StyleSheet.create({
         alignItems: "center",
         gap: 10,
         margin: 2,
-        padding: 10
+        paddingHorizontal: 10,
+        paddingVertical: 25,
+        
     },
 
     give: {
-        backgroundColor: "#FFDDE4",
-        flex: 1
+        backgroundColor: "#8b0000",
+        flex: 1,
     },
     
     take: {
-        backgroundColor: "#D4F7E4",
-        flex: 1
+        backgroundColor: "#0E593C",
+        flex: 1,
     },
 
     to_give_text: {
-        color: "red",
+        color: "white",
         fontSize: 15,
         fontWeight: "600"
     },
 
     to_take_text: {
-        color: "green",
+        color: "white",
         fontSize: 15,
         fontWeight: "600"
     },
 
     carets: {
-        
+        color: 'white'
+    },
+
+    money: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+
+    currency: {
+        fontSize: 15,
+        fontWeight: "normal",
     }
 })
