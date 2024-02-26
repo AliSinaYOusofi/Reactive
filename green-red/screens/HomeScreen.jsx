@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { View, StyleSheet, Text, ScrollView } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { View, StyleSheet, Text, ScrollView, Dimensions } from 'react-native'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import SearchCustomers from '../components/Home/SearchCustomers'
 import CustomerListTemplate from '../components/Home/CustmerListTemplate'
@@ -9,7 +9,9 @@ import { useIsFocused } from '@react-navigation/native'
 import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
-import { set } from 'date-fns'
+import NoExpenseTotalFound from '../components/global/NoExpenseTotalFound'
+import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
+const { width } = Dimensions.get("window")
 
 export default function HomeScreen() {
     
@@ -84,8 +86,6 @@ export default function HomeScreen() {
             
             let total_expense_data_of_customers = [];
             let totalAmountsByCurrency = {};
-
-            // Get all distinct currencies from the customer records
             let distinctCurrencies
 
             await db.transactionAsync( async tx => {
@@ -129,92 +129,57 @@ export default function HomeScreen() {
             setTotalExpenseOfCustomers(total_expense_data_of_customers)
         }
         
-        
-        
         fetchTotalOfAmountsBasedOnCurrency();
-    });
-    
-    // onst fetchTotalOfAmountsBasedOnCurrency = async () => {
-    //     let total_expense_data_of_customers = [];
+    })
+
+    const scrollX = useSharedValue(0)
+    const scrollViewRef = useRef(null)
+
+    const handleScroll = (event) => {
         
-    //     // Use an object to keep track of total amounts for each currency
-    //     let totalAmountsByCurrency = {};
-        
-    //     let processedUsersAndTheirRecords = new Set()
+        scrollX.value = event.nativeEvent.contentOffset.x
+    }
 
-    //     await db.transactionAsync(async tx => {
-            
-    //         for (const customerr of customer) {
-                
-    //             const recordsOfUser = await tx.executeSqlAsync("SELECT * FROM customer__records WHERE username = ?", [customerr.username]);
-                
-    //             if (! recordsOfUser.rows.length) continue
-                
-    //             for (const record of recordsOfUser.rows) {
-                    
-    //                 const currency = record.currency;
-    
-    //                 // Initialize total amount for currency if not already set
-    //                 if (!totalAmountsByCurrency[currency]) {
-    //                     totalAmountsByCurrency[currency] = {
-    //                         totalAmountBasedOnCurrencyToGive: 0,
-    //                         totalAmountBasedOnCurrencyToTake: 0
-    //                     };
-    //                 }
-    
-    //                 const totalAmountBasedOnCurrencyToTakeDBResult = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'received' AND currency = ?", [currency]);
-    //                 const totalAmountBasedOnCurrencyToGiveDBResult = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'paid' AND currency = ?", [currency]);
-                    
-    //                 console.log(totalAmountBasedOnCurrencyToGiveDBResult, ' to give result')
+    const animatedStyle = useAnimatedStyle( () => {
+        return {
+            transform: [{translateX: -scrollX.value}]
+        }
+    })
 
-    //                 let plainTotalAmountToGive, plainTotalAmountToTake;
-    
-    //                 if (totalAmountBasedOnCurrencyToGiveDBResult.rows.length === 0 || totalAmountBasedOnCurrencyToGiveDBResult.rows[0]['SUM(amount)'] === null) {
-    //                     plainTotalAmountToGive = 0;
-    //                 } else {
-    //                     plainTotalAmountToGive = parseFloat(totalAmountBasedOnCurrencyToGiveDBResult.rows[0]['SUM(amount)']);
-    //                 }
-    
-    //                 if (totalAmountBasedOnCurrencyToTakeDBResult.rows.length === 0 || totalAmountBasedOnCurrencyToTakeDBResult.rows[0]['SUM(amount)'] === null) {
-    //                     plainTotalAmountToTake = 0;
-    //                 } else {
-    //                     plainTotalAmountToTake = parseFloat(totalAmountBasedOnCurrencyToTakeDBResult.rows[0]['SUM(amount)']);
-    //                 }
-    
-    //                 // Accumulate total amounts for currency
-    //                 totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive += plainTotalAmountToGive;
-    //                 totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake += plainTotalAmountToTake;
-    //             }
-    //         }
-    //     });
-    
-    //     // Convert the total amounts by currency object into an array of objects
-    //     total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
-    //         currency,
-    //         totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,
-    //         totalAmountBasedOnCurrencyToTake: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake
-    //     }));
-    
-    //     console.log(totalAmountsByCurrency, 'cust')
-    //     return total_expense_data_of_customers;
-
-    console.log(totalExpenseOfCustomer)
     return (
         <>
             <View style={style.container}>
                 
-                <View>
+                <View style={{flex: 0}}>
 
-                    {
-                        totalExpenseOfCustomer.length
-                        ?
-                        totalExpenseOfCustomer.map( expenses => {
-                            return (
-                                <TotalExpenses />
-                            )
-                        })
-                        : null
-                    }
+                    <ScrollView 
+                        pagingEnabled 
+                        horizontal 
+                        showsHorizontalScrollIndicator={false}
+                        scrollEnabled
+                        scrollEventThrottle={16}
+                        style={style.wrapper}
+                        ref={scrollViewRef}
+                        onScroll={handleScroll}
+                    >
+
+                        {
+                            totalExpenseOfCustomer.length
+                            ?
+                            totalExpenseOfCustomer.map( expenses => {
+                                return (
+                                    <View key={expenses.currency} style={style.slide}>
+                                        <TotalExpenses 
+                                            totalAmountToGive={expenses.totalAmountBasedOnCurrencyToGive}
+                                            totalAmountToTake={expenses.totalAmountBasedOnCurrencyToTake}
+                                            currency={expenses.currency}
+                                        />
+                                    </View>
+                                )
+                            })
+                            : <NoExpenseTotalFound />
+                        }
+                    </ScrollView>
                 </View>
                 
                 <SearchCustomers 
@@ -301,5 +266,24 @@ const style = StyleSheet.create({
 
     scroll_view: {
         paddingHorizontal: 4
+    },
+
+    expense_container: {
+        
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
+
+    slide: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        height: "auto",
+    },
+
+    wrapper: {
+        height: "auto",
+        backgroundColor: "white",
     }
 })
