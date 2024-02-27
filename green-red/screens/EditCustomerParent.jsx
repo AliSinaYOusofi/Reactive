@@ -82,7 +82,7 @@ export default function EditCustomerParent({navigation, route}) {
                     "UPDATE customers SET username = ?, email = ?, phone=?, amount = ?, transaction_type = ?, currency = ?;",
                     [updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency],
                     (_, success) => {
-                        showToast('Customer updated successfully', 'success');
+                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },
                     (_, error) => {
                         showToast('Failed to add customer');
@@ -102,9 +102,9 @@ export default function EditCustomerParent({navigation, route}) {
                     "UPDATE customer__records SET username = ? WHERE username = ?;",
                     [updatedUsername, prev_username],
                     (_, success) => {
-                        showToast('Customer added successfully', 'success');
+                        showToast('Updated customer sucessfully', 'success');
                         setTimeout( () => navigator.navigate("homescreen"), 2000)
-                        // setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
+                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },
                     (_, error) => {
                         showToast('Failed to add customer');

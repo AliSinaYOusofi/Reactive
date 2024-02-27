@@ -68,35 +68,32 @@ export default function DeleteRecordModal({message, setCloseModal, username, rec
     }
 
     const deleteByUsername = () => {
-        try {
-            db.transaction(tx => {
-                tx.executeSql(`DELETE FROM customers WHERE username = ?;`, [username,],
-                (_, sucess) => {
-                    tx.executeSql("DELETE FROM customer__records WHERE username = ?;", [username],
-                    (_, succ) => {
-                        setCloseModal(false)
-                        showToast('Record deleted successfully', 'success')
-                    },
-                    (_, err) => {
-                        console.error("Failed to delete user", err.message)
-                        showToast("Failed to delete user")
-                    }
-                    )
+       
+        db.transaction(tx => {
+            tx.executeSql(`DELETE FROM customers WHERE username = ?;`, [username,],
+            (_, sucess) => {
+                tx.executeSql("DELETE FROM customer__records WHERE username = ?;", [username],
+                (_, succ) => {
+                    setCloseModal(false)
+                    showToast('Record deleted successfully', 'success')
+                    setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                 },
-
-                (_, error) => {
-                    console.error("Failed to delete user", error.message)
+                (_, err) => {
+                    console.error("Failed to delete user", err.message)
                     showToast("Failed to delete user")
                 }
-
                 )
-            })
-        }
+            },
 
-        catch(e) {
-            console.error("Failed to delete user", e.message)
-            showToast("Failed to delete user")
-        }
+            (_, error) => {
+                console.error("Failed to delete user", error.message)
+                showToast("Failed to delete user")
+            }
+
+            )
+        })
+       
+
     }
     
     return (

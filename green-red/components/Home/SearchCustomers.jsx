@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     icon: {
         marginRight: 10,
         color: "black",
-        backgroundColor: "#F8F8FF", // the bg-color
+        backgroundColor: "white", // the bg-color
         borderRadius: 50,
         padding: 8
     },
