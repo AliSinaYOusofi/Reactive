@@ -26,45 +26,41 @@ export default function HomeScreen() {
     useEffect( () => {
         const loadCustomerDataList = async () => {
 
-            try {
-                await db.transactionAsync( async tx => {
-                    
-                    const result = await tx.executeSqlAsync("SELECT * FROM customers", [])
-                    
-                    if (result.rows.length === 0) {
-                        setCustomers([])
-                        return
-                    }
-
-                    await Promise.all(
-                        result.rows.map( async (item, index) => {
-                            
-                            let received_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'received' AND username = ?", [item.username])
-
-                            let paid_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'paid' AND username = ?", [item.username])
-                            
-                            let received_amount_total, paid_amount_total
-
-                            received_amount_total = received_amount.rows[0]["SUM(amount)"] ? received_amount.rows[0]["SUM(amount)"] : 0
-                            paid_amount_total = paid_amount.rows[0]["SUM(amount)"] ? paid_amount.rows[0]["SUM(amount)"] : 0
-
-                            border_color_status = parseFloat(received_amount_total) > parseFloat(paid_amount_total) ? "green" : "red"
-                            let current_total_amount_status_count = parseFloat(received_amount_total) - parseFloat(paid_amount_total)
-                            
-                            item.amount = current_total_amount_status_count < 0  ? current_total_amount_status_count * -1 : current_total_amount_status_count
-                            item.border_color = border_color_status
-                            
-                            setCustomers( prevState => [...prevState, item]) 
-                        })
-                    )
-                }) 
-            }
+            const updatedCustomers = [];
             
-            catch( e ) {
-                console.error("error while fetching users", e.message)
-            } finally {
-                setCustomers( customer => customer.sort( (a, b) =>  new Date(b.at) - new Date(a.at)))
-            }
+            await db.transactionAsync( async tx => {
+                
+                const result = await tx.executeSqlAsync("SELECT * FROM customers", [])
+                
+                if (result.rows.length === 0) {
+                    setCustomers([])
+                    return
+                }
+                
+                
+                await Promise.all(
+                    result.rows.map( async (item, index) => {
+                        
+                        let received_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'received' AND username = ?", [item.username])
+
+                        let paid_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'paid' AND username = ?", [item.username])
+                        
+                        let received_amount_total, paid_amount_total
+
+                        received_amount_total = received_amount.rows[0]["SUM(amount)"] ? received_amount.rows[0]["SUM(amount)"] : 0
+                        paid_amount_total = paid_amount.rows[0]["SUM(amount)"] ? paid_amount.rows[0]["SUM(amount)"] : 0
+
+                        border_color_status = parseFloat(received_amount_total) > parseFloat(paid_amount_total) ? "green" : "red"
+                        let current_total_amount_status_count = parseFloat(received_amount_total) - parseFloat(paid_amount_total)
+                        
+                        item.amount = current_total_amount_status_count < 0  ? current_total_amount_status_count * -1 : current_total_amount_status_count
+                        item.border_color = border_color_status
+                        
+                        updatedCustomers.push(item)
+                    })
+                )
+            }) 
+            setCustomers( updatedCustomers.sort( (a, b) =>  new Date(b.at) - new Date(a.at)))
         }
         loadCustomerDataList()
     }, [refreshHomeScreenOnChangeDatabase])
@@ -139,14 +135,14 @@ export default function HomeScreen() {
                     
                     if (customerr.transaction_type === 'recieved') {
             
-                        totalAmountBasedOnCurrencyToGive = 0
-                        totalAmountBasedOnCurrencyToTake = customerr.amount
+                        totalAmountBasedOnCurrencyToGive = customerr.amount
+                        totalAmountBasedOnCurrencyToTake = 0
                     }
                     
                     else {
                         
-                        totalAmountBasedOnCurrencyToGive = customerr.amount
-                        totalAmountBasedOnCurrencyToTake = 0
+                        totalAmountBasedOnCurrencyToGive = 0
+                        totalAmountBasedOnCurrencyToTake = customerr.amount
                     }
 
                     totalAmountsByCurrency[customerr.currency] = {
@@ -157,7 +153,6 @@ export default function HomeScreen() {
                 }
             })
 
-            console.log('totalAmountsByCurrency', totalAmountsByCurrency)
             total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
                 currency,
                 totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,

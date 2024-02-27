@@ -116,7 +116,7 @@ function AddNewCustomerPopup({}) {
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
                         setTimeout( () => navigator.navigate("homescreen"), 2000)
-
+                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },
                     (_, error) => {
                         showToast('Failed to add customer');

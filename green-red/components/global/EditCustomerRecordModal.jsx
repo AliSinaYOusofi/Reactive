@@ -17,7 +17,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
     const [newCurrency, setNewCurrency] = useState("")
 
     const db = SQLite.openDatabase('green-red.db')
-    const { setRefreshSingleViewChangeDatabase } = useAppContext()
+    const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
 
     const handleAddNewRecord = () => {
         
@@ -64,6 +64,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                         showToast("User record updated!", "success")
                         setUpdateRecordModal(false)
                         setRefreshSingleViewChangeDatabase(prev => ! prev)
+                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },
                     (_, e) => {
                         console.error("Error While inserting new record", e.message)

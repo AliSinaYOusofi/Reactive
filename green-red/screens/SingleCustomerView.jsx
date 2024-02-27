@@ -9,13 +9,11 @@ import { useAppContext } from '../context/useAppContext'
 import { useSharedValue } from 'react-native-reanimated'
 import TotalExpenses from '../components/Home/TotalExpenses'
 
-
 export default function SingleCustomerView({navigation, route}) {
     
     const [customers, setCustomers] = useState([])
     const isFocused = useIsFocused()
     const username = route.params.username;
-    console.log(username, ' username')
     const [addNewRecordModal, setAddNewRecordModal] = useState(false)
     const { refreshSingelViewChangeDatabase } = useAppContext()
     const [singleCustomerExpense, setSingleCustomerExpense ] = useState([])
@@ -31,7 +29,7 @@ export default function SingleCustomerView({navigation, route}) {
 
             await db.transactionAsync( async tx => {
                 
-                distinctCurrencies = await tx.executeSqlAsync("SELECT DISTINCT currency FROM customer__records");
+                distinctCurrencies = await tx.executeSqlAsync("SELECT DISTINCT currency FROM customer__records WHERE username = ?", [username]);
                 distinctCurrencies = distinctCurrencies.rows.map(row => row.currency);
                 
                 await Promise.all( distinctCurrencies.map( async currency => {
@@ -122,7 +120,6 @@ export default function SingleCustomerView({navigation, route}) {
     return (
         <>
 
-
             <View style={{flex: 0}}>
 
                 <ScrollView 
@@ -173,7 +170,8 @@ export default function SingleCustomerView({navigation, route}) {
                         null
                 }
             </ScrollView>
-            <View>
+
+            <View style={styles.add_new_customer_container}>
                 <Pressable
                     style={styles.add_new_customer_btn}
                     onPress={handleAddNewCustomer}

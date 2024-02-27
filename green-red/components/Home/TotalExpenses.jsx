@@ -47,11 +47,11 @@ export default function TotalExpenses({totalAmountToGive, totalAmountToTake, cur
 
                 <View style={[styles.total_container]}>
                     {
-                        !parseFloat(totalAmountToGive) > parseFloat(totalAmountToTake) 
+                        parseFloat(totalAmountToGive) > parseFloat(totalAmountToTake) 
                         ?
-                        <Text style={styles.info_text}> In total I must get <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake)} </Text> {currency} back.</Text>
+                        <Text style={styles.info_text}> In total I must give <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake)} </Text> {currency} back.</Text>
                         :
-                        <Text style={styles.info_text}> In total I must give <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake) * -1} </Text> {currency} back</Text>
+                        <Text style={styles.info_text}> In total I must get <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake) * -1} </Text> {currency} back</Text>
                     }
                 </View>
             </View>
