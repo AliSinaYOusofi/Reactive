@@ -6,6 +6,8 @@ import UserListView from '../components/SingleCustomerViewComp/UserListView'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
 import { useAppContext } from '../context/useAppContext'
+import { useSharedValue } from 'react-native-reanimated'
+import TotalExpenses from '../components/Home/TotalExpenses'
 
 
 export default function SingleCustomerView({navigation, route}) {
@@ -13,11 +15,63 @@ export default function SingleCustomerView({navigation, route}) {
     const [customers, setCustomers] = useState([])
     const isFocused = useIsFocused()
     const username = route.params.username;
+    console.log(username, ' username')
     const [addNewRecordModal, setAddNewRecordModal] = useState(false)
     const { refreshSingelViewChangeDatabase } = useAppContext()
+    const [singleCustomerExpense, setSingleCustomerExpense ] = useState([])
 
     const db = SQLite.openDatabase('green-red.db')
     
+    useEffect ( () => {
+        const fetchAllCustomerExpense = async () => {
+
+            let total_expense_data_of_customers = [];
+            let totalAmountsByCurrency = {};
+            let distinctCurrencies
+
+            await db.transactionAsync( async tx => {
+                
+                distinctCurrencies = await tx.executeSqlAsync("SELECT DISTINCT currency FROM customer__records");
+                distinctCurrencies = distinctCurrencies.rows.map(row => row.currency);
+                
+                await Promise.all( distinctCurrencies.map( async currency => {
+
+                    const totalAmountBasedOnCurrencyToGive = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'received' AND currency = ? AND username = ?", [currency, username]);
+                    const totalAmountBasedOnCurrencyToTake = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'paid' AND currency = ? AND username = ?", [currency, username]);
+
+                    let plainTotalAmountToGive, plainTotalAmountToTake;
+    
+                    if (totalAmountBasedOnCurrencyToGive.rows.length === 0 || totalAmountBasedOnCurrencyToGive.rows[0]['SUM(amount)'] === null) {
+                        plainTotalAmountToGive = 0;
+                    } else {
+                        plainTotalAmountToGive = parseFloat(totalAmountBasedOnCurrencyToGive.rows[0]['SUM(amount)']);
+                    }
+    
+                    if (totalAmountBasedOnCurrencyToTake.rows.length === 0 || totalAmountBasedOnCurrencyToTake.rows[0]['SUM(amount)'] === null) {
+                        plainTotalAmountToTake = 0;
+                    } else {
+                        plainTotalAmountToTake = parseFloat(totalAmountBasedOnCurrencyToTake.rows[0]['SUM(amount)']);
+                    }
+
+                    totalAmountsByCurrency[currency] = {
+                        totalAmountBasedOnCurrencyToGive: plainTotalAmountToGive,
+                        totalAmountBasedOnCurrencyToTake: plainTotalAmountToTake
+                    };
+                }))
+
+            })
+
+            total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
+                currency,
+                totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,
+                totalAmountBasedOnCurrencyToTake: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake
+            }));
+
+            setSingleCustomerExpense(total_expense_data_of_customers)
+        }
+        fetchAllCustomerExpense()
+    }, [])
+
     useEffect( () => {
         
         const loadCustomerDataList = async () => {
@@ -58,8 +112,47 @@ export default function SingleCustomerView({navigation, route}) {
         });
     };
 
+    const scrollX = useSharedValue(0)
+
+    const handleScroll = (event) => {
+        
+        scrollX.value = event.nativeEvent.contentOffset.x
+    }
+
     return (
         <>
+
+
+            <View style={{flex: 0}}>
+
+                <ScrollView 
+                    pagingEnabled 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    scrollEnabled
+                    scrollEventThrottle={16}
+                    style={styles.wrapper}
+                    onScroll={handleScroll}
+                >
+
+                    {
+                        singleCustomerExpense.length
+                        ?
+                        singleCustomerExpense.map( expenses => {
+                            return (
+                                <View key={expenses.currency} style={styles.slide}>
+                                    <TotalExpenses 
+                                        totalAmountToGive={expenses.totalAmountBasedOnCurrencyToGive}
+                                        totalAmountToTake={expenses.totalAmountBasedOnCurrencyToTake}
+                                        currency={expenses.currency}
+                                    />
+                                </View>
+                            )
+                        })
+                        : null
+                    }
+                </ScrollView>
+            </View>
 
             <ScrollView style={styles.container}>
                 {
@@ -125,6 +218,19 @@ const styles = StyleSheet.create( {
         alignSelf: "center",
         position: "absolute",
         bottom: 10,
+    },
+
+    wrapper: {
+        height: "auto",
+        backgroundColor: "white",
+    },
+
+    slide: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        height: "auto",
     },
 
 })
