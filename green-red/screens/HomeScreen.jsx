@@ -10,7 +10,7 @@ import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
 import NoExpenseTotalFound from '../components/global/NoExpenseTotalFound'
-import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
+import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 const { width } = Dimensions.get("window")
 
 export default function HomeScreen() {
@@ -62,6 +62,8 @@ export default function HomeScreen() {
             
             catch( e ) {
                 console.error("error while fetching users", e.message)
+            } finally {
+                setCustomers( customer => customer.sort( (a, b) =>  new Date(b.at) - new Date(a.at)))
             }
         }
         loadCustomerDataList()
@@ -120,6 +122,42 @@ export default function HomeScreen() {
 
             })
 
+            customer.forEach( customerr => {
+                if (totalAmountsByCurrency[customerr.currency]) {
+
+                    if (String(customerr.transaction_type) === 'received') {
+                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToGive += customerr.amount
+                    }
+                    else {
+                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToTake += customerr.amount
+                    }
+                } 
+                
+                else {
+                    
+                    let totalAmountBasedOnCurrencyToGive, totalAmountBasedOnCurrencyToTake
+                    
+                    if (customerr.transaction_type === 'recieved') {
+            
+                        totalAmountBasedOnCurrencyToGive = 0
+                        totalAmountBasedOnCurrencyToTake = customerr.amount
+                    }
+                    
+                    else {
+                        
+                        totalAmountBasedOnCurrencyToGive = customerr.amount
+                        totalAmountBasedOnCurrencyToTake = 0
+                    }
+
+                    totalAmountsByCurrency[customerr.currency] = {
+                        totalAmountBasedOnCurrencyToGive,
+                        totalAmountBasedOnCurrencyToTake,
+                    }
+
+                }
+            })
+
+            console.log('totalAmountsByCurrency', totalAmountsByCurrency)
             total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
                 currency,
                 totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,
@@ -130,21 +168,15 @@ export default function HomeScreen() {
         }
         
         fetchTotalOfAmountsBasedOnCurrency();
-    })
+    }, [customer])
 
     const scrollX = useSharedValue(0)
     const scrollViewRef = useRef(null)
 
     const handleScroll = (event) => {
         
-        scrollX.value = event.nativeEvent.contentOffset.x
+        scrollX.value = (event.nativeEvent.contentOffset.x)
     }
-
-    const animatedStyle = useAnimatedStyle( () => {
-        return {
-            transform: [{translateX: -scrollX.value}]
-        }
-    })
 
     return (
         <>
@@ -177,7 +209,7 @@ export default function HomeScreen() {
                                     </View>
                                 )
                             })
-                            : <NoExpenseTotalFound />
+                            : null
                         }
                     </ScrollView>
                 </View>
