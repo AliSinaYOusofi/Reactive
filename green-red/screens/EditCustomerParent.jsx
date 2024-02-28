@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
-import { EvilIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { EvilIcons, FontAwesome } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../assets/mony.png'
-import { Fontisto } from '@expo/vector-icons';
 import CurrencyDropdownListSearch from '../components/global/CurrencyDropdownList';
 import { validateUsername } from '../utils/validators/usernameValidator';
 import { isEmailValid } from '../utils/validators/emailValidator';
@@ -58,7 +57,6 @@ export default function EditCustomerParent({navigation, route}) {
             return showToast('Please select a currency');
         }
         
-        console.log(updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency)
         updateParentCustomer()
         updateParentChildren()
 

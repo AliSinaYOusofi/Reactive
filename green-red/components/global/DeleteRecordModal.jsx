@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, StyleSheet, Text, Button, Pressable } from 'react-native'
+import { View, StyleSheet, Text, Pressable } from 'react-native'
 import { cancel_button_color, delete_button_color } from './colors'
 import { Ionicons } from '@expo/vector-icons'
 import * as SQLite from 'expo-sqlite'

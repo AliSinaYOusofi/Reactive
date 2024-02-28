@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate, Easing, withRepeat, withTiming } from 'react-native-reanimated';
-import { AntDesign } from '@expo/vector-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming } from 'react-native-reanimated';
 import { Fontisto } from '@expo/vector-icons';
 
 export default function ZeroSearchResult() {

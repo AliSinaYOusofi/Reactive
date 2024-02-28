@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { View, StyleSheet, Text, ScrollView, Dimensions } from 'react-native'
+import { View, StyleSheet, ScrollView } from 'react-native'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import SearchCustomers from '../components/Home/SearchCustomers'
 import CustomerListTemplate from '../components/Home/CustmerListTemplate'
@@ -9,9 +9,8 @@ import { useIsFocused } from '@react-navigation/native'
 import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
-import NoExpenseTotalFound from '../components/global/NoExpenseTotalFound'
-import { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
-const { width } = Dimensions.get("window")
+import { useSharedValue } from 'react-native-reanimated'
+
 
 export default function HomeScreen() {
     
