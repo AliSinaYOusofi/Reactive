@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { View, StyleSheet, Text, Pressable } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Feather, Ionicons } from '@expo/vector-icons';

@@ -1,8 +1,6 @@
 import React from 'react'
 import { Image, Text, View, StyleSheet } from 'react-native'
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { FontAwesome6 } from '@expo/vector-icons';
-import { background_color } from '../global/colors';
 
 export default function TotalExpenses({totalAmountToGive, totalAmountToTake, currency}) {
 

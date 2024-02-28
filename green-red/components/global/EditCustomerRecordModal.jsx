@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -7,7 +7,6 @@ import Toast from 'react-native-toast-message';
 import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppContext } from '../../context/useAppContext';
 
 export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {

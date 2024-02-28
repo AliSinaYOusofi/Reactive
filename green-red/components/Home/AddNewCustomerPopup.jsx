@@ -3,7 +3,6 @@ import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } fro
 import { EvilIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../../assets/mony.png'
-import { Fontisto } from '@expo/vector-icons';
 import CurrencyDropdownListSearch from '../global/CurrencyDropdownList';
 import { validateUsername } from '../../utils/validators/usernameValidator';
 import { isEmailValid } from '../../utils/validators/emailValidator';

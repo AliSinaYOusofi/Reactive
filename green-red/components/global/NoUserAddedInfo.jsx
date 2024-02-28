@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate, Easing, withRepeat, withTiming } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, interpolate, Easing, withRepeat, withTiming } from 'react-native-reanimated';
 import { AntDesign } from '@expo/vector-icons';
 
 export default function NoUserAddedInfo() {

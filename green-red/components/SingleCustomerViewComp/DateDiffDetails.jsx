@@ -1,6 +1,6 @@
 import { formatDistanceToNowStrict } from 'date-fns'
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { Text, StyleSheet } from 'react-native'
 
 export default function DateDiffDetails({date}) {
 

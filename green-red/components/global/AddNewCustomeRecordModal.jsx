@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import { FontAwesome, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';

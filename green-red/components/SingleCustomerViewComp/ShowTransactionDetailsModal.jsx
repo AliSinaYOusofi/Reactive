@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNowStrict } from 'date-fns';
 import DateDiffDetails from './DateDiffDetails';
 import * as Clipboard from 'expo-clipboard';
-import { ToastAndroid } from 'react-native';
+
 export default function ShowTransactionDetailsModal({username, amount, currency, transaction_type, transaction_date, email, phone, closeModal}) {
     
     const [copied, setCopied] = useState(false)
