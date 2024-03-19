@@ -89,7 +89,7 @@ export default function SingleCustomerView({navigation, route}) {
         };
 
         loadCustomerDataList();
-    },  [isFocused, refreshSingelViewChangeDatabase])
+    },  [refreshSingelViewChangeDatabase])
     
     const handleAddNewCustomer = () => {
         // a table should be created since username is unique

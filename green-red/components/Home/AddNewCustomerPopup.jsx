@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
 import { EvilIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
@@ -14,6 +14,15 @@ import * as SQLite from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../../context/useAppContext';
 import { format } from 'date-fns';
+import { AdEventType, InterstitialAd, TestIds} from 'react-native-google-mobile-ads'
+
+const androidInterstitalAdId = 'ca-app-pub-1665900038997295/7904919839'
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : androidInterstitalAdId
+
+const interstital = InterstitialAd.createForAdRequest(adUnitId, {
+    keywords: ['food', 'health', 'beauty', 'fashion', 'food', 'health', 'beauty', 'fashion'],
+    requestNonPersonalizedAdsOnly: true,
+})
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -22,10 +31,26 @@ function AddNewCustomerPopup({}) {
     const [amountOfMoney, setAmountOfMoney] = useState('')
     const [paymentStatus, setPaymentStatus] = useState('')
     const [selectedCurrency, setSelectedCurrency] = useState('')
-    
+    const [isAddLoaded, setIsAddLoaded] = useState(false)
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext()
     const navigator = useNavigation()
     const db = SQLite.openDatabase('green-red.db')
+    
+    useEffect( () => {
+        const unsubscribedLoaded = interstital.addAdEventListener(AdEventType.LOADED, () => {
+            setIsAddLoaded(true)
+        })
+
+        const unsubscribedFailedToLoad = interstital.addAdEventListener(AdEventType.FAILED_TO_LOAD, () => {
+            setIsAddLoaded(false)
+            interstital.load()
+        })
+
+        return () => {
+            unsubscribedLoaded()
+            unsubscribedFailedToLoad()
+        }
+    }, [])
 
     const addNewCustomer = () => {
         if (!validateUsername(username)) {
@@ -106,7 +131,7 @@ function AddNewCustomerPopup({}) {
     const insertCustomer = () => {
 
         const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-
+        
         db.transaction(
             tx => {
                 tx.executeSql(
@@ -114,6 +139,7 @@ function AddNewCustomerPopup({}) {
                     [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency, currentDateTime],
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
+                        interstital.load()
                         setTimeout( () => navigator.navigate("homescreen"), 2000)
                         setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },

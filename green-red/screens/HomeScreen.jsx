@@ -5,12 +5,17 @@ import SearchCustomers from '../components/Home/SearchCustomers'
 import CustomerListTemplate from '../components/Home/CustmerListTemplate'
 import AddNewCustomer from '../components/global/AddNewCustomerButton'
 import * as SQLite from 'expo-sqlite';
-import { useIsFocused } from '@react-navigation/native'
+
 import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
 import { useSharedValue } from 'react-native-reanimated'
-
+import {
+    AdMobBanner,
+    AdMobInterstitial,
+    PublisherBanner,
+    AdMobRewarded
+} from "expo";
 
 export default function HomeScreen() {
     
@@ -19,7 +24,7 @@ export default function HomeScreen() {
     const [parentSearchTerm, setParentSearchTerm] = useState("")
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([])
     const db = SQLite.openDatabase('green-red.db')
-    const isFocused = useIsFocused()
+    
     const { refreshHomeScreenOnChangeDatabase } = useAppContext()
     
     useEffect( () => {
@@ -172,6 +177,8 @@ export default function HomeScreen() {
         scrollX.value = (event.nativeEvent.contentOffset.x)
     }
 
+    const bannerError = () => console.log('banner erro')
+
     return (
         <>
             <View style={style.container}>
@@ -272,6 +279,7 @@ export default function HomeScreen() {
                 </ScrollView>
             </View>
             <AddNewCustomer />
+            
         </>
     )
 }
@@ -311,5 +319,9 @@ const style = StyleSheet.create({
     wrapper: {
         height: "auto",
         backgroundColor: "white",
-    }
+    },
+    bottomBanner: {
+        position: "absolute",
+        bottom: 0
+      },
 })
