@@ -34,6 +34,7 @@
     }
   },
   "react-native-google-mobile-ads": {
-    "android_app_id": "ba54c088-495d-4bb1-a8d6-10ca1ad1abe1"
+    "android_app_id": "ba54c088-495d-4bb1-a8d6-10ca1ad1abe1",
+    "user_tracking_usage_description": "This identifier will be used to deliver personalized ads to you."
   }
 }

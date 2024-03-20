@@ -16,6 +16,13 @@ import {
     PublisherBanner,
     AdMobRewarded
 } from "expo";
+import mobileAds from 'react-native-google-mobile-ads';
+
+mobileAds()
+  .initialize()
+  .then(adapterStatuses => {
+    // Initialization complete!
+  });
 
 export default function HomeScreen() {
     
