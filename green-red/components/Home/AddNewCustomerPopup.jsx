@@ -14,15 +14,7 @@ import * as SQLite from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../../context/useAppContext';
 import { format } from 'date-fns';
-import { AdEventType, InterstitialAd, TestIds} from 'react-native-google-mobile-ads'
 
-const androidInterstitalAdId = 'ca-app-pub-1665900038997295/7904919839'
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : androidInterstitalAdId
-
-const interstital = InterstitialAd.createForAdRequest(adUnitId, {
-    keywords: ['food', 'health', 'beauty', 'fashion', 'food', 'health', 'beauty', 'fashion'],
-    requestNonPersonalizedAdsOnly: true,
-})
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -35,22 +27,6 @@ function AddNewCustomerPopup({}) {
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext()
     const navigator = useNavigation()
     const db = SQLite.openDatabase('green-red.db')
-    
-    useEffect( () => {
-        const unsubscribedLoaded = interstital.addAdEventListener(AdEventType.LOADED, () => {
-            setIsAddLoaded(true)
-        })
-
-        const unsubscribedFailedToLoad = interstital.addAdEventListener(AdEventType.FAILED_TO_LOAD, () => {
-            setIsAddLoaded(false)
-            interstital.load()
-        })
-
-        return () => {
-            unsubscribedLoaded()
-            unsubscribedFailedToLoad()
-        }
-    }, [])
 
     const addNewCustomer = () => {
         if (!validateUsername(username)) {
@@ -139,7 +115,6 @@ function AddNewCustomerPopup({}) {
                     [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency, currentDateTime],
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
-                        interstital.load()
                         setTimeout( () => navigator.navigate("homescreen"), 2000)
                         setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
                     },
