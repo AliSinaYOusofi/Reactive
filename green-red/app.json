@@ -4,7 +4,7 @@
     "slug": "green-red",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/green-red.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -22,7 +22,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.alisinayousofi.greenred"
+      "package": "com.alisinayousofi.greenred",
+      "permissions": [
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -31,10 +35,9 @@
       "eas": {
         "projectId": "5fd3d24a-fc71-4427-b0d3-dd20f4b537b8"
       }
-    }
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ba54c088-495d-4bb1-a8d6-10ca1ad1abe1",
-    "user_tracking_usage_description": "This identifier will be used to deliver personalized ads to you."
+    },
+    "plugins": [
+      "expo-localization"
+    ]
   }
 }

@@ -28,6 +28,22 @@ function AddNewCustomerPopup({}) {
     const navigator = useNavigation()
     const db = SQLite.openDatabase('green-red.db')
 
+    useEffect( () => {
+        db.transaction(tx => {
+            
+            tx.executeSql(
+                'CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, email TEXT, phone TEXT, amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, at DATETIME NOT NULL);',
+                [],
+                () => console.log('Table created successfully'),
+                (_, error) => {
+                    alert(error.message)
+                    showToast(error.message)
+                    console.error('Error creating table: ', error)
+                }
+            );
+        });
+    }, [])
+    
     const addNewCustomer = () => {
         if (!validateUsername(username)) {
             return showToast('Username is invalid');
@@ -42,6 +58,7 @@ function AddNewCustomerPopup({}) {
         }
     
         if (amountOfMoney.length && !amountOfMoneyValidator(amountOfMoney)) {
+            setAmountOfMoney(0)
             return showToast('Amount of money is  invalid');
         }
     
@@ -64,15 +81,7 @@ function AddNewCustomerPopup({}) {
         //     );
         // });
 
-        db.transaction(tx => {
-            
-            tx.executeSql(
-                'CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, email TEXT, phone TEXT, amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, at DATETIME NOT NULL);',
-                [],
-                () => console.log('Table created successfully'),
-                (_, error) => console.error('Error creating table: ', error)
-            );
-        });
+        
     
         db.transaction(tx => {
             tx.executeSql(
