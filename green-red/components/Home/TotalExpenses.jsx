@@ -47,9 +47,9 @@ export default function TotalExpenses({totalAmountToGive, totalAmountToTake, cur
                     {
                         parseFloat(totalAmountToGive) > parseFloat(totalAmountToTake) 
                         ?
-                        <Text style={styles.info_text}> In total I must give <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake)} </Text> {currency}</Text>
+                        <Text style={styles.info_text}> In total I must give <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake)} </Text> <Text style={styles.currency}> {currency} </Text> </Text>
                         :
-                        <Text style={styles.info_text}> In total I must get <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake) * -1} </Text> {currency}</Text>
+                        <Text style={styles.info_text}> In total I must get <Text style={styles.total_amount_text}> {(totalAmountToGive - totalAmountToTake) * -1} </Text> <Text style={styles.currency}> {currency} </Text> </Text>
                     }
                 </View>
             </View>
@@ -65,10 +65,14 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: 'column',
         flexWrap: 'wrap',
-        alignContent: "center",
-        justifyContent: "space-around",
+        alignContent: "start",
+        justifyContent: "start",
         height: "auto",
-        alignItems: 'center'
+        alignItems: 'start',
+        backgroundColor: "#f5f5f5",
+        padding: 10,
+        borderRadius: 10,
+        marginHorizontal: 5
     },
 
     take_give_views: {
@@ -87,25 +91,27 @@ const styles = StyleSheet.create({
     },
 
     give: {
-        backgroundColor: "#8b0000",
+        borderColor: "#8b0000",
         flex: 1,
-        width: '50%'
+        width: '50%',
+        borderWidth: 1.5
     },
     
     take: {
-        backgroundColor: "#0E593C",
+        borderColor: "#0E593C",
         flex: 1,
-        width: '50%'
+        width: '50%',
+        borderWidth: 1.5
     },
 
     to_give_text: {
-        color: "white",
+        color: "black",
         fontSize: 15,
         fontWeight: "600"
     },
 
     to_take_text: {
-        color: "white",
+        color: "black",
         fontSize: 15,
         fontWeight: "600"
     },
@@ -122,6 +128,7 @@ const styles = StyleSheet.create({
     currency: {
         fontSize: 15,
         fontWeight: "normal",
+        textDecorationLine: "underline"
     },
 
     in_total_text: {
@@ -135,23 +142,24 @@ const styles = StyleSheet.create({
     },
 
     info_text: {
-        color: 'white'
+        color: 'black'
     },
 
     total_container: {
         borderRadius: 8,
         height: "auto",
-        color: "white",
+        color: "black",
         display: "flex",
         flexDirection: 'row',
         alignContent: "center",
         alignItems: "center",
         gap: 10,
         margin: 2,
-        paddingHorizontal: 10,
-        paddingVertical: 25,
-        backgroundColor: "#1D224E", 
-        width: '90%',
+        borderColor: "#1D224E", 
+        width: '100%',
+        borderWidth: 1,
+        padding: 3,
+        justifyContent: 'start'
     },
 
     take_give_container: {
