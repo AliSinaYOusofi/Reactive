@@ -84,7 +84,7 @@ export default function SingleCustomerView({navigation, route}) {
             
             catch (e) {
                 console.error("error while fetching users", e.message);
-                showToast("error while fetching users")
+                // showToast("error while fetching users")
             }
         };
 
