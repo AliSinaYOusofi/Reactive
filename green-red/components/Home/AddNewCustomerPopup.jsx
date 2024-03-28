@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid, KeyboardAvoidingView, Platform } from 'react-native'
-import { EvilIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { EvilIcons, FontAwesome, Fontisto, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../../assets/mony.png'
 import CurrencyDropdownListSearch from '../global/CurrencyDropdownList';
@@ -198,11 +198,11 @@ function AddNewCustomerPopup({}) {
 
                 <View style={styles.input_container}>
                     
-                    <FontAwesome 
-                        name="money" 
+                    <Fontisto 
+                        name="money-symbol" 
                         size={24} 
-                        color="black" 
-                        style={styles.icon}
+                        color="black"
+                        style={styles.icon} 
                     />
                     
                     <TextInput
@@ -246,7 +246,7 @@ function AddNewCustomerPopup({}) {
                     onPress={addNewCustomer}
                     title='add new customer'
                 >
-                    <Text style={{color: "white"}}>Add Customer</Text>
+                    <Text style={{color: "white", textAlign: "center"}}>Add Customer</Text>
                 </Pressable>
             </View>
         </KeyboardAvoidingView>
@@ -271,13 +271,14 @@ const styles = StyleSheet.create({
         backgroundColor: "#FDFCFA"
     },
     add_new_customer_btn: {
-        backgroundColor: 'black',
+        backgroundColor: '#181c20',
         color: "white",
-        borderRadius: 20,
+        borderRadius: 4,
         height: 'auto',
         paddingHorizontal: 20,
         paddingVertical: 10,
         marginTop: 10,
+        width: "50%"
     },
 
     input_container: {

@@ -10,8 +10,9 @@ import SingleCustomerView from './screens/SingleCustomerView';
 import EditCustomerParent from './screens/EditCustomerParent';
 import { AppContextProvider } from './context/useAppContext';
 const StackNavigator = createNativeStackNavigator()
-import { Feather } from '@expo/vector-icons';
+import { EvilIcons, Feather } from '@expo/vector-icons';
 import ByMeACoffe from './components/Stripe/ByMeACoffe';
+import { Ionicons } from '@expo/vector-icons';
 export default function App() {
 
   return (
@@ -35,14 +36,16 @@ export default function App() {
             name={"homescreen"}
             component={HomeScreen}
             options={{
-              title: "Home",
               headerStyle: {
                 backgroundColor: "white",
                 
               },
               headerTitleStyle: {
                 fontSize: 25,
-              }
+              },
+              headerTitle: () => (
+                <Ionicons name="home-outline" size={24} color="black" />
+              )
             }}
           />
 
@@ -52,20 +55,43 @@ export default function App() {
             options={{
               title: "Add Customer", 
               headerTitleStyle: {
-              fontSize: 25,
-              }
+                fontSize: 25,
+              },
+              headerTitle: () => (
+                <Feather name="database" size={24} color="black" />
+              )
             }}
           />
 
           <StackNavigator.Screen
             name={"CustomerData"}
             component={SingleCustomerView}
-            options={{title: "Customer Data"}}
+            options={
+              {
+                title: "Customer Data",
+                headerTitle: () => (
+                  <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
+                      <Feather name="database" size={24} color="black" />
+                      <Text>Records</Text>
+                  </View>
+                )
+              }
+            }
           />
           <StackNavigator.Screen
             name={"EditCustomer"}
             component={EditCustomerParent}
-            options={{title: "Edit Custome Data"}}
+            options={
+              {
+                title: "Customer Data",
+                headerTitle: () => (
+                  <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
+                      <EvilIcons name="pencil" size={34} color="black" />
+                      <Text>Edit customer</Text>
+                  </View>
+                )
+              }
+            }
           />
         </StackNavigator.Navigator>
         <Toast />

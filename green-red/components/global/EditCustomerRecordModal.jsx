@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Fontisto, Ionicons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -106,11 +106,11 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                         keyboardType='phone-pad'
                     />
 
-                    <FontAwesome 
-                        name="money" 
+                    <Fontisto 
+                        name="money-symbol" 
                         size={24} 
-                        color="black" 
-                        style={styles.icon}
+                        color="black"
+                        style={styles.icon} 
                     />
                 </View>
 
@@ -147,7 +147,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                         onPress={handleAddNewRecord}
                         title='add new customer'
                     >
-                        <Text style={{color: "white"}}>Update record</Text>
+                        <Text style={{color: "white", textAlign: "center"}}>Update record</Text>
                     </Pressable>
                 </View>
                 <Pressable 
@@ -228,12 +228,13 @@ const styles = StyleSheet.create({
     add_new_customer_btn: {
         backgroundColor: 'green',
         color: "white",
-        borderRadius: 20,
+        borderRadius: 4,
         paddingHorizontal: 20,
         paddingVertical: 10,
         marginTop: 20,
         textAlign: 'center',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        width: "50%"
     },
     drop_down_container: {
         marginTop: 20,

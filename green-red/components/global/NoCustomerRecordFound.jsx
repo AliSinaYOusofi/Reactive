@@ -34,14 +34,14 @@ export default function NoCustomerRecordFound() {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: "#f8f9fa",
         borderRadius: 10,
         padding: 10,
         marginTop: "50%",
-        marginLeft: 10
+        marginLeft: 6,
+        height: 'auto'
     },
     iconContainer: {
         marginBottom: 20,
