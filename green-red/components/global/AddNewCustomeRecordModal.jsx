@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     add_new_customer_btn: {
         backgroundColor: 'green',
         color: "white",
-        borderRadius: 20,
+        borderRadius: 8,
         paddingHorizontal: 20,
         paddingVertical: 10,
         marginTop: 20,

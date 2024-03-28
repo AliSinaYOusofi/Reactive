@@ -8,6 +8,7 @@ import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordMo
 import { useAppContext } from '../context/useAppContext'
 import { useSharedValue } from 'react-native-reanimated'
 import TotalExpenses from '../components/Home/TotalExpenses'
+import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
 
 export default function SingleCustomerView({navigation, route}) {
     
@@ -146,7 +147,7 @@ export default function SingleCustomerView({navigation, route}) {
                                 </View>
                             )
                         })
-                        : null
+                        : <NoCustomerRecordFound />
                     }
                 </ScrollView>
             </View>
@@ -198,6 +199,7 @@ export default function SingleCustomerView({navigation, route}) {
 
 
 const styles = StyleSheet.create( {
+    // TODO background should be full
     container: {
         backgroundColor: '#fff',
         height: "100%",
@@ -206,7 +208,7 @@ const styles = StyleSheet.create( {
     add_new_customer_btn: {
         backgroundColor: 'black',
         color: "white",
-        borderRadius: 20,
+        borderRadius: 8,
         height: 'auto',
         paddingHorizontal: 20,
         paddingVertical: 10,
@@ -229,6 +231,7 @@ const styles = StyleSheet.create( {
         alignItems: 'center',
         backgroundColor: 'white',
         height: "auto",
+        
     },
 
 })

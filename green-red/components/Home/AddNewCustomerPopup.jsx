@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
+import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid, KeyboardAvoidingView, Platform } from 'react-native'
 import { EvilIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import money from '../../assets/mony.png'
@@ -137,7 +137,9 @@ function AddNewCustomerPopup({}) {
     };
 
     return (
-        <>
+        <KeyboardAvoidingView
+        behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+        style={{flex: 1}}>
             <View style={styles.modalView}>
                 <Image 
                     source={money} 
@@ -247,7 +249,7 @@ function AddNewCustomerPopup({}) {
                     <Text style={{color: "white"}}>Add Customer</Text>
                 </Pressable>
             </View>
-        </>
+        </KeyboardAvoidingView>
     )
 }
 

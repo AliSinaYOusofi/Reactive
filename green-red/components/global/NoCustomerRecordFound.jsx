@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, interpolate, Easing, withRepeat, withTiming } from 'react-native-reanimated';
 import { AntDesign } from '@expo/vector-icons';
 
-export default function NoUserAddedInfo() {
+export default function NoCustomerRecordFound() {
 
     const offset = useSharedValue(10);
 
@@ -22,8 +22,8 @@ export default function NoUserAddedInfo() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text_big}>No customers added.</Text>
-            <Text style={styles.text}>Add a new customer by clicking the button below</Text>
+            <Text style={styles.text_big}>No records found</Text>
+            <Text style={styles.text}>Add a new record by clicking the button below</Text>
             
             <Animated.View style={[styles.iconContainer, styles.icon, animatedStyle]}>
                 <AntDesign name="arrowdown" size={24} color="black" />
@@ -37,10 +37,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: "#f8f8ff",
+        backgroundColor: "#f8f9fa",
         borderRadius: 10,
         padding: 10,
-        marginTop: 80,
+        marginTop: "50%",
+        marginLeft: 10
     },
     iconContainer: {
         marginBottom: 20,

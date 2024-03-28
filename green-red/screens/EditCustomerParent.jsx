@@ -220,7 +220,7 @@ export default function EditCustomerParent({navigation, route}) {
                     style={styles.add_new_customer_btn}
                     onPress={handleUpdateCustomerParent}
                 >
-                    <Text style={{color: "white"}}>Update</Text>
+                    <Text style={{color: "white", textAlign: "center", fontWeight: 'bold'}}>Update</Text>
                 </Pressable>
             </View>
         </>
@@ -247,11 +247,13 @@ const styles = StyleSheet.create({
     add_new_customer_btn: {
         backgroundColor: 'black',
         color: "white",
-        borderRadius: 20,
+        borderRadius: 8,
         height: 'auto',
         paddingHorizontal: 20,
         paddingVertical: 10,
         marginTop: 10,
+        width: '60%',
+        textAlign: "center"
     },
 
     input_container: {

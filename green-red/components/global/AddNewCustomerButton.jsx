@@ -38,7 +38,7 @@ const style = StyleSheet.create({
     add_new_customer_btn: {
         backgroundColor: 'black',
         color: "white",
-        borderRadius: 20,
+        borderRadius: 8,
         height: 'auto',
         paddingHorizontal: 20,
         paddingVertical: 10,

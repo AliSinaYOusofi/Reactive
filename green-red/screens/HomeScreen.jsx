@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { View, StyleSheet, ScrollView } from 'react-native'
+import { View, StyleSheet, ScrollView, Dimensions, Text } from 'react-native'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import SearchCustomers from '../components/Home/SearchCustomers'
 import CustomerListTemplate from '../components/Home/CustmerListTemplate'
@@ -9,13 +9,7 @@ import * as SQLite from 'expo-sqlite';
 import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
-import { useSharedValue } from 'react-native-reanimated'
-import {
-    AdMobBanner,
-    AdMobInterstitial,
-    PublisherBanner,
-    AdMobRewarded
-} from "expo";
+import Carousel from 'react-native-reanimated-carousel';
 
 export default function HomeScreen() {
     
@@ -169,51 +163,32 @@ export default function HomeScreen() {
         fetchTotalOfAmountsBasedOnCurrency();
     }, [customer])
 
-    const scrollX = useSharedValue(0)
-    const scrollViewRef = useRef(null)
-
-    const handleScroll = (event) => {
-        
-        scrollX.value = (event.nativeEvent.contentOffset.x)
-    }
-
-    const bannerError = () => console.log('banner erro')
+    const width = Dimensions.get('window').width;
 
     return (
-        <>
-            <View style={style.container}>
-                
+        <View style={{width: "100%"}}>
+            <View style={[style.container]}>
                 <View style={{flex: 0}}>
 
-                    <ScrollView 
-                        pagingEnabled 
-                        horizontal 
-                        showsHorizontalScrollIndicator={false}
-                        scrollEnabled
-                        scrollEventThrottle={16}
-                        style={style.wrapper}
-                        ref={scrollViewRef}
-                        onScroll={handleScroll}
-                    >
-
-                        {
-                            totalExpenseOfCustomer.length
-                            ?
-                            totalExpenseOfCustomer.map( expenses => {
-                                return (
-                                    <View key={expenses.currency} style={style.slide}>
-                                        <TotalExpenses 
-                                            totalAmountToGive={expenses.totalAmountBasedOnCurrencyToGive}
-                                            totalAmountToTake={expenses.totalAmountBasedOnCurrencyToTake}
-                                            currency={expenses.currency}
-                                        />
-                                    </View>
-                                )
-                            })
-                            : null
-                        }
-                    </ScrollView>
+                <Carousel
+                    loop
+                    width={width}
+                    height={width / 2}
+                    data={totalExpenseOfCustomer}
+                    scrollAnimationDuration={2000}
+                    autoPlay
+                    renderItem={({ item }) => (
+                        <View style={style.slide}>
+                            <TotalExpenses 
+                                totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
+                                totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
+                                currency={item.currency}
+                            />
+                        </View>
+                    )}
+                />
                 </View>
+                
                 
                 <SearchCustomers 
                     style={style.item} 
@@ -280,7 +255,7 @@ export default function HomeScreen() {
             </View>
             <AddNewCustomer />
             
-        </>
+        </View>
     )
 }
 
@@ -291,6 +266,7 @@ const style = StyleSheet.create({
         backgroundColor: 'white',
         height: "100%",
         fontFamily: "Roboto",
+        width: "100%"
     },
     item: {
         flex: 1,
@@ -310,10 +286,11 @@ const style = StyleSheet.create({
 
     slide: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: 'start',
+        alignItems: 'start',
         backgroundColor: 'white',
         height: "auto",
+        width: "85%"
     },
 
     wrapper: {
