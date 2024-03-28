@@ -1,4 +1,4 @@
-export const background_color = '#0f0f0f'
+export const background_color = "#22282f"
 export const transaction_details_bg_color = '#FFF1F1'
 export const cancel_button_color = '#00693e'
 export const delete_button_color = '#de1738'

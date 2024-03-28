@@ -8,6 +8,7 @@ import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
+import { background_color } from './colors';
 
 export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {
 
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     ,
     
     options_container: {
-        backgroundColor: "black",
+        backgroundColor: background_color,
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,

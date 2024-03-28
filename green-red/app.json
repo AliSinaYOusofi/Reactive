@@ -4,10 +4,10 @@
     "slug": "green-red",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/green-red.png",
+    "icon": "./assets/ic_launcher.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/mony.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/ic_launcher.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.alisinayousofi.greenred",

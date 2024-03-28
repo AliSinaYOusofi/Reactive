@@ -10,7 +10,8 @@ import SingleCustomerView from './screens/SingleCustomerView';
 import EditCustomerParent from './screens/EditCustomerParent';
 import { AppContextProvider } from './context/useAppContext';
 const StackNavigator = createNativeStackNavigator()
-
+import { Feather } from '@expo/vector-icons';
+import ByMeACoffe from './components/Stripe/ByMeACoffe';
 export default function App() {
 
   return (
@@ -22,20 +23,38 @@ export default function App() {
             headerShown: true,
             contentStyle: {
               marginHorizontal: 20,
-              margin: 5
-            }
+              margin: 5,
+              fontSize: 20
+              
+            },
+            headerRight: () => <ByMeACoffe />
+            
           }}
         >
           <StackNavigator.Screen
             name={"homescreen"}
             component={HomeScreen}
-            options={{title: "Home"}}
+            options={{
+              title: "Home",
+              headerStyle: {
+                backgroundColor: "white",
+                
+              },
+              headerTitleStyle: {
+                fontSize: 25,
+              }
+            }}
           />
 
           <StackNavigator.Screen
             name={"Add Customer"}
             component={AddUser}
-            options={{title: "Add Customer"}}
+            options={{
+              title: "Add Customer", 
+              headerTitleStyle: {
+              fontSize: 25,
+              }
+            }}
           />
 
           <StackNavigator.Screen
