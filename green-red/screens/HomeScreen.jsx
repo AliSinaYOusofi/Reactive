@@ -170,23 +170,26 @@ export default function HomeScreen() {
             <View style={[style.container]}>
                 <View style={{flex: 0}}>
 
-                <Carousel
-                    loop
-                    width={width}
-                    height={width / 2}
-                    data={totalExpenseOfCustomer}
-                    scrollAnimationDuration={2000}
-                    autoPlay
-                    renderItem={({ item }) => (
-                        <View style={style.slide}>
-                            <TotalExpenses 
-                                totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
-                                totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
-                                currency={item.currency}
-                            />
-                        </View>
-                    )}
-                />
+                    {
+                        totalExpenseOfCustomer.length ?
+                        <Carousel
+                            loop
+                            width={width}
+                            height={width / 2}
+                            data={totalExpenseOfCustomer}
+                            scrollAnimationDuration={2000}
+                            autoPlay={totalExpenseOfCustomer.length > 1}
+                            renderItem={({ item }) => (
+                                <View style={style.slide}>
+                                    <TotalExpenses 
+                                        totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
+                                        totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
+                                        currency={item.currency}
+                                    />
+                                </View>
+                            )}
+                        />: null
+                    }
                 </View>
                 
                 
@@ -197,61 +200,64 @@ export default function HomeScreen() {
                     customersToConvert={customer}
                 />
                 
-                <ScrollView style={style.scroll_view}>
+                <View style={{flex: 1, paddingBottom: 60}}>
 
-                    {
-                        customer.length ?
+                    <ScrollView indicatorStyle='black' style={style.scroll_view}>
 
-                        parentSearchTerm ?
-                        (
-                            filteredCustomers.length ?
-                            filteredCustomers.map( item => 
+                        {
+                            customer.length ?
 
-                               {
+                            parentSearchTerm ?
+                            (
+                                filteredCustomers.length ?
+                                filteredCustomers.map( item => 
 
-                                    return(
-                                        <View key={item.id}>
-                                            <CustomerListTemplate 
-                                                username={item.username} 
-                                                usernameShortCut={"AS"} 
-                                                totalAmount={item.amount}
-                                                style={style.item}
-                                                transaction_type={item.transaction_type}
-                                                currency={item.currency}
-                                                at={item.at}
-                                                border_color={item.border_color}
-                                                email={item.email}
-                                                phone={item.phone}
-                                                isSearchComponent={true}
-                                                searchResultLength={filteredCustomers.length}
-                                            />
-                                        </View>
-                                    )
-                               }
-                            ): <ZeroSearchResult />
-                        )
-                        :
-                        customer.map( 
-                            (item, index) => 
-                                <View key={item.id}>
-                                    <CustomerListTemplate 
-                                        username={item.username} 
-                                        usernameShortCut={"AS"} 
-                                        totalAmount={item.amount}
-                                        style={style.item}
-                                        transaction_type={item.transaction_type}
-                                        currency={item.currency}
-                                        at={item.at}
-                                        border_color={item.border_color}
-                                        email={item.email}
-                                        phone={item.phone}
-                                        isSearchComponent={false}
-                                    />
-                                </View>
-                        )
-                        : <NoUserAddedInfo />
-                    }
-                </ScrollView>
+                                {
+
+                                        return(
+                                            <View key={item.id}>
+                                                <CustomerListTemplate 
+                                                    username={item.username} 
+                                                    usernameShortCut={"AS"} 
+                                                    totalAmount={item.amount}
+                                                    style={style.item}
+                                                    transaction_type={item.transaction_type}
+                                                    currency={item.currency}
+                                                    at={item.at}
+                                                    border_color={item.border_color}
+                                                    email={item.email}
+                                                    phone={item.phone}
+                                                    isSearchComponent={true}
+                                                    searchResultLength={filteredCustomers.length}
+                                                />
+                                            </View>
+                                        )
+                                }
+                                ): <ZeroSearchResult />
+                            )
+                            :
+                            customer.map( 
+                                (item, index) => 
+                                    <View key={item.id}>
+                                        <CustomerListTemplate 
+                                            username={item.username} 
+                                            usernameShortCut={"AS"} 
+                                            totalAmount={item.amount}
+                                            style={style.item}
+                                            transaction_type={item.transaction_type}
+                                            currency={item.currency}
+                                            at={item.at}
+                                            border_color={item.border_color}
+                                            email={item.email}
+                                            phone={item.phone}
+                                            isSearchComponent={false}
+                                        />
+                                    </View>
+                            )
+                            : <NoUserAddedInfo />
+                        }
+                    </ScrollView>
+                </View>
             </View>
             <AddNewCustomer />
             

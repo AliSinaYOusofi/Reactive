@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal, Dimensions } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
 import * as SQLite from 'expo-sqlite'
 import UserListView from '../components/SingleCustomerViewComp/UserListView'
@@ -9,6 +9,7 @@ import { useAppContext } from '../context/useAppContext'
 import { useSharedValue } from 'react-native-reanimated'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
+import Carousel from 'react-native-reanimated-carousel'
 
 export default function SingleCustomerView({navigation, route}) {
     
@@ -99,78 +100,57 @@ export default function SingleCustomerView({navigation, route}) {
         setAddNewRecordModal(true)
     }
 
-    const showToast = (message, type = 'error') => {
-        
-        Toast.show({
-            type: type,
-            text1: message,
-            position: 'top',
-            onPress: () => Toast.hide(),
-            swipeable: true,
-            topOffset: 100,
-        });
-    };
-
-    const scrollX = useSharedValue(0)
-
-    const handleScroll = (event) => {
-        
-        scrollX.value = event.nativeEvent.contentOffset.x
-    }
+    const width = Dimensions.get('window').width;
 
     return (
         <>
 
-            <View style={{flex: 0}}>
+            <View style={{flex: 0, backgroundColor: "white"}}>
 
-                <ScrollView 
-                    pagingEnabled 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    scrollEnabled
-                    scrollEventThrottle={16}
-                    style={styles.wrapper}
-                    onScroll={handleScroll}
-                >
+                {
+                    singleCustomerExpense.length ?
+                    <Carousel
+                        loop
+                        width={width}
+                        height={width / 2}
+                        data={singleCustomerExpense}
+                        scrollAnimationDuration={2000}
+                        autoPlay={singleCustomerExpense.length > 1}
+                        renderItem={({ item }) => (
+                            <View style={styles.slide}>
+                                <TotalExpenses 
+                                    totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
+                                    totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
+                                    currency={item.currency}
+                                />
+                            </View>
+                        )}
+                    />: <NoCustomerRecordFound />
+                }
+            </View>
+            
+            <View style={{flex: 1}}>
 
+                <ScrollView style={styles.container}>
                     {
-                        singleCustomerExpense.length
+                        customers.length > 0 
                         ?
-                        singleCustomerExpense.map( expenses => {
-                            return (
-                                <View key={expenses.currency} style={styles.slide}>
-                                    <TotalExpenses 
-                                        totalAmountToGive={expenses.totalAmountBasedOnCurrencyToGive}
-                                        totalAmountToTake={expenses.totalAmountBasedOnCurrencyToTake}
-                                        currency={expenses.currency}
-                                    />
-                                </View>
+                            customers.map((customer, index) => 
+                                <UserListView
+                                    username={customer.username}
+                                    amount={customer.amount}
+                                    key={index}
+                                    transaction_date={customer.transaction_at}
+                                    currency={customer.currency}
+                                    transaction_type={customer.transaction_type}
+                                    record_id={customer.id}
+                                />
                             )
-                        })
-                        : <NoCustomerRecordFound />
+                        : 
+                            null
                     }
                 </ScrollView>
             </View>
-
-            <ScrollView style={styles.container}>
-                {
-                    customers.length > 0 
-                    ?
-                        customers.map((customer, index) => 
-                            <UserListView
-                                username={customer.username}
-                                amount={customer.amount}
-                                key={index}
-                                transaction_date={customer.transaction_at}
-                                currency={customer.currency}
-                                transaction_type={customer.transaction_type}
-                                record_id={customer.id}
-                            />
-                        )
-                    : 
-                        null
-                }
-            </ScrollView>
 
             <View style={styles.add_new_customer_container}>
                 <Pressable
@@ -201,12 +181,12 @@ export default function SingleCustomerView({navigation, route}) {
 const styles = StyleSheet.create( {
     // TODO background should be full
     container: {
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
         height: "100%",
     },
     
     add_new_customer_btn: {
-        backgroundColor: 'black',
+        backgroundColor: '#181c20',
         color: "white",
         borderRadius: 8,
         height: 'auto',
@@ -228,10 +208,9 @@ const styles = StyleSheet.create( {
     slide: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white',
+        alignItems: 'start',
         height: "auto",
-        
+        width: "85%"
     },
 
 })

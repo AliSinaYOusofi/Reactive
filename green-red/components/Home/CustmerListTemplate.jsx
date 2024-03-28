@@ -103,9 +103,7 @@ const styles = StyleSheet.create({
     
     hr: {
 
-        borderBottomColor: 'gray',
-        borderBottomWidth: 0.4,
-        marginVertical: 10, // Adjust as needed for spacing
+       // Adjust as needed for spacing
     },
 
     username_and_shortcut_container: {
