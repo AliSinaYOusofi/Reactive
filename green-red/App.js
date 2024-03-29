@@ -13,6 +13,15 @@ const StackNavigator = createNativeStackNavigator()
 import { EvilIcons, Feather } from '@expo/vector-icons';
 import ByMeACoffe from './components/Stripe/ByMeACoffe';
 import { Ionicons } from '@expo/vector-icons';
+import * as SystemUI from 'expo-system-ui';
+SystemUI.setBackgroundColorAsync("white");
+import mobileAds, { AppOpenAd, InterstitialAd, RewardedAd, BannerAd, TestIds } from 'react-native-google-mobile-ads'
+
+mobileAds()
+  .initialize()
+  .then(() => console.log('Ads initialized'))
+  .catch(error => console.error(error));
+const adUnitId = __DEV__ ? TestIds.APP_OPEN : 'ca-app-pub-1665900038997295/7904919839';
 export default function App() {
 
   return (
@@ -22,14 +31,16 @@ export default function App() {
         <StackNavigator.Navigator
           screenOptions={{
             headerShown: true,
+            
             contentStyle: {
               marginHorizontal: 20,
               margin: 5,
               fontSize: 20
               
             },
-            headerRight: () => <ByMeACoffe />
             
+            headerRight: () => <ByMeACoffe />,
+          
           }}
         >
           <StackNavigator.Screen
@@ -58,7 +69,10 @@ export default function App() {
                 fontSize: 25,
               },
               headerTitle: () => (
-                <Feather name="database" size={24} color="black" />
+                <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
+                    <EvilIcons name="plus" size={24} color="black" />
+                    <Text>Add Customer</Text>
+                </View>
               )
             }}
           />
