@@ -125,11 +125,11 @@ export default function SingleCustomerView({navigation, route}) {
                                 />
                             </View>
                         )}
-                    />: <NoCustomerRecordFound />
+                    />: null
                 }
             </View>
             
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, paddingBottom: 40}}>
 
                 <ScrollView style={styles.container}>
                     {
@@ -147,20 +147,20 @@ export default function SingleCustomerView({navigation, route}) {
                                 />
                             )
                         : 
-                            null
+                        <NoCustomerRecordFound />
                     }
                 </ScrollView>
             </View>
 
-            <View style={styles.add_new_customer_container}>
-                <Pressable
-                    style={styles.add_new_customer_btn}
-                    onPress={handleAddNewCustomer}
-                    title='add new customer'
-                >
-                    <Text style={{color: "white"}}>Add new record</Text>
-                </Pressable>
-            </View>
+            
+            <Pressable
+                style={styles.add_new_customer_btn}
+                onPress={handleAddNewCustomer}
+                title='add new customer'
+            >
+                <Text style={{color: "white"}}>Add new record</Text>
+            </Pressable>
+            
 
             <Modal
                 visible={addNewRecordModal}
@@ -179,10 +179,10 @@ export default function SingleCustomerView({navigation, route}) {
 
 
 const styles = StyleSheet.create( {
-    // TODO background should be full
     container: {
         backgroundColor: 'white',
         height: "100%",
+        paddingBottom: 40
     },
     
     add_new_customer_btn: {

@@ -14,7 +14,8 @@ import * as SQLite from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../../context/useAppContext';
 import { format } from 'date-fns';
-
+import { TestIds, AppOpenAd } from 'react-native-google-mobile-ads';
+const adUnitId = __DEV__ ? TestIds.APP_OPEN : 'ca-app-pub-1665900038997295/7904919839';
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -27,7 +28,9 @@ function AddNewCustomerPopup({}) {
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext()
     const navigator = useNavigation()
     const db = SQLite.openDatabase('green-red.db')
-
+    const appOpenAd = AppOpenAd.createForAdRequest(adUnitId, {
+        keywords: ['fashion', 'clothing'],
+    });
     useEffect( () => {
         db.transaction(tx => {
             
@@ -42,8 +45,13 @@ function AddNewCustomerPopup({}) {
                 }
             );
         });
+        
     }, [])
-    
+    useEffect(() => {
+        appOpenAd.load();
+        
+    }, []);
+
     const addNewCustomer = () => {
         if (!validateUsername(username)) {
             return showToast('Username is invalid');
@@ -92,6 +100,7 @@ function AddNewCustomerPopup({}) {
                         showToast('Username already exists');
                     } else {
                         insertCustomer();
+                        appOpenAd.show();
                     }
                 },
                 (_, error) => {
