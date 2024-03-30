@@ -10,7 +10,8 @@ import { useSharedValue } from 'react-native-reanimated'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
 import Carousel from 'react-native-reanimated-carousel'
-
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.EXPO_PUBLIC_ADMOB_BANNER;
 export default function SingleCustomerView({navigation, route}) {
     
     const [customers, setCustomers] = useState([])
@@ -149,6 +150,14 @@ export default function SingleCustomerView({navigation, route}) {
                         : 
                         <NoCustomerRecordFound />
                     }
+
+                    <View style={{marginTop: 20}}>
+                        <BannerAd
+                        
+                            unitId={adUnitId}
+                            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                        />
+                    </View>
                 </ScrollView>
             </View>
 

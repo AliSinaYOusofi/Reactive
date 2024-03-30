@@ -10,7 +10,8 @@ import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
 import Carousel from 'react-native-reanimated-carousel';
-
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.EXPO_PUBLIC_ADMOB_BANNER;
 export default function HomeScreen() {
     
     const [ customer, setCustomers ] = useState([])
@@ -252,13 +253,20 @@ export default function HomeScreen() {
                                             phone={item.phone}
                                             isSearchComponent={false}
                                         />
+                                        
                                     </View>
                             )
                             : <NoUserAddedInfo />
                         }
                     </ScrollView>
+                    <BannerAd
+                        unitId={adUnitId}
+                        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                    />
                 </View>
+                
             </View>
+            
             <AddNewCustomer />
             
         </View>
