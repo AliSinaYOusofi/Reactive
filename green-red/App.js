@@ -16,12 +16,13 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SystemUI from 'expo-system-ui';
 SystemUI.setBackgroundColorAsync("white");
 import mobileAds, { AppOpenAd, InterstitialAd, RewardedAd, BannerAd, TestIds } from 'react-native-google-mobile-ads'
+import AboutScreen from './components/about/About';
 
 mobileAds()
   .initialize()
   .then(() => console.log('Ads initialized'))
   .catch(error => console.error(error));
-const adUnitId = __DEV__ ? TestIds.APP_OPEN : 'ca-app-pub-1665900038997295/7904919839';
+
 export default function App() {
 
   return (
@@ -102,6 +103,21 @@ export default function App() {
                   <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
                       <EvilIcons name="pencil" size={34} color="black" />
                       <Text>Edit customer</Text>
+                  </View>
+                )
+              }
+            }
+          />
+          <StackNavigator.Screen
+            name={"about"}
+            component={AboutScreen}
+            options={
+              {
+                title: "About PayPair",
+                headerTitle: () => (
+                  <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
+                      <EvilIcons name="exclamation" size={34} color="black" />
+                      <Text style={{fontWeight: "bold"}}>About PayPair</Text>
                   </View>
                 )
               }

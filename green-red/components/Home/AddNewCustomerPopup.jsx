@@ -14,8 +14,8 @@ import * as SQLite from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../../context/useAppContext';
 import { format } from 'date-fns';
-import { TestIds, AppOpenAd } from 'react-native-google-mobile-ads';
-const adUnitId = __DEV__ ? TestIds.APP_OPEN : 'ca-app-pub-1665900038997295/7904919839';
+import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -28,10 +28,19 @@ function AddNewCustomerPopup({}) {
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext()
     const navigator = useNavigation()
     const db = SQLite.openDatabase('green-red.db')
-    const appOpenAd = AppOpenAd.createForAdRequest(adUnitId, {
-        keywords: ['fashion', 'clothing'],
-    });
-    useEffect( () => {
+    const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
+
+    useEffect(() => {
+        load();
+    }, [load]);
+    
+    useEffect(() => {
+        if (isClosed) {
+          navigator.navigate('homescreen');
+        }
+    }, [isClosed, navigator]);
+    
+      useEffect( () => {
         db.transaction(tx => {
             
             tx.executeSql(
@@ -47,10 +56,6 @@ function AddNewCustomerPopup({}) {
         });
         
     }, [])
-    useEffect(() => {
-        appOpenAd.load();
-        
-    }, []);
 
     const addNewCustomer = () => {
         if (!validateUsername(username)) {
@@ -78,6 +83,7 @@ function AddNewCustomerPopup({}) {
             return showToast('Please select a currency');
         }
 
+        
 
         // db.transaction(tx => {
             
@@ -100,7 +106,6 @@ function AddNewCustomerPopup({}) {
                         showToast('Username already exists');
                     } else {
                         insertCustomer();
-                        appOpenAd.show();
                     }
                 },
                 (_, error) => {
@@ -133,8 +138,12 @@ function AddNewCustomerPopup({}) {
                     [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency, currentDateTime],
                     (_, success) => {
                         showToast('Customer added successfully', 'success');
-                        setTimeout( () => navigator.navigate("homescreen"), 2000)
+                        
+                        setTimeout( () => {
+                            if (isLoaded) show()
+                        }, 2000)
                         setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
+
                     },
                     (_, error) => {
                         showToast('Failed to add customer');

@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
@@ -9,7 +9,8 @@ import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyVali
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
 import { background_color } from './colors';
-
+import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
 export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
 
     const [amount, setAmount] = useState("")
@@ -18,6 +19,18 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
 
     const db = SQLite.openDatabase('green-red.db')
     const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
+
+    const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
+
+    useEffect(() => {
+        load();
+    }, [load]);
+    
+    useEffect(() => {
+        if (isClosed) {
+          navigator.navigate('homescreen');
+        }
+    }, [isClosed, navigator]);
 
     const handleAddNewRecord = () => {
         
@@ -87,6 +100,9 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         setAddNewRecordModal(false)
                         setRefreshSingleViewChangeDatabase( prev => ! prev)
                         setRefreshHomeScreenOnChangeDatabase( prev => ! prev)
+                        setTimeout( () => {
+                            if (isLoaded) show()
+                        }, 1000)
                     },
                     (_, e) => {
                         console.error("Error While inserting new record", e.message)
