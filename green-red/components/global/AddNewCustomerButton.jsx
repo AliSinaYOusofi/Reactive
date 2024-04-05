@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Linking } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { EvilIcons } from '@expo/vector-icons';
@@ -12,7 +11,7 @@ export default function ActionButtons() {
     };
 
     const handleOpenPaypal = () => {
-        Linking.openURL('https://www.paypal.com');
+        Linking.openURL('https://www.paypal.com/paypalme/habibyousofi');
     };
 
     const handleNavigateToChart = () => {

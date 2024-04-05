@@ -130,7 +130,7 @@ export default function SingleCustomerView({navigation, route}) {
                 }
             </View>
             
-            <View style={{flex: 1, paddingBottom: 40}}>
+            <View style={{flex: 1, paddingBottom: 40, backgroundColor: "white"}}>
 
                 <ScrollView style={styles.container}>
                     {
