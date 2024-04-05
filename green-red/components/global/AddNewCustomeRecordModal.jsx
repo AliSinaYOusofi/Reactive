@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
         position: "relative",
-        
+        backgroundColor: "white"
     },
     input: {
         borderColor: 'gray',

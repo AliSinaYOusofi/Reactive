@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 const AboutScreen = () => {
-    const appSummary = "OurApp is a financial management app that helps you track your transactions and manage your finances easily. With OurApp, you can record transactions, view reports, and stay on top of your finances effortlessly.";
+    const appSummary = "PairPay is a financial management app that helps you track your transactions and manage your finances easily. With OurApp, you can record transactions, view reports, and stay on top of your finances effortlessly.";
 
     const handleRateApp = () => {
-        const packageName = 'your-package-name'; // Replace 'your-package-name' with your app's package name on Google Play Store
+        const packageName = 'your-package-name';
         Linking.openURL(`market://details?id=${packageName}`);
     };
 

@@ -8,11 +8,25 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_ADMOB_INTERSTIAL": "ca-app-pub-1665900038997295/7904919839",
+        "EXPO_PUBLIC_ADMOB_BANNER": "ca-app-pub-1665900038997295/9046674751"
+      }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_ADMOB_INTERSTIAL": "ca-app-pub-1665900038997295/7904919839",
+        "EXPO_PUBLIC_ADMOB_BANNER": "ca-app-pub-1665900038997295/9046674751"
+      }
+    }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_ADMOB_INTERSTIAL": "ca-app-pub-1665900038997295/7904919839",
+        "EXPO_PUBLIC_ADMOB_BANNER": "ca-app-pub-1665900038997295/9046674751"
+      }
+    }
   }
 }
