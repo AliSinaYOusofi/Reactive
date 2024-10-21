@@ -115,13 +115,11 @@ export default function HomeScreen() {
     useEffect(() => {
         const fetchTotalOfAmountsBasedOnCurrency = async () => {
             try {
+                
                 let totalAmountsByCurrency = {};
-
-                // Get distinct currencies
                 const distinctCurrenciesResult = await db.getAllAsync("SELECT DISTINCT currency FROM customer__records");
                 const distinctCurrencies = distinctCurrenciesResult.map(row => row.currency);
 
-                // Calculate totals for each currency
                 await Promise.all(distinctCurrencies.map(async currency => {
                     const [toGiveResult, toTakeResult] = await Promise.all([
                         db.getAllAsync("SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'received' AND currency = ?", [currency]),
@@ -137,7 +135,6 @@ export default function HomeScreen() {
                     };
                 }));
 
-                // Process customer data
                 customer.forEach(customerr => {
                     if (!totalAmountsByCurrency[customerr.currency]) {
                         totalAmountsByCurrency[customerr.currency] = {

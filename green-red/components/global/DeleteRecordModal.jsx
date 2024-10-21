@@ -42,59 +42,43 @@ export default function DeleteRecordModal({message, setCloseModal, username, rec
         });
     };
 
-    const deleteByRecoredId = () => {
+    const deleteByRecoredId = async () => {
         try {
-            db.transaction(tx => {
-                tx.executeSql(`DELETE FROM customer__records WHERE id = ?;`, [record_id,],
-                (_, sucess) => {
-                    setCloseModal(false)
-                    showToast('Record deleted successfully', 'success')
-                    
-                },
-
-                (_, error) => {
-                    console.error("Failed to delete record", error.message)
-                    showToast("Failed to delete record")
-                }
+            const query = 'DELETE FROM customer__records WHERE id = ?;';
+            const result = await db.runAsync(query, [record_id]);
+            
+            if (result.changes) {
                 
-                )
-            })
-        }
-        
-        catch(e) {
-            console.error("Failed to delete record", e.message)
-            showToast("Failed to delete record")
-        }
-    }
-
-    const deleteByUsername = () => {
-       
-        db.transaction(tx => {
-            tx.executeSql(`DELETE FROM customers WHERE username = ?;`, [username,],
-            (_, sucess) => {
-                tx.executeSql("DELETE FROM customer__records WHERE username = ?;", [username],
-                (_, succ) => {
-                    setCloseModal(false)
-                    showToast('Record deleted successfully', 'success')
-                    setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
-                },
-                (_, err) => {
-                    console.error("Failed to delete user", err.message)
-                    showToast("Failed to delete user")
-                }
-                )
-            },
-
-            (_, error) => {
-                console.error("Failed to delete user", error.message)
-                showToast("Failed to delete user")
+                showToast('Record deleted.', 'success');
+            } else {
+                showToast('No record found to delete', 'success');
             }
+        } catch (error) {
+            console.error("Failed to delete record", error.message);
+            showToast("Failed to delete record");
+        } finally {
+            setCloseModal(false);
+        }
+    };
 
-            )
-        })
-       
+    const deleteByUsername = async () => {
+        try {
+            // Delete from customers table
+            const deleteCustomerQuery = 'DELETE FROM customers WHERE username = ?;';
+            await db.runAsync(deleteCustomerQuery, [username]);
 
-    }
+            // Delete from customer__records table
+            const deleteRecordsQuery = 'DELETE FROM customer__records WHERE username = ?;';
+            const result = await db.runAsync(deleteRecordsQuery, [username]);
+
+            setCloseModal(false);
+            showToast('User and all associated records deleted.', 'success');
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+        } catch (error) {
+            console.error("Failed to delete user", error.message);
+            showToast("Failed to delete user");
+        }
+    };
     
     return (
         <View style={styles.modalContainer}>
