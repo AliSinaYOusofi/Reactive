@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Linking } from 'react-native';
+import { View, StyleSheet, Pressable, Linking, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { EvilIcons } from '@expo/vector-icons';
+
 export default function ActionButtons() {
     const navigation = useNavigation();
 
@@ -23,39 +24,52 @@ export default function ActionButtons() {
             
             <Pressable style={styles.button} onPress={handleAddCustomer}>
                 <AntDesign name="adduser" size={24} color="white" />
+                <Text style={styles.text}>Add User</Text>
             </Pressable>
             
             
-            <Pressable style={styles.button} onPress={handleOpenPaypal}>
-                <EvilIcons name="heart" size={34} color="white" />
-            </Pressable>
+            
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
+        
         backgroundColor: 'white',
         width: '100%',
         position: 'absolute',
         bottom: 0,
-        columnGap: 8
+        columnGap: 8,
+        alignItems: 'center'
     },
+
     button: {
         alignItems: 'center',
-        paddingVertical: 10,
-        backgroundColor: "#181c20",
-        paddingHorizontal: 10,
-        borderRadius: 4,
-        paddingVertical: 15,
-        width: "50%"
+        justifyContent: 'center',
+        backgroundColor: "#14171A",
+        borderRadius: 9999,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        width: "90%",
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10
     },
     separator: {
         height: '100%',
         width: 1,
         backgroundColor: 'gray',
     },
+
+    text: {
+        color: "white",
+        fontSize: 16,
+    }
 });

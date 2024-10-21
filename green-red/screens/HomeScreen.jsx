@@ -10,58 +10,66 @@ import { useAppContext } from '../context/useAppContext'
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo'
 import ZeroSearchResult from '../components/global/ZeroSearchResult'
 import Carousel from 'react-native-reanimated-carousel';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
-const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.EXPO_PUBLIC_ADMOB_BANNER;
+// import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+// const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.EXPO_PUBLIC_ADMOB_BANNER;
 export default function HomeScreen() {
     
     const [ customer, setCustomers ] = useState([])
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("")
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([])
-    const db = SQLite.openDatabase('green-red.db')
+    const db = SQLite.openDatabaseSync('green-red.db')
     
     const { refreshHomeScreenOnChangeDatabase } = useAppContext()
     
-    useEffect( () => {
+    useEffect(() => {
         const loadCustomerDataList = async () => {
-
-            const updatedCustomers = [];
-            
-            await db.transactionAsync( async tx => {
+            try {
+                const customers = await db.getAllAsync("SELECT * FROM customers");
                 
-                const result = await tx.executeSqlAsync("SELECT * FROM customers", [])
-                
-                if (result.rows.length === 0) {
-                    setCustomers([])
-                    return
+                if (!customers || customers.length === 0) {
+                    console.log("No customers found");
+                    setCustomers([]);
+                    return;
                 }
                 
+                const updatedCustomers = await Promise.all(customers.map(async (customer) => {
+                    try {
+                        const [receivedResult, paidResult] = await Promise.all([
+                            db.getAllAsync(
+                                "SELECT SUM(amount) as total FROM customers WHERE transaction_type = 'received' AND username = ?",
+                                [customer.username]
+                            ),
+                            db.getAllAsync(
+                                "SELECT SUM(amount) as total FROM customers WHERE transaction_type = 'paid' AND username = ?",
+                                [customer.username]
+                            )
+                        ]);
+
+                        const received_amount_total = receivedResult[0]?.total ?? 0;
+                        const paid_amount_total = paidResult[0]?.total ?? 0;
+
+                        const border_color_status = parseFloat(received_amount_total) > parseFloat(paid_amount_total) ? "green" : "red";
+                        const current_total_amount_status_count = parseFloat(received_amount_total) - parseFloat(paid_amount_total);
+                        
+                        return {
+                            ...customer,
+                            amount: Math.abs(current_total_amount_status_count),
+                            border_color: border_color_status
+                        };
+                    } catch (itemError) {
+                        console.error(`Error processing customer ${customer.username}:`, itemError);
+                        return customer; // Return the original customer data if processing fails
+                    }
+                }));
                 
-                await Promise.all(
-                    result.rows.map( async (item, index) => {
-                        
-                        let received_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'received' AND username = ?", [item.username])
+                setCustomers(updatedCustomers.sort((a, b) => new Date(b.at) - new Date(a.at)));
+            } catch (error) {
+                console.error("Error loading customer data:", error);
+            }
+        };
 
-                        let paid_amount = await tx.executeSqlAsync("SELECT SUM(amount) FROM customers WHERE transaction_type = 'paid' AND username = ?", [item.username])
-                        
-                        let received_amount_total, paid_amount_total
-
-                        received_amount_total = received_amount.rows[0]["SUM(amount)"] ? received_amount.rows[0]["SUM(amount)"] : 0
-                        paid_amount_total = paid_amount.rows[0]["SUM(amount)"] ? paid_amount.rows[0]["SUM(amount)"] : 0
-
-                        border_color_status = parseFloat(received_amount_total) > parseFloat(paid_amount_total) ? "green" : "red"
-                        let current_total_amount_status_count = parseFloat(received_amount_total) - parseFloat(paid_amount_total)
-                        
-                        item.amount = current_total_amount_status_count < 0  ? current_total_amount_status_count * -1 : current_total_amount_status_count
-                        item.border_color = border_color_status
-                        
-                        updatedCustomers.push(item)
-                    })
-                )
-            }) 
-            setCustomers( updatedCustomers.sort( (a, b) =>  new Date(b.at) - new Date(a.at)))
-        }
-        loadCustomerDataList()
+        loadCustomerDataList();
     }, [refreshHomeScreenOnChangeDatabase])
     
     const handleSearch = (searchTerm) => {
@@ -77,90 +85,87 @@ export default function HomeScreen() {
         
         setFilteredCustomers(filtered);
     };
+    
+    useEffect( () => {
+        const createCustomerRecordsTable = async () => {
+            try {
+            const query = `
+                CREATE TABLE IF NOT EXISTS customer__records (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    amount REAL NOT NULL,
+                    transaction_type TEXT NOT NULL,
+                    currency TEXT NOT NULL,
+                    transaction_at DATETIME NOT NULL,
+                    transaction_updated_at DATETIME NOT NULL
+                )
+            `;
+            console.log("creating customer__records table")
+            await db.execAsync(query);
+            console.log("Table created successfully--- customer__records");
+            } catch (error) {
+                console.error("Error while creating customer__records table:", error.message);
+                showToast("Error while creating customer__records table");
+            }
+        }
+
+        createCustomerRecordsTable();
+    }, [])
 
     useEffect(() => {
         const fetchTotalOfAmountsBasedOnCurrency = async () => {
-            
-            let total_expense_data_of_customers = [];
-            let totalAmountsByCurrency = {};
-            let distinctCurrencies
+            try {
+                let totalAmountsByCurrency = {};
 
-            await db.transactionAsync( async tx => {
-                
-                distinctCurrencies = await tx.executeSqlAsync("SELECT DISTINCT currency FROM customer__records");
-                distinctCurrencies = distinctCurrencies.rows.map(row => row.currency);
-                
-                await Promise.all( distinctCurrencies.map( async currency => {
+                // Get distinct currencies
+                const distinctCurrenciesResult = await db.getAllAsync("SELECT DISTINCT currency FROM customer__records");
+                const distinctCurrencies = distinctCurrenciesResult.map(row => row.currency);
 
-                    const totalAmountBasedOnCurrencyToGive = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'received' AND currency = ?", [currency]);
-                    const totalAmountBasedOnCurrencyToTake = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'paid' AND currency = ?", [currency]);
+                // Calculate totals for each currency
+                await Promise.all(distinctCurrencies.map(async currency => {
+                    const [toGiveResult, toTakeResult] = await Promise.all([
+                        db.getAllAsync("SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'received' AND currency = ?", [currency]),
+                        db.getAllAsync("SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'paid' AND currency = ?", [currency])
+                    ]);
 
-                    let plainTotalAmountToGive, plainTotalAmountToTake;
-    
-                    if (totalAmountBasedOnCurrencyToGive.rows.length === 0 || totalAmountBasedOnCurrencyToGive.rows[0]['SUM(amount)'] === null) {
-                        plainTotalAmountToGive = 0;
-                    } else {
-                        plainTotalAmountToGive = parseFloat(totalAmountBasedOnCurrencyToGive.rows[0]['SUM(amount)']);
-                    }
-    
-                    if (totalAmountBasedOnCurrencyToTake.rows.length === 0 || totalAmountBasedOnCurrencyToTake.rows[0]['SUM(amount)'] === null) {
-                        plainTotalAmountToTake = 0;
-                    } else {
-                        plainTotalAmountToTake = parseFloat(totalAmountBasedOnCurrencyToTake.rows[0]['SUM(amount)']);
-                    }
+                    const totalAmountBasedOnCurrencyToGive = parseFloat(toGiveResult[0]?.total ?? 0);
+                    const totalAmountBasedOnCurrencyToTake = parseFloat(toTakeResult[0]?.total ?? 0);
 
                     totalAmountsByCurrency[currency] = {
-                        totalAmountBasedOnCurrencyToGive: plainTotalAmountToGive,
-                        totalAmountBasedOnCurrencyToTake: plainTotalAmountToTake
-                    };
-                }))
-
-            })
-
-            customer.forEach( customerr => {
-                if (totalAmountsByCurrency[customerr.currency]) {
-
-                    if (String(customerr.transaction_type) === 'received') {
-                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToGive += customerr.amount
-                    }
-                    else {
-                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToTake += customerr.amount
-                    }
-                } 
-                
-                else {
-                    
-                    let totalAmountBasedOnCurrencyToGive, totalAmountBasedOnCurrencyToTake
-                    
-                    if (customerr.transaction_type === 'recieved') {
-            
-                        totalAmountBasedOnCurrencyToGive = customerr.amount
-                        totalAmountBasedOnCurrencyToTake = 0
-                    }
-                    
-                    else {
-                        
-                        totalAmountBasedOnCurrencyToGive = 0
-                        totalAmountBasedOnCurrencyToTake = customerr.amount
-                    }
-
-                    totalAmountsByCurrency[customerr.currency] = {
                         totalAmountBasedOnCurrencyToGive,
-                        totalAmountBasedOnCurrencyToTake,
+                        totalAmountBasedOnCurrencyToTake
+                    };
+                }));
+
+                // Process customer data
+                customer.forEach(customerr => {
+                    if (!totalAmountsByCurrency[customerr.currency]) {
+                        totalAmountsByCurrency[customerr.currency] = {
+                            totalAmountBasedOnCurrencyToGive: 0,
+                            totalAmountBasedOnCurrencyToTake: 0
+                        };
                     }
 
-                }
-            })
+                    if (customerr.transaction_type === 'received') {
+                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToGive += parseFloat(customerr.amount);
+                    } else {
+                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToTake += parseFloat(customerr.amount);
+                    }
+                });
 
-            total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
-                currency,
-                totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,
-                totalAmountBasedOnCurrencyToTake: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake
-            }));
+                // Format data for state update
+                const total_expense_data_of_customers = Object.entries(totalAmountsByCurrency).map(([currency, amounts]) => ({
+                    currency,
+                    totalAmountBasedOnCurrencyToGive: amounts.totalAmountBasedOnCurrencyToGive,
+                    totalAmountBasedOnCurrencyToTake: amounts.totalAmountBasedOnCurrencyToTake
+                }));
 
-            setTotalExpenseOfCustomers(total_expense_data_of_customers)
-        }
-        
+                setTotalExpenseOfCustomers(total_expense_data_of_customers);
+            } catch (error) {
+                console.error("Error fetching total amounts:", error);
+            }
+        };
+
         fetchTotalOfAmountsBasedOnCurrency();
     }, [customer])
 
@@ -169,7 +174,7 @@ export default function HomeScreen() {
     return (
         <View style={{width: "100%"}}>
             <View style={[style.container]}>
-                <View style={{flex: 0}}>
+                <View style={{flex: 1, marginBottom: -100}}>
 
                     {
                         totalExpenseOfCustomer.length ?
@@ -259,10 +264,10 @@ export default function HomeScreen() {
                             : <NoUserAddedInfo />
                         }
                     </ScrollView>
-                    <BannerAd
+                    {/* <BannerAd
                         unitId={adUnitId}
                         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-                    />
+                    /> */}
                 </View>
                 
             </View>

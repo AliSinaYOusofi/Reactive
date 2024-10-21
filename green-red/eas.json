@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 7.6.0"
+    "version": ">= 10.2.2"
   },
   "build": {
     "development": {
@@ -8,25 +8,11 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_ADMOB_INTERSTIAL": "ca-app-pub-1665900038997295/7904919839",
-        "EXPO_PUBLIC_ADMOB_BANNER": "ca-app-pub-1665900038997295/9046674751"
-      }
+      "distribution": "internal"
     },
-    "production": {
-      "env": {
-        "EXPO_PUBLIC_ADMOB_INTERSTIAL": "ca-app-pub-1665900038997295/7904919839",
-        "EXPO_PUBLIC_ADMOB_BANNER": "ca-app-pub-1665900038997295/9046674751"
-      }
-    }
+    "production": {}
   },
   "submit": {
-    "production": {
-      "env": {
-        "EXPO_PUBLIC_ADMOB_INTERSTIAL": "ca-app-pub-1665900038997295/7904919839",
-        "EXPO_PUBLIC_ADMOB_BANNER": "ca-app-pub-1665900038997295/9046674751"
-      }
-    }
+    "production": {}
   }
 }

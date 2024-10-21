@@ -4,35 +4,39 @@ import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
 import Toast from 'react-native-toast-message';
-import * as SQLite from 'expo-sqlite'
+import { openDatabaseSync } from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
 import { background_color } from './colors';
-import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
+// import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
+// const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
 export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
 
     const [amount, setAmount] = useState("")
     const [transactionType, setTransactionType] = useState("")
     const [currency, setCurrency] = useState("")
 
-    const db = SQLite.openDatabase('green-red.db')
+    const db = openDatabaseSync('green-red.db')
     const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
 
-    const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
+    // const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
 
-    useEffect(() => {
-        load();
-    }, [load]);
+    // useEffect(() => {
+    //     load();
+    // }, [load]);
     
-    useEffect(() => {
-        if (isClosed) {
-          navigator.navigate('homescreen');
-        }
-    }, [isClosed, navigator]);
+    // useEffect(() => {
+    //     if (isClosed) {
+    //       navigator.navigate('homescreen');
+    //     }
+    // }, [isClosed, navigator]);
 
-    const handleAddNewRecord = () => {
+    // create customer__records table if not exists
+    
+
+    // handle add new record
+    const handleAddNewRecord = async () => {
         
         if (!amountOfMoneyValidator(amount)) {
             return showToast('Amount of money is not valid');
@@ -46,32 +50,11 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
             return showToast('Please select a currency');
         }
 
-        // for testing tables and dropping if necessary
-        // db.transaction(tx => {
-        //     tx.executeSql("DROP TABLE IF EXISTS customer__records;", [], (_, result) => {console.log("Table deleted")})
-        // })
-        // creating the table
         try {
-
-            const query = 'CREATE TABLE IF NOT EXISTS customer__records(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL , amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, transaction_at DATETIME NOT NULL, transaction_updated_at DATETIME NOT NULL);'
-
-            db.transaction(tx => {
-                tx.executeSql(query, [], 
-                    (tx, result) => {
-                        if (result) insertToCustomerChild()
-                    },
-                    (_, error) => {
-                        console.error("Error While creating table", error)
-                        showToast("Error While creating table")
-                    }
-                )
-            })
-        } catch( e ) {
-            console.error("error while adding new customer", e.message)
-            Toast.show({
-                type: 'error',
-                text1: 'error while adding new customer',
-            })
+            await insertToCustomerChild();
+        } catch (error) {
+            console.error("Error while adding new record:", error.message);
+            showToast("Error while adding new record");
         }
     }
 
@@ -87,41 +70,29 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
         });
     };
 
-    const insertToCustomerChild = () => {
-        
+    const insertToCustomerChild = async () => {
         try {
-            const query = 'INSERT INTO customer__records (username, amount, transaction_type, currency, transaction_at, transaction_updated_at) VALUES (?, ?, ?, ?, ?, ?);'
-            const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-            db.transaction(tx => {
-                
-                tx.executeSql(query, [username, amount, transactionType, currency, currentDateTime, currentDateTime], 
-                    (tx, result) => {
-                        showToast("User record added!", "success")
-                        setAddNewRecordModal(false)
-                        setRefreshSingleViewChangeDatabase( prev => ! prev)
-                        setRefreshHomeScreenOnChangeDatabase( prev => ! prev)
-                        setTimeout( () => {
-                            if (isLoaded) show()
-                        }, 1000)
-                    },
-                    (_, e) => {
-                        console.error("Error While inserting new record", e.message)
-                        showToast("Error While inserting new record")
-                    }
-                )
-            })
-        } 
-        
-        catch( e ) {
-            console.error("error while adding new customer", e.message)
-            Toast.show({
-                type: 'error',
-                text1: 'error while adding new customer',
-            })
+            const query = `
+                INSERT INTO customer__records (
+                    username, amount, transaction_type, currency, transaction_at, transaction_updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            `;
+            const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+            const args = [username, amount, transactionType, currency, currentDateTime, currentDateTime];
+
+            await db.runAsync(query, args);
+
+            showToast("User record added!", "success");
+            setAddNewRecordModal(false);
+            setRefreshSingleViewChangeDatabase(prev => !prev);
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+        } catch (error) {
+            console.error("Error while inserting new record:", error.message);
+            showToast("Error while inserting new record");
         } finally {
-            setAmount("")
-            setTransactionType("")
-            setCurrency("")
+            setAmount("");
+            setTransactionType("");
+            setCurrency("");
         }
     }
 
@@ -180,7 +151,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         onPress={handleAddNewRecord}
                         title='add new customer'
                     >
-                        <Text style={{color: "white"}}>Add new record</Text>
+                        <Text style={{color: "white"}}>Save new record</Text>
                     </Pressable>
                 </View>
 
@@ -267,7 +238,18 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         marginTop: 20,
         textAlign: 'center',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 9999,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        width: "90%",
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     drop_down_container: {
         marginTop: 20,
@@ -281,6 +263,7 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         color: "black",
         top: 10,
-        right: 10
+        right: 10,
+        
     },
 })

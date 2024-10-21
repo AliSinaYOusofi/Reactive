@@ -14,8 +14,8 @@ import * as SQLite from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../../context/useAppContext';
 import { format } from 'date-fns';
-import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
+// import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
+// const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
 function AddNewCustomerPopup({}) {
 
     const [username, setUsername] = useState('');
@@ -27,37 +27,46 @@ function AddNewCustomerPopup({}) {
     const [isAddLoaded, setIsAddLoaded] = useState(false)
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext()
     const navigator = useNavigation()
-    const db = SQLite.openDatabase('green-red.db')
-    const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
+    const db = SQLite.openDatabaseSync('green-red.db')
+    // const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
 
-    useEffect(() => {
-        load();
-    }, [load]);
+    // useEffect(() => {
+    //     load();
+    // }, [load]);
+    
+    // useEffect(() => {
+    //     if (isClosed) {
+    //       navigator.navigate('homescreen');
+    //     }
+    // }, [isClosed, navigator]);
     
     useEffect(() => {
-        if (isClosed) {
-          navigator.navigate('homescreen');
-        }
-    }, [isClosed, navigator]);
+        const initializeDatabase = async () => {
+            try {
+                await db.execAsync(`
+                    CREATE TABLE IF NOT EXISTS customers (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                        username TEXT NOT NULL, 
+                        email TEXT, 
+                        phone TEXT, 
+                        amount REAL NOT NULL, 
+                        transaction_type TEXT NOT NULL, 
+                        currency TEXT NOT NULL, 
+                        at DATETIME NOT NULL
+                    );
+                `);
+                console.log('Table created successfully');
+            } catch (error) {
+                alert(error.message);
+                showToast(error.message);
+                console.error('Error creating table: ', error);
+            }
+        };
     
-      useEffect( () => {
-        db.transaction(tx => {
-            
-            tx.executeSql(
-                'CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, email TEXT, phone TEXT, amount REAL NOT NULL, transaction_type TEXT NOT NULL, currency TEXT NOT NULL, at DATETIME NOT NULL);',
-                [],
-                () => console.log('Table created successfully'),
-                (_, error) => {
-                    alert(error.message)
-                    showToast(error.message)
-                    console.error('Error creating table: ', error)
-                }
-            );
-        });
-        
-    }, [])
+        initializeDatabase();
+    }, []);
 
-    const addNewCustomer = () => {
+    const addNewCustomer = async () => {
         if (!validateUsername(username)) {
             return showToast('Username is invalid');
         }
@@ -97,23 +106,23 @@ function AddNewCustomerPopup({}) {
 
         
     
-        db.transaction(tx => {
-            tx.executeSql(
+        try {
+            // check if username already exists
+            console.log(username, " username")
+            const result = await db.execAsync(
                 "SELECT * FROM customers WHERE username = ?",
-                [username],
-                (_, result) => {
-                    if (result.rows._array.length) {
-                        showToast('Username already exists');
-                    } else {
-                        insertCustomer();
-                    }
-                },
-                (_, error) => {
-                    console.error("error while checking if username exists", error.message)
-                    showToast('Failed to add new customer')
-                }   
+                [username]
             );
-        });
+            console.log(result, " result")
+            if (result) {
+                showToast('Username already exists');
+            } else {
+                await insertCustomer();
+            }
+        } catch (error) {
+            console.error("Error while checking if username exists", error.message);
+            showToast('Failed to add new customer');
+        }
     };
     
     const showToast = (message, type = 'error') => {
@@ -127,31 +136,50 @@ function AddNewCustomerPopup({}) {
         });
     };
 
-    const insertCustomer = () => {
+    const insertCustomer = async () => {
+        const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
-        const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
-        
-        db.transaction(
-            tx => {
-                tx.executeSql(
-                    "INSERT INTO customers (username, email, phone, amount, transaction_type, currency, at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    [username, email, phone, amountOfMoney, paymentStatus, selectedCurrency, currentDateTime],
-                    (_, success) => {
-                        showToast('Customer added successfully', 'success');
-                        
-                        setTimeout( () => {
-                            if (isLoaded) show()
-                        }, 2000)
-                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
+        // Validate required fields
+        if (!username || !amountOfMoney || !paymentStatus || !selectedCurrency) {
+            showToast('Please fill in all required fields');
+            return;
+        }
 
-                    },
-                    (_, error) => {
-                        showToast('Failed to add customer');
-                        console.error("error while adding new user", error.message)
-                    }
-                );
-            },
-        );
+        const statement = await db.prepareAsync(`
+            INSERT INTO customers (username, email, phone, amount, transaction_type, currency, at) 
+            VALUES ($username, $email, $phone, $amount, $transactionType, $currency, $at)
+        `);
+
+        try {
+            const result = await statement.executeAsync({
+                $username: username,
+                $email: email || null,
+                $phone: phone || null,
+                $amount: parseFloat(amountOfMoney),
+                $transactionType: paymentStatus,
+                $currency: selectedCurrency,
+                $at: currentDateTime
+            });
+
+            console.log('Inserted customer:', result.lastInsertRowId, result.changes);
+
+            showToast('Customer added successfully', 'success');
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+
+            // Reset form fields
+            setUsername('');
+            setEmail('');
+            setPhone('');
+            setAmountOfMoney('');
+            setPaymentStatus('');
+            setSelectedCurrency('');
+
+        } catch (error) {
+            showToast('Failed to add customer: ' + error.message);
+            console.error("Error while adding new user", error);
+        } finally {
+            await statement.finalizeAsync();
+        }
     };
 
     return (
@@ -289,14 +317,21 @@ const styles = StyleSheet.create({
         backgroundColor: "#FDFCFA"
     },
     add_new_customer_btn: {
-        backgroundColor: '#181c20',
-        color: "white",
-        borderRadius: 4,
-        height: 'auto',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        
         marginTop: 10,
-        width: "50%"
+        width: "50%",
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: "#14171A",
+        borderRadius: 9999,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        width: "70%",
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
 
     input_container: {
