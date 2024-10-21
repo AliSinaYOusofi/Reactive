@@ -29,7 +29,7 @@ export default function EditCustomerParent({navigation, route}) {
     
     const navigator = useNavigation();
     const {setRefreshHomeScreenOnChangeDatabase} = useAppContext()
-    const db = SQLite.openDatabase('green-red.db')
+    const db = SQLite.openDatabaseSync('green-red.db')
 
     const handleUpdateCustomerParent = () => {
         

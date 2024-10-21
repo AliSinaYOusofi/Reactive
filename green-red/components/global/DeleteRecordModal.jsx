@@ -8,7 +8,7 @@ import { useAppContext } from '../../context/useAppContext'
 
 export default function DeleteRecordModal({message, setCloseModal, username, record_id}) {
 
-    const db = SQLite.openDatabase('green-red.db')
+    const db = SQLite.openDatabaseSync('green-red.db')
     const { setRefreshHomeScreenOnChangeDatabase, setRefreshSingleViewChangeDatabase } = useAppContext()
 
     const handleDelete = () => {

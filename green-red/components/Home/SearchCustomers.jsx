@@ -60,7 +60,7 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
 
     const AllCustomersData = async () => {
         
-        const db = SQLite.openDatabase("green-red.db");
+        const db =  await SQLite.openDatabaseAsync("green-red.db");
     
         try {
             let allCustomersDataToConvert = [];

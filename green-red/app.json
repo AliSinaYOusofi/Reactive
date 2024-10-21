@@ -1,5 +1,4 @@
 {
-  "expo": {
     "name": "PairPay",
     "slug": "green-red",
     "version": "1.0.0",
@@ -27,7 +26,8 @@
       "permissions": [
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE"
-      ]
+      ],
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,10 +38,15 @@
       }
     },
     "plugins": [
-      "expo-localization"
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          }
+        }
+      ]
     ]
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-1665900038997295~6511893217"
-  }
 }

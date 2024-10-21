@@ -15,13 +15,13 @@ import ByMeACoffe from './components/Stripe/ByMeACoffe';
 import { Ionicons } from '@expo/vector-icons';
 import * as SystemUI from 'expo-system-ui';
 SystemUI.setBackgroundColorAsync("white");
-import mobileAds, { AppOpenAd, InterstitialAd, RewardedAd, BannerAd, TestIds } from 'react-native-google-mobile-ads'
+// import mobileAds, { AppOpenAd, InterstitialAd, RewardedAd, BannerAd, TestIds } from 'react-native-google-mobile-ads'
 import AboutScreen from './components/about/About';
 
-mobileAds()
-  .initialize()
-  .then(() => console.log('Ads initialized'))
-  .catch(error => console.error(error));
+// mobileAds()
+//   .initialize()
+//   .then(() => console.log('Ads initialized'))
+//   .catch(error => console.error(error));
 
 export default function App() {
 
@@ -71,7 +71,7 @@ export default function App() {
               },
               headerTitle: () => (
                 <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                    <EvilIcons name="plus" size={24} color="black" />
+                    {/* <EvilIcons name="plus" size={24} color="black" /> */}
                     <Text>Add Customer</Text>
                 </View>
               )
@@ -86,7 +86,7 @@ export default function App() {
                 title: "Customer Data",
                 headerTitle: () => (
                   <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                      <Feather name="database" size={24} color="black" />
+                      {/* <Feather name="database" size={24} color="black" /> */}
                       <Text>Records</Text>
                   </View>
                 )
@@ -101,7 +101,7 @@ export default function App() {
                 title: "Customer Data",
                 headerTitle: () => (
                   <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                      <EvilIcons name="pencil" size={34} color="black" />
+                      {/* <EvilIcons name="pencil" size={34} color="black" /> */}
                       <Text>Edit customer</Text>
                   </View>
                 )
@@ -113,10 +113,10 @@ export default function App() {
             component={AboutScreen}
             options={
               {
-                title: "About PayPair",
+                title: "About",
                 headerTitle: () => (
                   <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                      <EvilIcons name="exclamation" size={34} color="black" />
+                      {/* <EvilIcons name="exclamation" size={34} color="black" /> */}
                       <Text style={{fontWeight: "bold"}}>About PayPair</Text>
                   </View>
                 )

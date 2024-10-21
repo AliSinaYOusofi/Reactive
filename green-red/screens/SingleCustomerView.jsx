@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, Dimensions } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
-import * as SQLite from 'expo-sqlite'
+import { openDatabase, openDatabaseSync } from 'expo-sqlite'
 import UserListView from '../components/SingleCustomerViewComp/UserListView'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
@@ -10,8 +10,8 @@ import { useSharedValue } from 'react-native-reanimated'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
 import Carousel from 'react-native-reanimated-carousel'
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
-const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.EXPO_PUBLIC_ADMOB_BANNER;
+// import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+// const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.EXPO_PUBLIC_ADMOB_BANNER;
 export default function SingleCustomerView({navigation, route}) {
     
     const [customers, setCustomers] = useState([])
@@ -21,78 +21,63 @@ export default function SingleCustomerView({navigation, route}) {
     const { refreshSingelViewChangeDatabase } = useAppContext()
     const [singleCustomerExpense, setSingleCustomerExpense ] = useState([])
 
-    const db = SQLite.openDatabase('green-red.db')
+    const db = openDatabaseSync('green-red.db')
     
     useEffect ( () => {
         const fetchAllCustomerExpense = async () => {
-
-            let total_expense_data_of_customers = [];
             let totalAmountsByCurrency = {};
-            let distinctCurrencies
 
-            await db.transactionAsync( async tx => {
-                
-                distinctCurrencies = await tx.executeSqlAsync("SELECT DISTINCT currency FROM customer__records WHERE username = ?", [username]);
-                distinctCurrencies = distinctCurrencies.rows.map(row => row.currency);
-                
-                await Promise.all( distinctCurrencies.map( async currency => {
+            try {
+                const distinctCurrenciesQuery = "SELECT DISTINCT currency FROM customer__records WHERE username = ?";
+                const distinctCurrencies = await db.getAllAsync(distinctCurrenciesQuery, [username]);
 
-                    const totalAmountBasedOnCurrencyToGive = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'received' AND currency = ? AND username = ?", [currency, username]);
-                    const totalAmountBasedOnCurrencyToTake = await tx.executeSqlAsync("SELECT SUM(amount) FROM customer__records WHERE transaction_type = 'paid' AND currency = ? AND username = ?", [currency, username]);
+                await Promise.all(distinctCurrencies.map(async ({ currency }) => {
+                    const toGiveQuery = "SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'received' AND currency = ? AND username = ?";
+                    const toTakeQuery = "SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'paid' AND currency = ? AND username = ?";
 
-                    let plainTotalAmountToGive, plainTotalAmountToTake;
-    
-                    if (totalAmountBasedOnCurrencyToGive.rows.length === 0 || totalAmountBasedOnCurrencyToGive.rows[0]['SUM(amount)'] === null) {
-                        plainTotalAmountToGive = 0;
-                    } else {
-                        plainTotalAmountToGive = parseFloat(totalAmountBasedOnCurrencyToGive.rows[0]['SUM(amount)']);
-                    }
-    
-                    if (totalAmountBasedOnCurrencyToTake.rows.length === 0 || totalAmountBasedOnCurrencyToTake.rows[0]['SUM(amount)'] === null) {
-                        plainTotalAmountToTake = 0;
-                    } else {
-                        plainTotalAmountToTake = parseFloat(totalAmountBasedOnCurrencyToTake.rows[0]['SUM(amount)']);
-                    }
+                    const [toGiveResult, toTakeResult] = await Promise.all([
+                        db.getFirstAsync(toGiveQuery, [currency, username]),
+                        db.getFirstAsync(toTakeQuery, [currency, username])
+                    ]);
 
                     totalAmountsByCurrency[currency] = {
-                        totalAmountBasedOnCurrencyToGive: plainTotalAmountToGive,
-                        totalAmountBasedOnCurrencyToTake: plainTotalAmountToTake
+                        totalAmountBasedOnCurrencyToGive: parseFloat(toGiveResult?.total || 0),
+                        totalAmountBasedOnCurrencyToTake: parseFloat(toTakeResult?.total || 0)
                     };
-                }))
+                }));
 
-            })
+                const total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
+                    currency,
+                    totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,
+                    totalAmountBasedOnCurrencyToTake: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake
+                }));
 
-            total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
-                currency,
-                totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,
-                totalAmountBasedOnCurrencyToTake: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake
-            }));
+                setSingleCustomerExpense(total_expense_data_of_customers);
+            } catch (error) {
+                console.error("Error fetching customer expenses:", error.message);
+                // Consider implementing proper error handling here
+            }
+        };
 
-            setSingleCustomerExpense(total_expense_data_of_customers)
-        }
-        fetchAllCustomerExpense()
-    }, [])
+        fetchAllCustomerExpense();
+    }, [username]); // Added username to dependency array
 
-    useEffect( () => {
-        
+    useEffect(() => {
         const loadCustomerDataList = async () => {
-            
             try {
-                await db.transactionAsync(async tx => {
-                    const result = await tx.executeSqlAsync("SELECT * FROM customer__records WHERE username = ?", [username]);
-                    
-                    setCustomers(result.rows.sort( (a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)));
-                });
-            } 
-            
-            catch (e) {
-                console.error("error while fetching users", e.message);
-                // showToast("error while fetching users")
+                const query = "SELECT * FROM customer__records WHERE username = ?";
+                const result = await db.getAllAsync(query, [username]);
+                
+                setCustomers(result.sort((a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)));
+            } catch (e) {
+                console.error("Error while fetching customer records:", e.message);
+                // Consider implementing a proper error handling mechanism here
+                // showToast("Error while fetching customer records");
             }
         };
 
         loadCustomerDataList();
-    },  [refreshSingelViewChangeDatabase])
+    }, [refreshSingelViewChangeDatabase, username]);
     
     const handleAddNewCustomer = () => {
         // a table should be created since username is unique
@@ -106,7 +91,7 @@ export default function SingleCustomerView({navigation, route}) {
     return (
         <>
 
-            <View style={{flex: 0, backgroundColor: "white"}}>
+            <View style={{flex: 1, backgroundColor: "white", marginBottom: -150}}>
 
                 {
                     singleCustomerExpense.length ?
@@ -152,11 +137,11 @@ export default function SingleCustomerView({navigation, route}) {
                     }
 
                     <View style={{marginTop: 20}}>
-                        <BannerAd
+                        {/* <BannerAd
                         
                             unitId={adUnitId}
                             size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-                        />
+                        /> */}
                     </View>
                 </ScrollView>
             </View>
@@ -207,6 +192,18 @@ const styles = StyleSheet.create( {
         alignSelf: "center",
         position: "absolute",
         bottom: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: "#14171A",
+        borderRadius: 9999,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        width: "90%",
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
 
     wrapper: {
