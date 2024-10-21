@@ -17,6 +17,7 @@ import * as SystemUI from 'expo-system-ui';
 SystemUI.setBackgroundColorAsync("white");
 // import mobileAds, { AppOpenAd, InterstitialAd, RewardedAd, BannerAd, TestIds } from 'react-native-google-mobile-ads'
 import AboutScreen from './components/about/About';
+import TransactionsChart from './components/chart/TransactionsChart';
 
 // mobileAds()
 //   .initialize()
@@ -122,6 +123,19 @@ export default function App() {
                 )
               }
             }
+          />
+          <StackNavigator.Screen
+            name="Charts"
+            component={TransactionsChart}
+            options={{
+              title: "Charts",
+              headerTitle: () => (
+                <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
+                  {/* <Ionicons name="bar-chart-outline" size={24} color="black" /> */}
+                  <Text>Charts</Text>
+                </View>
+              )
+            }}
           />
         </StackNavigator.Navigator>
         <Toast />

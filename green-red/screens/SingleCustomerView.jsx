@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, Dimensions } from 'react-native'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { openDatabase, openDatabaseSync } from 'expo-sqlite'
 import UserListView from '../components/SingleCustomerViewComp/UserListView'
 import Toast from 'react-native-toast-message'
@@ -10,6 +10,9 @@ import { useSharedValue } from 'react-native-reanimated'
 import TotalExpenses from '../components/Home/TotalExpenses'
 import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
 import Carousel from 'react-native-reanimated-carousel'
+import TransactionsChart from '../components/chart/TransactionsChart'
+import { Ionicons } from '@expo/vector-icons'
+
 // import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 // const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.EXPO_PUBLIC_ADMOB_BANNER;
 export default function SingleCustomerView({navigation, route}) {
@@ -28,6 +31,18 @@ export default function SingleCustomerView({navigation, route}) {
             let totalAmountsByCurrency = {};
 
             try {
+                
+                const initialTransactionQuery = "SELECT amount, currency, transaction_type FROM customers WHERE username = ?";
+                const initialTransaction = await db.getFirstAsync(initialTransactionQuery, [username]);
+
+                if (initialTransaction) {
+                    const { amount, currency, transaction_type } = initialTransaction;
+                    totalAmountsByCurrency[currency] = {
+                        totalAmountBasedOnCurrencyToGive: transaction_type === 'received' ? parseFloat(amount) : 0,
+                        totalAmountBasedOnCurrencyToTake: transaction_type === 'paid' ? parseFloat(amount) : 0
+                    };
+                }
+
                 const distinctCurrenciesQuery = "SELECT DISTINCT currency FROM customer__records WHERE username = ?";
                 const distinctCurrencies = await db.getAllAsync(distinctCurrenciesQuery, [username]);
 
@@ -40,10 +55,15 @@ export default function SingleCustomerView({navigation, route}) {
                         db.getFirstAsync(toTakeQuery, [currency, username])
                     ]);
 
-                    totalAmountsByCurrency[currency] = {
-                        totalAmountBasedOnCurrencyToGive: parseFloat(toGiveResult?.total || 0),
-                        totalAmountBasedOnCurrencyToTake: parseFloat(toTakeResult?.total || 0)
-                    };
+                    if (!totalAmountsByCurrency[currency]) {
+                        totalAmountsByCurrency[currency] = {
+                            totalAmountBasedOnCurrencyToGive: 0,
+                            totalAmountBasedOnCurrencyToTake: 0
+                        };
+                    }
+
+                    totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive += parseFloat(toGiveResult?.total || 0);
+                    totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake += parseFloat(toTakeResult?.total || 0);
                 }));
 
                 const total_expense_data_of_customers = Object.keys(totalAmountsByCurrency).map(currency => ({
@@ -60,7 +80,7 @@ export default function SingleCustomerView({navigation, route}) {
         };
 
         fetchAllCustomerExpense();
-    }, [username]); // Added username to dependency array
+    }, [username]); 
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
@@ -71,8 +91,7 @@ export default function SingleCustomerView({navigation, route}) {
                 setCustomers(result.sort((a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)));
             } catch (e) {
                 console.error("Error while fetching customer records:", e.message);
-                // Consider implementing a proper error handling mechanism here
-                // showToast("Error while fetching customer records");
+                showToast("Error while fetching customer records");
             }
         };
 
@@ -80,8 +99,6 @@ export default function SingleCustomerView({navigation, route}) {
     }, [refreshSingelViewChangeDatabase, username]);
     
     const handleAddNewCustomer = () => {
-        // a table should be created since username is unique
-        //  that should be the relation between this user and his customer list
         
         setAddNewRecordModal(true)
     }
@@ -90,6 +107,16 @@ export default function SingleCustomerView({navigation, route}) {
 
     return (
         <>
+            <View style={{backgroundColor: "white"}}>
+                <Pressable
+                        style={styles.view_charts_btn}
+                        onPress={() => navigation.navigate("Charts", {username: username})}
+                        title='add new customer'
+                    >
+                    <Ionicons name="bar-chart-outline" size={24} color="white" />
+                    <Text style={{color: "white"}}>View charts</Text>
+                </Pressable>
+            </View>
 
             <View style={{flex: 1, backgroundColor: "white", marginBottom: -150}}>
 
@@ -147,15 +174,19 @@ export default function SingleCustomerView({navigation, route}) {
             </View>
 
             
-            <Pressable
-                style={styles.add_new_customer_btn}
-                onPress={handleAddNewCustomer}
-                title='add new customer'
-            >
-                <Text style={{color: "white"}}>Add new record</Text>
-            </Pressable>
-            
+            <View>
 
+                <Pressable
+                    style={styles.add_new_customer_btn}
+                    onPress={handleAddNewCustomer}
+                    title='add new customer'
+                >
+                    <Text style={{color: "white"}}>Add new record</Text>
+                </Pressable>
+                
+                
+            </View>
+            
             <Modal
                 visible={addNewRecordModal}
                 animationType='slide'
@@ -167,6 +198,7 @@ export default function SingleCustomerView({navigation, route}) {
                     setAddNewRecordModal={setAddNewRecordModal}
                 />
             </Modal>
+            
         </>
     )
 }
@@ -219,4 +251,18 @@ const styles = StyleSheet.create( {
         width: "85%"
     },
 
+    view_charts_btn: {
+        alignSelf: "center",
+        padding: 10,
+        fontSize: 20,
+        fontVariant: "small-caps",
+        display: "flex",
+        flexDirection: "row",
+        columnGap: 10,
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 9999,
+        width: "90%",
+        backgroundColor: "#14171A",
+    }
 })
