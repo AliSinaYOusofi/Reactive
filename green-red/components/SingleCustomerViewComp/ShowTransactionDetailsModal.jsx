@@ -6,11 +6,10 @@ import DateDiffDetails from './DateDiffDetails';
 import * as Clipboard from 'expo-clipboard';
 
 export default function ShowTransactionDetailsModal({username, amount, currency, transaction_type, transaction_date, email, phone, closeModal}) {
-    
     const [copied, setCopied] = useState(false)
-    const copy_to_cliboard = async () => {
+    
+    const copy_to_clipboard = async () => {
         setCopied(true)
-
         const content = `
 ${transaction_type.toUpperCase()}
 ${amount} ${currency}
@@ -20,43 +19,53 @@ Email: ${email || 'N/A'}
 Phone: ${phone || 'N/A'}
         `;
         await Clipboard.setStringAsync(content);
-
-        setTimeout( () => setCopied(false), 2000)
+        setTimeout(() => setCopied(false), 2000)
     }
 
     return (
         <View style={styles.modalContainer}>
-
             <View style={styles.all_text_container}>
-
-                <Text style={[styles.transaction_type_, {color: transaction_type === "received" ? "green" : "red"}]}>{transaction_type}</Text>
+                <Text style={[styles.transaction_type_, {color: transaction_type === "received" ? "#4CAF50" : "#F44336"}]}>
+                    {transaction_type}
+                </Text>
                 
                 <View style={styles.two_texts}>
                     <Text style={styles.amount}>{amount}</Text>
-                    <Text style={{color: "white"}}>{currency}</Text>
+                    <Text style={styles.currency}>{currency}</Text>
                 </View>
                 
-                <View style={styles.tow}>
-                    <Text style={styles.color}> {transaction_type !== 'received' ? 'To' : 'From'} </Text>
-                    <Text style={styles.username}>{username}</Text>
+                <View style={styles.row}>
+                    <Text style={styles.label}>{transaction_type !== 'received' ? 'To' : 'From'}:</Text>
+                    <Text style={styles.value}>{username}</Text>
                 </View>
 
-                <View style={styles.tow}>
-                    <Text style={styles.color}>On</Text>
-                    <Text style={styles.transaction_date}> {transaction_date ? <DateDiffDetails date={transaction_date}/> : null}</Text>
+                <View style={styles.row}>
+                    <Text style={styles.label}>On:</Text>
+                    <Text style={styles.value}>
+                        {transaction_date ? <DateDiffDetails date={transaction_date}/> : 'N/A'}
+                    </Text>
                 </View>
+
+                {email && (
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Email:</Text>
+                        <Text style={styles.value}>{email}</Text>
+                    </View>
+                )}
+
+                {phone && (
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Phone:</Text>
+                        <Text style={styles.value}>{phone}</Text>
+                    </View>
+                )}
                 
                 <Pressable onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
-                    <Ionicons name="close-outline" size={24} color="black" />
+                    <Ionicons name="close-outline" size={24} color="#FFF" />
                 </Pressable>
                 
-                <Pressable onPress={copy_to_cliboard} style={[styles.pressable, styles.pressable_clipboard]}>
-                    {
-                        !copied ?
-                        <Ionicons name="clipboard-outline" size={24} color="black" />
-                        :
-                        <Ionicons name="checkmark-circle-outline" size={24} color="black" />
-                    }
+                <Pressable onPress={copy_to_clipboard} style={[styles.pressable, styles.pressable_clipboard]}>
+                    <Ionicons name={copied ? "checkmark-circle-outline" : "clipboard-outline"} size={24} color="#FFF" />
                 </Pressable>
             </View>
         </View>
@@ -68,85 +77,73 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-end',
         alignItems: 'center',
-        position: "relative",
-        color: "white"
+        
     },
     all_text_container: {
-        backgroundColor: "#293038",
+        backgroundColor: "black",
         padding: 20,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         width: '100%',
-        alignItems: 'flex-start',
-        color: "white"
+        alignItems: 'stretch',
     },
     transaction_type_: {
-        fontSize: 30,
+        fontSize: 28,
         fontWeight: "bold",
         textAlign: 'center',
         textTransform: 'uppercase',
-        color: "white"
+        marginBottom: 15,
     },
     two_texts: {
         flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 10,
-        color: "white"
-    },
-    tow: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 10,
-        color: "white"
+        alignItems: 'baseline',
+        marginBottom: 20,
     },
     amount: {
-        fontSize: 25,
+        fontSize: 32,
         fontWeight: "bold",
+        color: "white",
         marginRight: 5,
-        color: "white"
     },
-
-    username: {
-        fontSize: 20,
-        color: "white",
-        fontWeight: "bold"
-    },
-
-    transaction_date: {
-        fontSize: 20,
+    currency: {
+        fontSize: 24,
         color: "white",
     },
-
-    email_and_phone: {
-        fontSize: 20,
-        color: "white",
-        alignSelf: "center",
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+        paddingVertical: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     },
-
+    label: {
+        fontSize: 18,
+        color: "#B0BEC5",
+        flex: 1,
+    },
+    value: {
+        fontSize: 18,
+        color: "white",
+        fontWeight: "500",
+        flex: 2,
+        textAlign: 'right',
+    },
     pressable: {
         position: 'absolute',
         zIndex: 1,
-        backgroundColor: "white",
-        padding: 5,
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        padding: 8,
         borderRadius: 50,
-        color: "white"
     },
-
     pressable_close: {
         top: 10,
-        right: 20,
+        right: 10,
     },
-    
     pressable_clipboard: {
         top: 10,
         right: 60,
     },
-
-    color: {
-        color: "white",
-        fontSize: 20,
-    }
 });
- 

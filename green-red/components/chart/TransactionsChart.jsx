@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { openDatabaseSync } from 'expo-sqlite';
 import { LineChart } from 'react-native-chart-kit';
 import { format, parseISO } from 'date-fns';
+import Flag from 'react-native-flags';
+import { options } from '../global/CurrencyDropdownList';
 
 export default function TransactionsChart({ navigation, route }) {
     const username = route.params.username;
@@ -75,7 +77,14 @@ export default function TransactionsChart({ navigation, route }) {
 
         return (
             <View key={currency} style={styles.chartContainer}>
-                <Text style={styles.currencyTitle}>{currency} Transactions</Text>
+                
+                <Text style={styles.currencyTitle}>{currency} Transactions 
+                    <Flag
+                        code={options.find(option => option.value === currency).countryCode}
+                        size={32}
+                    />
+                </Text>
+                
                 <LineChart
                     data={chartData}
                     width={Dimensions.get('window').width - 32}
