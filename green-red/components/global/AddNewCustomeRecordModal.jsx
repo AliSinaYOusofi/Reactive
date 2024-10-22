@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
         position: "relative",
-        backgroundColor: "white"
+        
     },
     input: {
         borderColor: 'gray',
@@ -223,13 +223,14 @@ const styles = StyleSheet.create({
     ,
     
     options_container: {
-        backgroundColor: background_color,
+        backgroundColor: "black",
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         width: '100%',
         position: "relative",
     },
+
     add_new_customer_btn: {
         backgroundColor: 'green',
         color: "white",
@@ -251,6 +252,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
+
     drop_down_container: {
         marginTop: 20,
     },
@@ -264,6 +266,5 @@ const styles = StyleSheet.create({
         color: "black",
         top: 10,
         right: 10,
-        
     },
 })

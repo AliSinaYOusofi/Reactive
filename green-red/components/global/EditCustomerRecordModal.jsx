@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     ,
     
     options_container: {
-        backgroundColor: background_color,
+        backgroundColor: "black",
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     add_new_customer_btn: {
         backgroundColor: 'green',
         color: "white",
-        borderRadius: 4,
+        borderRadius: 99,
         paddingHorizontal: 20,
         paddingVertical: 10,
         marginTop: 20,

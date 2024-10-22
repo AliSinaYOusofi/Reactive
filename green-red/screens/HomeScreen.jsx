@@ -281,8 +281,9 @@ const style = StyleSheet.create({
         rowGap: 10,
         backgroundColor: 'white',
         height: "100%",
-        fontFamily: "Roboto",
-        width: "100%"
+        fontFamily: "Helvetica",
+        width: "100%",
+        
     },
     item: {
         flex: 1,
