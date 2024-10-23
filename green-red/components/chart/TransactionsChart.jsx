@@ -78,12 +78,15 @@ export default function TransactionsChart({ navigation, route }) {
         return (
             <View key={currency} style={styles.chartContainer}>
                 
-                <Text style={styles.currencyTitle}>{currency} Transactions 
+                <View style={{flexDirection: "row", alignItems: "center"}}>
+
+                    <Text style={styles.currencyTitle}>{currency} Transactions </Text>
                     <Flag
                         code={options.find(option => option.value === currency).countryCode}
                         size={32}
+                        
                     />
-                </Text>
+                </View>
                 
                 <LineChart
                     data={chartData}
@@ -152,6 +155,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 8,
         textAlign: 'left',
+        
     },
     loadingText: {
         fontSize: 18,

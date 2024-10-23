@@ -50,41 +50,26 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
         });
     };
 
-    const insertToCustomerChild = () => {
-        
+    const insertToCustomerChild = async () => {
         try {
+            const query = 'UPDATE customer__records SET amount = ?, transaction_type = ?, currency = ?, transaction_updated_at = ? WHERE id = ?';
+            const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
             
-            const query = 'UPDATE customer__records SET amount = ?, transaction_type = ?, currency = ?, transaction_updated_at = ? WHERE id = ?'
-            const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+            await db.runAsync(query, [newAmount, newTransactionType, newCurrency, currentDateTime, record_id]);
             
-            db.transaction(tx => {
-                
-                tx.executeSql(query, [newAmount, newTransactionType, newCurrency, currentDateTime, record_id], 
-                    (tx, result) => {
-                        showToast("User record updated!", "success")
-                        setUpdateRecordModal(false)
-                        setRefreshSingleViewChangeDatabase(prev => ! prev)
-                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
-                    },
-                    (_, e) => {
-                        console.error("Error While inserting new record", e.message)
-                        showToast("Failed to update record")
-                    }
-                )
-            })
-        } 
-        
-        catch( e ) {
-            console.error("error while adding new customer", e.message)
-            showToast("Failed to update record")
-        } 
-        
-        finally {
-            setNewAmount("")
-            setNewTransactionType("")
-            setNewCurrency("")
+            showToast("User record updated!", "success");
+            setUpdateRecordModal(false);
+            setRefreshSingleViewChangeDatabase(prev => !prev);
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+        } catch (error) {
+            console.error("Error while updating record", error);
+            showToast("Failed to update record");
+        } finally {
+            setNewAmount("");
+            setNewTransactionType("");
+            setNewCurrency("");
         }
-    }
+    };
 
     useEffect( () => {
         setNewCurrency(currency)
@@ -101,7 +86,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
 
                     <TextInput
                         style={styles.input}
-                        placeholder={String(amount)}
+                        value={String(newAmount)}
                         onChangeText={(text) => setNewAmount(text)}
                         keyboardType='phone-pad'
                     />

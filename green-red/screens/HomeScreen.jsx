@@ -281,7 +281,7 @@ const style = StyleSheet.create({
         rowGap: 10,
         backgroundColor: 'white',
         height: "100%",
-        fontFamily: "Helvetica",
+        fontFamily: "Roboto",
         width: "100%",
         
     },
