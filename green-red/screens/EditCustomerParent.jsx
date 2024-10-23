@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
 import { EvilIcons, FontAwesome, Fontisto } from '@expo/vector-icons';
 import { SimpleLineIcons } from '@expo/vector-icons';
@@ -10,7 +10,7 @@ import { phoneNumberValidator } from '../utils/validators/phoneNumberValidator';
 import { amountOfMoneyValidator } from '../utils/validators/amountOfMoneyValidator';
 import { RadioButton } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
-import * as SQLite from 'expo-sqlite'
+import { openDatabase, openDatabaseSync } from 'expo-sqlite'
 import { useNavigation } from '@react-navigation/native';
 import { useAppContext } from '../context/useAppContext';
 
@@ -20,17 +20,25 @@ export default function EditCustomerParent({navigation, route}) {
     let {username: prev_username, email: prev_email, phone: prev_phone,  totalAmount: prev_amount_of_money, transaction_type: prev_payment_status, currency: prev_selected_currency} = route.params;
     prev_amount_of_money = String(prev_amount_of_money)
 
-    const [updatedUsername, setUpdatedUsername] = useState(prev_username);
-    const [updatedEmail, setUpdatedEmail] = useState(prev_email);
-    const [updatedPhone, setUpdatedPhone] = useState(prev_phone);
-    const [updatedAmountOfMoney, setUpdatedAmountOfMoney] = useState(prev_amount_of_money)
-    const [updatedPaymentStatus, setUpdatedPaymentStatus] = useState(prev_payment_status)
-    const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState(prev_selected_currency)
+    const [updatedUsername, setUpdatedUsername] = useState();
+    const [updatedEmail, setUpdatedEmail] = useState();
+    const [updatedPhone, setUpdatedPhone] = useState();
+    const [updatedAmountOfMoney, setUpdatedAmountOfMoney] = useState()
+    const [updatedPaymentStatus, setUpdatedPaymentStatus] = useState()
+    const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState()
     
     const navigator = useNavigation();
     const {setRefreshHomeScreenOnChangeDatabase} = useAppContext()
-    const db = SQLite.openDatabaseSync('green-red.db')
+    const db = openDatabaseSync('green-red.db')
 
+    useEffect( () => {
+        setUpdatedUsername(prev_username)
+        setUpdatedEmail(prev_email)
+        setUpdatedPhone(prev_phone)
+        setUpdatedAmountOfMoney(prev_amount_of_money)
+        setUpdatedPaymentStatus(prev_payment_status)
+        setUpdatedSelectedCurrency(prev_selected_currency)
+    }, [])
     const handleUpdateCustomerParent = () => {
         
         if (!validateUsername(updatedUsername)) {
@@ -73,46 +81,33 @@ export default function EditCustomerParent({navigation, route}) {
         });
     };
     
-    const updateParentCustomer = () => {
-        db.transaction(
-            tx => {
-                tx.executeSql(
-                    "UPDATE customers SET username = ?, email = ?, phone=?, amount = ?, transaction_type = ?, currency = ?;",
-                    [updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency],
-                    (_, success) => {
-                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
-                    },
-                    (_, error) => {
-                        showToast('Failed to add customer');
-                        console.log(error)
-                    }
-                );
-            },
-            null,
-            null
-        );
+    const updateParentCustomer = async () => {
+        try {
+            await db.runAsync(
+                "UPDATE customers SET username = ?, email = ?, phone = ?, amount = ?, transaction_type = ?, currency = ? WHERE username = ?",
+                [updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency, prev_username]
+            );
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+        } catch (error) {
+            showToast('Failed to update customer');
+            console.error(error);
+        }
     };
 
-    const updateParentChildren = () => {
-        db.transaction(
-            tx => {
-                tx.executeSql(
-                    "UPDATE customer__records SET username = ? WHERE username = ?;",
-                    [updatedUsername, prev_username],
-                    (_, success) => {
-                        showToast('Updated customer sucessfully', 'success');
-                        setTimeout( () => navigator.navigate("homescreen"), 2000)
-                        setRefreshHomeScreenOnChangeDatabase(prev => ! prev)
-                    },
-                    (_, error) => {
-                        showToast('Failed to add customer');
-                    }
-                );
-            },
-            null,
-            null
-        );
-    }
+    const updateParentChildren = async () => {
+        try {
+            await db.runAsync(
+                "UPDATE customer__records SET username = ? WHERE username = ?",
+                [updatedUsername, prev_username]
+            );
+            showToast('Updated customer successfully', 'success');
+            setTimeout(() => navigator.navigate("homescreen"), 2000);
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+        } catch (error) {
+            showToast('Failed to update customer records');
+            console.error(error);
+        }
+    };
     
     return (
         <>
@@ -127,7 +122,7 @@ export default function EditCustomerParent({navigation, route}) {
 
                     <TextInput
                         style={styles.input}
-                        placeholder={prev_username}
+                        value={updatedUsername}
                         onChangeText={(text) => setUpdatedUsername(text)}
                     />
 
@@ -143,7 +138,7 @@ export default function EditCustomerParent({navigation, route}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder={prev_email || "N/A"}
+                        value={updatedEmail}
                         onChangeText={(text) => setUpdatedEmail(text)}
                         keyboardType="email-address"
                     />
@@ -166,7 +161,7 @@ export default function EditCustomerParent({navigation, route}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder={prev_phone || "N/A"}
+                        value={updatedPhone}
                         onChangeText={(text) => setUpdatedPhone(text)}
                         keyboardType="phone-pad"
                     />
@@ -183,7 +178,7 @@ export default function EditCustomerParent({navigation, route}) {
                     
                     <TextInput
                         style={styles.input}
-                        placeholder={prev_amount_of_money}
+                        value={updatedAmountOfMoney}
                         onChangeText={(text) => setUpdatedAmountOfMoney(text)}
                         keyboardType="phone-pad"
                     />
@@ -247,7 +242,7 @@ const styles = StyleSheet.create({
     add_new_customer_btn: {
         backgroundColor: 'black',
         color: "white",
-        borderRadius: 8,
+        borderRadius: 999,
         height: 'auto',
         paddingHorizontal: 20,
         paddingVertical: 10,
