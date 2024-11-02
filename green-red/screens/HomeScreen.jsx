@@ -171,7 +171,7 @@ export default function HomeScreen() {
     return (
         <View style={{width: "100%"}}>
             <View style={[style.container]}>
-                <View style={{flex: 1, marginBottom: -100}}>
+                <View style={{flex: 1, marginBottom: -200}}>
 
                     {
                         totalExpenseOfCustomer.length ?
