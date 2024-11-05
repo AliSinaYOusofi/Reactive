@@ -4,7 +4,7 @@ import { EvilIcons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
 import SortOptionsDropDownModal from '../global/SortOptionsDropDownModal';
-import { parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import * as Print from 'expo-print'
 import * as SQLite from 'expo-sqlite'
 import * as Sharing from 'expo-sharing';
@@ -58,49 +58,33 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
     }
 
 
+    const db =  SQLite.openDatabaseSync("green-red.db");
     const AllCustomersData = async () => {
         
-        const db =  await SQLite.openDatabaseAsync("green-red.db");
     
         try {
             let allCustomersDataToConvert = [];
-    
-            await new Promise((resolve, reject) => {
+            
+            const all_customers = await db.getAllAsync("SELECT * FROM customers");
+
+            await Promise.all(
                 
-                db.transaction(tx => {
-                
-                    tx.executeSql("SELECT * FROM customers", [], async (_, customerParent) => {
-                
-                        await Promise.all(
-                
-                            Array.from(customerParent.rows._array).map(async (customer) => {
-                
-                                const other_customer_records = await new Promise((resolve, reject) => {
-                
-                                    tx.executeSql("SELECT * FROM customer__records WHERE username = ?;", [customer.username], (_, other_customer_records) => {
-                
-                                        resolve(other_customer_records);
-                                    }, (_, error) => {
-                
-                                        reject(error);
-                                    });
-                                });
-                                
-                                const customers_with_relevant_records = {
-                                    ...customer,
-                                    records: Array.from(other_customer_records.rows._array),
-                                };
-    
-                                allCustomersDataToConvert.push(customers_with_relevant_records);
-                            })
-                        );
-    
-                        resolve();
-                    }, (_, error) => {
-                        reject(error);
+                all_customers.map(async (customer) => {
+                    
+                    const other_customer_records = await new Promise(async (resolve, reject) => {
+                        
+                        let customers_records = await db.getAllAsync('SELECT * FROM customer__records WHERE username = ?;',[customer.username])
+                        resolve(customers_records)
                     });
-                });
-            });
+                    
+                    const customers_with_relevant_records = {
+                        ...customer,
+                        records: (other_customer_records),
+                    };
+
+                    allCustomersDataToConvert.push(customers_with_relevant_records);
+                })
+            );
     
             return allCustomersDataToConvert
         } catch (error) {
@@ -146,75 +130,104 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
 
     const convertQueryResultToPdf = async () => {
         try {
-            
-            let allCustomersDataToConvert = await AllCustomersData()
-            console.log(allCustomersDataToConvert, 'all')
-            if (! allCustomersDataToConvert.length) {
-                return showToast('No customers found')
+            const allCustomersDataToConvert = await AllCustomersData();
+            if (!allCustomersDataToConvert.length) {
+                return showToast('No customers found');
             }
+    
+            const formatDateTime = (dateString) => {
+                const date = parseISO(dateString);
+                return `${format(date, 'MMM d, yyyy HH:mm')} (${formatDistanceToNowStrict(date)} ago)`;
+            };
+    
             const customerDataDiv = allCustomersDataToConvert.map(customer => {
-
-                const customersDetailsParent = `
-                    <tr>
-                        <td rowspan="${customer.records.length + 1}">${customer.username}</td>
-                        <td rowspan="${customer.records.length + 1}">${customer.email}</td>
-                        <td rowspan="${customer.records.length + 1}">${customer.phone}</td>
-                        <td rowspan="${customer.records.length + 1}">${customer.transaction_type}</td>
-                        <td rowspan="${customer.records.length + 1}">${customer.amount} ${customer.currency}</td>
-                        <td rowspan="${customer.records.length + 1}">${customer.at} (${formatDistanceToNowStrict(parseISO(customer.at))} ago)</td>
+                const records = customer.records || [];
+                
+                // Main customer row
+                const mainRow = `
+                    <tr class="customer-row">
+                        <td>${customer.username}</td>
+                        <td>${customer.email}</td>
+                        <td>${customer.phone}</td>
+                        <td>${customer.transaction_type}</td>
+                        <td>${customer.amount} ${customer.currency}</td>
+                        <td>${formatDateTime(customer.at)}</td>
                     </tr>
                 `;
-
-                let recordRows
-
-                if (customer.records.length) {
-                    recordRows = customer.records.map(record => {
-                        return `
-                            <tr>
-                                <td>${record.transaction_type}</td>
-                                <td>${record.amount} ${record.currency}</td>
-                                <td>${record.transaction_at} (${formatDistanceToNowStrict(parseISO(record.transaction_at))} ago)</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-
-                return `
-                    ${customersDetailsParent}
-                    ${recordRows}
-                `
+    
+                // Transaction history rows
+                const recordRows = records.map(record => `
+                    <tr class="record-row">
+                        <td colspan="3" class="empty-cell"></td>
+                        <td>${record.transaction_type}</td>
+                        <td>${record.amount} ${record.currency}</td>
+                        <td>${formatDateTime(record.transaction_at)}</td>
+                    </tr>
+                `).join('');
+    
+                return mainRow + recordRows;
             }).join('');
-            
+    
             const customerHtml = `
                 <html>
                     <head>
                         <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                margin: 20px;
+                            }
+                            h1 {
+                                color: #333;
+                                text-align: center;
+                                margin-bottom: 20px;
+                            }
                             table {
                                 width: 100%;
                                 border-collapse: collapse;
+                                margin-bottom: 20px;
                             }
                             th, td {
-                                border: 1px solid #dddddd;
-                                text-align: left;
-                                padding: 8px;
+                                border: 1px solid #ddd;
+                                padding: 12px 8px;
+                                font-size: 14px;
                             }
                             th {
-                                background-color: #f2f2f2;
+                                background-color: #f5f5f5;
+                                font-weight: bold;
+                                text-align: left;
+                            }
+                            .customer-row {
+                                background-color: #fff;
+                            }
+                            .record-row {
+                                background-color: #f9f9f9;
+                            }
+                            .record-row td {
+                                border-top: none;
+                            }
+                            .empty-cell {
+                                border: none;
+                                background-color: #f9f9f9;
+                            }
+                            td:nth-child(4), td:nth-child(5) {  /* Transaction type and Amount columns */
+                                white-space: nowrap;
+                            }
+                            @media print {
+                                body { margin: 0; }
+                                table { page-break-inside: auto; }
+                                tr { page-break-inside: avoid; }
                             }
                         </style>
                     </head>
                     <body>
-                        <h1>Customers Data</h1>
+                        <h1>Customer Transaction History</h1>
                         <table>
                             <thead>
                                 <tr>
                                     <th>Username</th>
                                     <th>Email</th>
                                     <th>Phone</th>
-                                    <th> Transaction type </th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th> Transaction type </th>
+                                    <th>Transaction Type</th>
                                     <th>Amount</th>
                                     <th>Date</th>
                                 </tr>
@@ -226,15 +239,23 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
                     </body>
                 </html>
             `;
-            
-            const { uri } = await Print.printToFileAsync({ html: customerHtml });
-            
-            Sharing.shareAsync(uri, { dialogTitle: 'Customers Data' });            
-            
-        } catch( e ) {
-            console.error("error while gening pdf => ", e.message)
+    
+            const { uri } = await Print.printToFileAsync({
+                html: customerHtml,
+                base64: false
+            });
+    
+            await Sharing.shareAsync(uri, {
+                dialogTitle: 'Customer Transaction History',
+                mimeType: 'application/pdf',
+                UTI: 'com.adobe.pdf'
+            });
+    
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            showToast('Failed to generate PDF');
         }
-    }
+    };
     
     return (
         <>
