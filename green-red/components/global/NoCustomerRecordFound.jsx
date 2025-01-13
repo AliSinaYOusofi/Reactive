@@ -41,7 +41,8 @@ const styles = StyleSheet.create({
         padding: 10,
        
         marginLeft: 6,
-        height: 'auto'
+        height: 'auto',
+        marginTop: 10
     },
     iconContainer: {
         marginBottom: 20,
