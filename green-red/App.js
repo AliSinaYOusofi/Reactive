@@ -41,7 +41,7 @@ export default function App() {
               
             },
             
-            headerRight: () => <ByMeACoffe />,
+            // headerRight: () => <ByMeACoffe />,
           
           }}
         >

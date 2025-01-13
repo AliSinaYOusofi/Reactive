@@ -196,12 +196,16 @@ export default function HomeScreen() {
                 </View>
                 
                 
-                <SearchCustomers 
-                    style={style.item} 
-                    handleSearch={handleSearch} 
-                    setCustomers={setCustomers}
-                    customersToConvert={customer}
-                />
+                {
+                    customer.length ?
+                    <SearchCustomers 
+                        style={style.item} 
+                        handleSearch={handleSearch} 
+                        setCustomers={setCustomers}
+                        customersToConvert={customer}
+                    />
+                    : null
+                }
                 
                 <View style={{flex: 1, paddingBottom: 60}}>
 

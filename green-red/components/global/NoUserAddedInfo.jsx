@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f8ff",
         borderRadius: 10,
         padding: 10,
-        marginTop: 80,
+       
     },
     iconContainer: {
         marginBottom: 20,
