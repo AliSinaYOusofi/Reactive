@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { openDatabaseSync } from 'expo-sqlite';
 import { LineChart } from 'react-native-chart-kit';
 import { format, parseISO } from 'date-fns';
-import Flag from 'react-native-flags';
+import Flag from 'react-native-flags'
 import { options } from '../global/CurrencyDropdownList';
 
 export default function TransactionsChart({ navigation, route }) {
@@ -21,6 +21,11 @@ export default function TransactionsChart({ navigation, route }) {
                     ORDER BY transaction_at ASC
                 `;
                 const results = await db.getAllAsync(query, [username]);
+
+                if (!results || results.length === 0) {
+                    setTransactionData(null);
+                    return;
+                }
 
                 const dataByDate = results.reduce((acc, transaction) => {
                     const { currency, amount, transaction_type, transaction_at } = transaction;
@@ -45,6 +50,7 @@ export default function TransactionsChart({ navigation, route }) {
                 setTransactionData(dataByDate);
             } catch (error) {
                 console.error("Error fetching transaction data:", error.message);
+                setTransactionData(null);
             }
         };
 
@@ -77,17 +83,13 @@ export default function TransactionsChart({ navigation, route }) {
 
         return (
             <View key={currency} style={styles.chartContainer}>
-                
-                <View style={{flexDirection: "row", alignItems: "center"}}>
-
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Text style={styles.currencyTitle}>{currency} Transactions </Text>
                     <Flag
-                        code={options.find(option => option.value === currency).countryCode}
+                        code={options.find(option => option.value === currency)?.countryCode || 'US'}
                         size={32}
-                        
                     />
                 </View>
-                
                 <LineChart
                     data={chartData}
                     width={Dimensions.get('window').width - 32}
@@ -120,10 +122,12 @@ export default function TransactionsChart({ navigation, route }) {
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>{username}'s Transactions</Text>
-            {Object.keys(transactionData).length > 0 ? (
-                Object.keys(transactionData).map(renderChart)
-            ) : transactionData === null ? (
-                <Text style={styles.loadingText}>Loading chart data...</Text>
+            {transactionData ? (
+                Object.keys(transactionData).length > 0 ? (
+                    Object.keys(transactionData).map(renderChart)
+                ) : (
+                    <Text style={styles.loadingText}>Loading chart data...</Text>
+                )
             ) : (
                 <View style={styles.noDataContainer}>
                     <Text style={styles.noDataText}>No transaction data available for {username}.</Text>
@@ -155,7 +159,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 8,
         textAlign: 'left',
-        
     },
     loadingText: {
         fontSize: 18,
