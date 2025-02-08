@@ -38,8 +38,7 @@ const styles = StyleSheet.create({
         
         backgroundColor: 'white',
         width: '100%',
-        position: 'absolute',
-        bottom: 0,
+        
         columnGap: 8,
         alignItems: 'center'
     },

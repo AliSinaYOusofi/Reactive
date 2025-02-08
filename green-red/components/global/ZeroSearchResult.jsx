@@ -17,7 +17,7 @@ export default function ZeroSearchResult() {
         offset.value = withRepeat(
             withTiming(-offset.value, { duration: 470}), -1, true
         )
-    })
+    }, [])
 
     return (
         <View style={styles.container}>
@@ -29,7 +29,6 @@ export default function ZeroSearchResult() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,

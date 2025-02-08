@@ -40,6 +40,10 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 20,
         margin: 5,
+        height: 230,
+        width: "85%",
+        
+        
     },
     item: {
         flexDirection: 'row',

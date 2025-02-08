@@ -10,8 +10,10 @@ import NoUserAddedInfo from '../components/global/NoUserAddedInfo';
 import ZeroSearchResult from '../components/global/ZeroSearchResult';
 import Carousel from 'react-native-reanimated-carousel';
 import { createCustomerRecordsTable } from '../database/createCustomerRecordsTable';
+import CarouselOfTracker from '../components/carousel/Carouself';
 
 export default function HomeScreen() {
+    
     const [customer, setCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("");
@@ -96,32 +98,13 @@ export default function HomeScreen() {
         fetchTotalOfAmountsBasedOnCurrency();
     }, [customer]);
 
-    const width = Dimensions.get('window').width;
-
     return (
-        <View style={{ width: "100%" }}>
-            <View style={style.container}>
-                <View style={{ flex: 1, marginBottom: -200 }}>
-                    {totalExpenseOfCustomer.length ? (
-                        <Carousel
-                            loop
-                            width={width}
-                            height={width / 2}
-                            data={totalExpenseOfCustomer}
-                            scrollAnimationDuration={2000}
-                            autoPlay={totalExpenseOfCustomer.length > 1}
-                            renderItem={({ item }) => (
-                                <View style={style.slide}>
-                                    <TotalExpenses 
-                                        totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
-                                        totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
-                                        currency={item.currency}
-                                    />
-                                </View>
-                            )}
-                        />
-                    ) : null}
-                </View>
+        
+        <View style={style.container}>
+            
+            <CarouselOfTracker totalExpenseOfCustomer={totalExpenseOfCustomer}/>
+
+            <View style={{marginTop: 20}}>
                 {customer.length ? (
                     <SearchCustomers 
                         style={style.item} 
@@ -130,32 +113,14 @@ export default function HomeScreen() {
                         customersToConvert={customer}
                     />
                 ) : null}
-                <View style={{ flex: 1, paddingBottom: 60 }}>
-                    <ScrollView indicatorStyle='black' style={style.scroll_view}>
-                        {customer.length ? (
-                            parentSearchTerm ? (
-                                filteredCustomers.length ? (
-                                    filteredCustomers.map(item => (
-                                        <View key={item.id}>
-                                            <CustomerListTemplate 
-                                                username={item.username} 
-                                                usernameShortCut={"AS"} 
-                                                totalAmount={item.amount}
-                                                style={style.item}
-                                                transaction_type={item.transaction_type}
-                                                currency={item.currency}
-                                                at={item.at}
-                                                border_color={item.border_color}
-                                                email={item.email}
-                                                phone={item.phone}
-                                                isSearchComponent={true}
-                                                searchResultLength={filteredCustomers.length}
-                                            />
-                                        </View>
-                                    ))
-                                ) : <ZeroSearchResult />
-                            ) : (
-                                customer.map(item => (
+            </View>
+            
+            <View style={{ flex: 1 }}>
+                <ScrollView indicatorStyle='black' style={style.scroll_view}>
+                    {customer.length ? (
+                        parentSearchTerm ? (
+                            filteredCustomers.length ? (
+                                filteredCustomers.map(item => (
                                     <View key={item.id}>
                                         <CustomerListTemplate 
                                             username={item.username} 
@@ -168,16 +133,39 @@ export default function HomeScreen() {
                                             border_color={item.border_color}
                                             email={item.email}
                                             phone={item.phone}
-                                            isSearchComponent={false}
+                                            isSearchComponent={true}
+                                            searchResultLength={filteredCustomers.length}
                                         />
                                     </View>
                                 ))
-                            )
-                        ) : <NoUserAddedInfo />}
-                    </ScrollView>
-                </View>
+                            ) : <ZeroSearchResult />
+                        ) : (
+                            customer.map(item => (
+                                <View key={item.id}>
+                                    <CustomerListTemplate 
+                                        username={item.username} 
+                                        usernameShortCut={"AS"} 
+                                        totalAmount={item.amount}
+                                        style={style.item}
+                                        transaction_type={item.transaction_type}
+                                        currency={item.currency}
+                                        at={item.at}
+                                        border_color={item.border_color}
+                                        email={item.email}
+                                        phone={item.phone}
+                                        isSearchComponent={false}
+                                    />
+                                </View>
+                            ))
+                        )
+                    ) : <NoUserAddedInfo />}
+                </ScrollView>
             </View>
-            <AddNewCustomer />
+            {
+                ! parentSearchTerm.length
+                ? <AddNewCustomer />
+                : null
+            }
         </View>
     );
 }
