@@ -29,7 +29,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                     <Carousel
                         loop
                         width={width}
-                        height={160} 
+                        height={200} 
                         data={totalExpenseOfCustomer}
                         scrollAnimationDuration={3000}
                         autoPlay={totalExpenseOfCustomer.length > 1}

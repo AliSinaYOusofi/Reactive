@@ -1,45 +1,59 @@
-import React, { useEffect, useState } from 'react'
-import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid, KeyboardAvoidingView, Platform } from 'react-native'
-import { EvilIcons, FontAwesome, Fontisto, MaterialCommunityIcons } from '@expo/vector-icons';
-import { SimpleLineIcons } from '@expo/vector-icons';
-import money from '../../assets/mony.png'
-import CurrencyDropdownListSearch from '../global/CurrencyDropdownList';
-import { validateUsername } from '../../utils/validators/usernameValidator';
-import { isEmailValid } from '../../utils/validators/emailValidator';
-import { phoneNumberValidator } from '../../utils/validators/phoneNumberValidator';
-import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
-import { RadioButton } from 'react-native-paper';
-import Toast from 'react-native-toast-message';
-import * as SQLite from 'expo-sqlite'
-import { useNavigation } from '@react-navigation/native';
-import { useAppContext } from '../../context/useAppContext';
-import { format } from 'date-fns';
-// import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
-// const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
-function AddNewCustomerPopup({}) {
+"use client";
 
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [amountOfMoney, setAmountOfMoney] = useState('')
-    const [paymentStatus, setPaymentStatus] = useState('')
-    const [selectedCurrency, setSelectedCurrency] = useState('')
-    const [isAddLoaded, setIsAddLoaded] = useState(false)
-    const { setRefreshHomeScreenOnChangeDatabase } = useAppContext()
-    const navigator = useNavigation()
-    const db = SQLite.openDatabaseSync('green-red.db')
-    // const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
+import { useEffect, useState } from "react";
+import {
+    View,
+    TextInput,
+    StyleSheet,
+    Pressable,
+    Text,
+    KeyboardAvoidingView,
+    Platform,
+} from "react-native";
+import { EvilIcons, Fontisto } from "@expo/vector-icons";
+import CurrencyDropdownListSearch from "../global/CurrencyDropdownList";
+import { validateUsername } from "../../utils/validators/usernameValidator";
+import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyValidator";
+import { RadioButton } from "react-native-paper";
+import Toast from "react-native-toast-message";
+import * as SQLite from "expo-sqlite";
+import { useNavigation } from "@react-navigation/native";
+import { useAppContext } from "../../context/useAppContext";
+import { format } from "date-fns";
+import Animated, {
+    FadeIn,
+    FadeInDown,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from "react-native-reanimated";
 
-    // useEffect(() => {
-    //     load();
-    // }, [load]);
-    
-    // useEffect(() => {
-    //     if (isClosed) {
-    //       navigator.navigate('homescreen');
-    //     }
-    // }, [isClosed, navigator]);
-    
+function AddNewCustomerPopup() {
+    const [username, setUsername] = useState("");
+    const [amountOfMoney, setAmountOfMoney] = useState("");
+    const [paymentStatus, setPaymentStatus] = useState("");
+    const [selectedCurrency, setSelectedCurrency] = useState("");
+
+    const { setRefreshHomeScreenOnChangeDatabase } = useAppContext();
+    const db = SQLite.openDatabaseSync("green-red.db");
+    const navigator = useNavigation();
+
+    // Animation setup
+    const scale = useSharedValue(1);
+    const buttonStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: scale.value }],
+        };
+    });
+
+    const onPressIn = () => {
+        scale.value = withSpring(0.95);
+    };
+
+    const onPressOut = () => {
+        scale.value = withSpring(1);
+    };
+
     useEffect(() => {
         const initializeDatabase = async () => {
             try {
@@ -55,81 +69,55 @@ function AddNewCustomerPopup({}) {
                         at DATETIME NOT NULL
                     );
                 `);
-                console.log('Table created successfully');
             } catch (error) {
-                alert(error.message);
                 showToast(error.message);
-                console.error('Error creating table: ', error);
+                console.error("Error creating table: ", error);
             }
         };
-    
+
         initializeDatabase();
-    }, []);
+    }, [db.execAsync]); // Added db.execAsync to dependencies
 
     const addNewCustomer = async () => {
         if (!validateUsername(username)) {
-            return showToast('Username is invalid');
+            return showToast("Username is invalid");
         }
-    
-        if (email && !isEmailValid(email)) {
-            return showToast('Email is invalid');
-        }
-    
-        if (phone && !phoneNumberValidator(phone)) {
-            return showToast('Phone number is invalid');
-        }
-    
+
         if (amountOfMoney.length && !amountOfMoneyValidator(amountOfMoney)) {
-            setAmountOfMoney(0)
-            return showToast('Amount of money is  invalid');
+            setAmountOfMoney(0);
+            return showToast("Amount of money is invalid");
         }
-    
+
         if (!paymentStatus) {
-            return showToast('Please select a payment status');
+            return showToast("Please select a payment status");
         }
-    
+
         if (!selectedCurrency) {
-            return showToast('Please select a currency');
+            return showToast("Please select a currency");
         }
 
-        
-
-        // db.transaction(tx => {
-            
-        //     tx.executeSql(
-        //         'DROP TABLE IF EXISTS customers;',
-        //         [],
-        //         () => console.log('Table created successfully'),
-        //         (_, error) => console.error('Error creating table: ', error)
-        //     );
-        // });
-
-        
-    
         try {
-            // check if username already exists
-            console.log(username, " username")
             const result = await db.execAsync(
                 "SELECT * FROM customers WHERE username = ?",
                 [username]
             );
-            console.log(result, " result")
-            if (result) {
-                showToast('Username already exists');
+
+            if (result && result[0] && result[0].values.length > 0) {
+                showToast("Username already exists");
             } else {
                 await insertCustomer();
             }
         } catch (error) {
-            console.error("Error while checking if username exists", error.message);
-            showToast('Failed to add new customer');
+            console.error("Error while checking username", error.message);
+            showToast("Failed to add new customer");
         }
     };
-    
-    const showToast = (message, type = 'error') => {
+
+    const showToast = (message, type = "error") => {
         Toast.show({
             type: type,
             text1: message,
-            position: 'top',
+            position: "top",
             onPress: () => Toast.hide(),
             swipeable: true,
             topOffset: 100,
@@ -137,11 +125,15 @@ function AddNewCustomerPopup({}) {
     };
 
     const insertCustomer = async () => {
-        const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+        const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
-        // Validate required fields
-        if (!username || !amountOfMoney || !paymentStatus || !selectedCurrency) {
-            showToast('Please fill in all required fields');
+        if (
+            !username ||
+            !amountOfMoney ||
+            !paymentStatus ||
+            !selectedCurrency
+        ) {
+            showToast("Please fill in all required fields");
             return;
         }
 
@@ -151,31 +143,25 @@ function AddNewCustomerPopup({}) {
         `);
 
         try {
-            const result = await statement.executeAsync({
+            await statement.executeAsync({
                 $username: username,
-                $email: email || null,
-                $phone: phone || null,
-                $amount: parseFloat(amountOfMoney),
+                $email: null,
+                $phone: null,
+                $amount: Number.parseFloat(amountOfMoney),
                 $transactionType: paymentStatus,
                 $currency: selectedCurrency,
-                $at: currentDateTime
+                $at: currentDateTime,
             });
 
-            console.log('Inserted customer:', result.lastInsertRowId, result.changes);
-
-            showToast('Customer added successfully', 'success');
-            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
-
-            // Reset form fields
-            setUsername('');
-            setEmail('');
-            setPhone('');
-            setAmountOfMoney('');
-            setPaymentStatus('');
-            setSelectedCurrency('');
-
+            showToast("Customer added successfully", "success");
+            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            
+            setTimeout( () => {
+                navigator.goBack();
+            }, 1000)
+            
         } catch (error) {
-            showToast('Failed to add customer: ' + error.message);
+            showToast("Failed to add customer: " + error.message);
             console.error("Error while adding new user", error);
         } finally {
             await statement.finalizeAsync();
@@ -184,195 +170,223 @@ function AddNewCustomerPopup({}) {
 
     return (
         <KeyboardAvoidingView
-        behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-        style={{flex: 1}}>
-            <View style={styles.modalView}>
-                <Image 
-                    source={money} 
-                    style={styles.image_container}
-                    resizeMode="contain"  
-                />
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+        >
+            <Animated.View
+                entering={FadeIn.duration(300)}
+                style={styles.modalView}
+            >
+                <Animated.Text
+                    entering={FadeInDown.duration(300).delay(100)}
+                    style={styles.title}
+                >
+                    Add New Customer
+                </Animated.Text>
 
-                <View style={styles.input_container}>
-
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(200)}
+                    style={styles.inputContainer}
+                >
                     <TextInput
                         style={styles.input}
                         placeholder="Username"
-                        onChangeText={(text) => setUsername(text)}
+                        onChangeText={setUsername}
+                        placeholderTextColor="#94A3B8"
                     />
+                    <View style={styles.iconContainer}>
+                        <EvilIcons name="user" size={28} color="#64748B" />
+                    </View>
+                </Animated.View>
 
-                    <EvilIcons 
-                        name="user" 
-                        size={30} 
-                        color="black"
-                        style={styles.icon} 
-                    />
-                </View>
-
-                <View style={styles.input_container}>
-                    
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Email (optional)"
-                        onChangeText={(text) => setEmail(text)}
-                        keyboardType="email-address"
-                    />
-                    <EvilIcons 
-                        name="envelope" 
-                        size={30} 
-                        color="black"
-                        style={styles.icon} 
-                    />
-                </View>
-
-                <View style={styles.input_container}>
-                    
-                    <SimpleLineIcons 
-                        name="phone" 
-                        size={24} 
-                        color="black"
-                        style={styles.icon}  
-                    />
-                    
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Phone (optional)"
-                        onChangeText={(text) => setPhone(text)}
-                        keyboardType="phone-pad"
-                    />
-                </View>
-
-                <View style={styles.input_container}>
-                    
-                    <Fontisto 
-                        name="money-symbol" 
-                        size={24} 
-                        color="black"
-                        style={styles.icon} 
-                    />
-                    
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(300)}
+                    style={styles.inputContainer}
+                >
                     <TextInput
                         style={styles.input}
                         placeholder="Amount"
-                        onChangeText={(text) => setAmountOfMoney(text)}
-                        keyboardType="phone-pad"
+                        onChangeText={setAmountOfMoney}
+                        keyboardType="decimal-pad"
+                        placeholderTextColor="#94A3B8"
                     />
-                </View>
-                
-                <View style={styles.payment_status}>
-                    
-                    <View >
-                        <Text style={styles.payment_text}> Money : </Text>
+                    <View style={styles.iconContainer}>
+                        <Fontisto
+                            name="money-symbol"
+                            size={20}
+                            color="#64748B"
+                        />
                     </View>
-                    
-                    <RadioButton.Group  onValueChange={newValue => setPaymentStatus(newValue)} value={paymentStatus}>
+                </Animated.View>
 
-                        <View style={styles.payment_status}>
-
-                            
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <RadioButton color="green" value="received" />
-                                <Text>Received</Text>
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(400)}
+                    style={styles.paymentStatusContainer}
+                >
+                    <Text style={styles.paymentLabel}>Payment Status</Text>
+                    <RadioButton.Group
+                        onValueChange={setPaymentStatus}
+                        value={paymentStatus}
+                    >
+                        <View style={styles.radioGroup}>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="received"
+                                    color="#10B981"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Received</Text>
                             </View>
-                            
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <RadioButton value="paid" color="red"/>
-                                <Text>Paid</Text>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="paid"
+                                    color="#EF4444"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Paid</Text>
                             </View>
                         </View>
                     </RadioButton.Group>
-                </View>
+                </Animated.View>
 
-                <View style={styles.drop_down_container}>
-                    <CurrencyDropdownListSearch setSelected={setSelectedCurrency} selected={selectedCurrency}/>
-                </View>
-
-                <Pressable
-                    style={styles.add_new_customer_btn}
-                    onPress={addNewCustomer}
-                    title='add new customer'
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(500)}
+                    style={styles.dropDownContainer}
                 >
-                    <Text style={{color: "white", textAlign: "center"}}>Add Customer</Text>
-                </Pressable>
-            </View>
+                    <CurrencyDropdownListSearch
+                        setSelected={setSelectedCurrency}
+                        selected={selectedCurrency}
+                    />
+                </Animated.View>
+
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(600)}
+                    style={styles.buttonWrapper}
+                >
+                    <Animated.View style={[buttonStyle]}>
+                        <Pressable
+                            style={styles.addButton}
+                            onPress={addNewCustomer}
+                            onPressIn={onPressIn}
+                            onPressOut={onPressOut}
+                        >
+                            <Text style={styles.buttonText}>Add Customer</Text>
+                        </Pressable>
+                    </Animated.View>
+                </Animated.View>
+            </Animated.View>
         </KeyboardAvoidingView>
-    )
+    );
 }
 
-
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "white",
+    },
     modalView: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 24,
+        backgroundColor: "white",
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "700",
+        color: "#1E293B",
+        marginBottom: 32,
+        letterSpacing: 0.5,
+    },
+    inputContainer: {
+        width: "100%",
+        marginBottom: 16,
+        position: "relative",
     },
     input: {
-
-        borderColor: 'gray',
-        padding: 10,
-        marginBottom: 20,
-        width: '80%',
-        borderRadius: 10,
-        backgroundColor: "#FDFCFA"
-    },
-    add_new_customer_btn: {
-        
-        marginTop: 10,
-        width: "50%",
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: "#14171A",
-        borderRadius: 9999,
-        paddingVertical: 12,
+        width: "100%",
+        height: 56,
         paddingHorizontal: 16,
-        width: "70%",
-        elevation: 2,
-        shadowColor: "#000",
+        paddingRight: 48,
+        fontSize: 16,
+        color: "#1E293B",
+        backgroundColor: "#FFFFFF",
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        borderRadius: 12,
+        shadowColor: "#64748B",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
     },
-
-    input_container: {
-        flexDirection: 'row',
-        alignContent: "center",
-        alignItems: "center",
+    iconContainer: {
+        position: "absolute",
+        right: 16,
+        height: "100%",
+        justifyContent: "center",
     },
-
-    icon: {
-        position: 'absolute',
-        right: 10,
-        top: '10%',
-        color: "black",
-        zIndex: 1,
-        backgroundColor: "white",
-        padding: 5,
-        borderRadius: 50,
+    paymentStatusContainer: {
+        width: "100%",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        shadowColor: "#64748B",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
     },
-
-    image_container: {
-        position: 'absolute',
+    paymentLabel: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#1E293B",
+        marginBottom: 12,
     },
-
-    drop_down_container: {
-       width: "80%",
-       marginTop: 20
-    },
-
-    payment_status: {
+    radioGroup: {
         flexDirection: "row",
-        width: "80%",
-        backgroundColor: "#FDFCFA",
-        borderRadius: 10,
-        justifyContent: "space-evenly",
+        justifyContent: "space-around",
         alignItems: "center",
-        padding: 5
     },
-    payment_text: {
-        fontSize: 14,
-        fontWeight: "bold",
-        marginLeft: 4
-    }
+    radioOption: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    radioLabel: {
+        fontSize: 16,
+        color: "#475569",
+        marginLeft: 8,
+    },
+    dropDownContainer: {
+        width: "100%",
+        marginBottom: 24,
+    },
+    addButton: {
+        width: "100%",
+        minWidth: 280,
+        backgroundColor: "black",
+        paddingVertical: 16,
+        borderRadius: 12,
+        shadowColor: "#3B82F6",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    buttonText: {
+        color: "#FFFFFF",
+        fontSize: 16,
+        fontWeight: "600",
+        textAlign: "center",
+        letterSpacing: 0.5,
+    },
+    buttonWrapper: {
+        width: "100%",
+        alignItems: "center",
+    },
 });
-export default AddNewCustomerPopup
+
+export default AddNewCustomerPopup;
