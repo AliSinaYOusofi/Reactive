@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { View, StyleSheet, Text, Pressable, Modal } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
@@ -5,39 +6,50 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import { format_username } from '../../utils/username_shortcut';
 import { padi_color, received_color } from '../global/colors';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import useListAnimation from '../animations/useListAnimation';
+import useDeleteAnimation from '../animations/useDeleteAnimation';
 
-export default function CustomerListTemplate({usernameShortCut, username, totalAmount, transaction_type, currency, at, border_color, phone, email, isSearchComponent, searchResultLength}) {
-    
+export default function CustomerListTemplate({ index, username, totalAmount, transaction_type, currency, phone, email, isSearchComponent, searchResultLength, onDelete }) {
     const navigator = useNavigation();
-    const [ deleteModal, setDeleteModal] = useState(false)
+    const [deleteModal, setDeleteModal] = useState(false);
+    const { opacity: listOpacity, translateY } = useListAnimation(index);
+    const { opacity: deleteOpacity, translateX, height, animateDelete } = useDeleteAnimation();
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        opacity: deleteOpacity.value * listOpacity.value,
+        transform: [
+            { translateY: translateY.value },
+            { translateX: translateX.value }
+        ],
+        height: height.value,
+    }));
 
     const handleCustomerViewClick = () => {
-        // navigating to other screen and fetching based on username
         navigator.navigate("CustomerData", {username})    
     }
+
+    const handleDelete = async () => {
+        animateDelete();
+        setTimeout(() => {
+            setDeleteModal(false);
+            if (onDelete) onDelete(username);
+        }, 300);
+    }
+
     return (
         <>
-            {
-                isSearchComponent
-                ?
-                <Text style={styles.search_header}>
-                    Search Results: {searchResultLength}
-                </Text>
-                : null
-            }
-            <View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}]}>
-
+            
+            <Animated.View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}, animatedStyle]}>
                 <Pressable onPress={handleCustomerViewClick} style={[styles.container]}>
-                    
                     <View style={styles.username_and_shortcut_container}>
                         <View style={styles.usernameShortCutStyle}>
-                            <Text >{format_username(username)}</Text>
+                            <Text>{format_username(username)}</Text>
                         </View>
                         <View>
                             <Text> {username} </Text>
                         </View>
                     </View>
-
 
                     <View>
                         <Text>  {totalAmount} {currency} </Text>
@@ -65,8 +77,7 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
                         />
                     </Pressable>
                 </View>
-                
-            </View>
+            </Animated.View>
 
             <Modal
                 visible={deleteModal}
@@ -78,6 +89,7 @@ export default function CustomerListTemplate({usernameShortCut, username, totalA
                     username={username}
                     setCloseModal={setDeleteModal}
                     message={`All data related to ${username} will be deleted !`}
+                    onConfirmDelete={handleDelete}
                 />
             </Modal>
         </>
@@ -92,20 +104,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         padding: 5,
         marginVertical: 5,
-        borderRadius: 10
+        borderRadius: 10,
+        overflow: 'hidden'
     },
-    
     usernameShortCutStyle: {
-        backgroundColor: "white", // the bg-color
+        backgroundColor: "white",
         borderRadius: 50,
         padding: 8
     },
-    
-    hr: {
-
-       // Adjust as needed for spacing
-    },
-
     username_and_shortcut_container: {
         display: 'flex',
         flexDirection: 'row',
@@ -113,20 +119,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         columnGap: 10
     },
-    
-    username: {
-
-    },
-
     delete_icon: {
         backgroundColor: "white",
-        padding: 5,
+        padding: 8,
         borderRadius: 50,
-        color: "white",
-        borderRadius: 50,
-        padding: 8
     },
-    
     _icons_container: {
         display: "flex",
         flexDirection: 'row',
@@ -134,18 +131,15 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         columnGap: 10,
     },
-
     search_header: {
         fontSize: 17,
         fontWeight: "bold",
         marginTop: 10,
     },
-
     pdf_icon: {
-        padding: 5,
+        backgroundColor: "white",
+        padding: 8,
         borderRadius: 50,
-        backgroundColor: "white", // the bg-color
-        borderRadius: 50,
-        padding: 8
-    }
-})
+    },
+    
+});

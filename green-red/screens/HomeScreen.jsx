@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import TotalExpenses from '../components/Home/TotalExpenses';
@@ -11,15 +12,16 @@ import ZeroSearchResult from '../components/global/ZeroSearchResult';
 import Carousel from 'react-native-reanimated-carousel';
 import { createCustomerRecordsTable } from '../database/createCustomerRecordsTable';
 import CarouselOfTracker from '../components/carousel/Carouself';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 export default function HomeScreen() {
-    
     const [customer, setCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("");
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([]);
     const db = SQLite.openDatabaseSync('green-red.db');
     const { refreshHomeScreenOnChangeDatabase } = useAppContext();
+    const width = Dimensions.get('window').width;
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
@@ -99,12 +101,10 @@ export default function HomeScreen() {
     }, [customer]);
 
     return (
-        
-        <View style={style.container}>
-            
+        <Animated.View style={style.container} entering={FadeIn.duration(500)}>
             <CarouselOfTracker totalExpenseOfCustomer={totalExpenseOfCustomer}/>
 
-            <View style={{marginTop: 20}}>
+            <Animated.View style={{marginTop: 50}} entering={FadeInDown.delay(200)}>
                 {customer.length ? (
                     <SearchCustomers 
                         style={style.item} 
@@ -113,15 +113,15 @@ export default function HomeScreen() {
                         customersToConvert={customer}
                     />
                 ) : null}
-            </View>
+            </Animated.View>
             
             <View style={{ flex: 1 }}>
                 <ScrollView indicatorStyle='black' style={style.scroll_view}>
                     {customer.length ? (
                         parentSearchTerm ? (
                             filteredCustomers.length ? (
-                                filteredCustomers.map(item => (
-                                    <View key={item.id}>
+                                filteredCustomers.map((item, index) => (
+                                    <Animated.View key={item.id} entering={FadeInDown.delay(index * 100)}>
                                         <CustomerListTemplate 
                                             username={item.username} 
                                             usernameShortCut={"AS"} 
@@ -136,13 +136,14 @@ export default function HomeScreen() {
                                             isSearchComponent={true}
                                             searchResultLength={filteredCustomers.length}
                                         />
-                                    </View>
+                                    </Animated.View>
                                 ))
                             ) : <ZeroSearchResult />
                         ) : (
-                            customer.map(item => (
-                                <View key={item.id}>
-                                    <CustomerListTemplate 
+                            customer.map((item, index) => (
+                                <Animated.View key={item.id} entering={FadeInDown.delay(index * 100)}>
+                                    <CustomerListTemplate
+                                        index={index} 
                                         username={item.username} 
                                         usernameShortCut={"AS"} 
                                         totalAmount={item.amount}
@@ -155,18 +156,20 @@ export default function HomeScreen() {
                                         phone={item.phone}
                                         isSearchComponent={false}
                                     />
-                                </View>
+                                </Animated.View>
                             ))
                         )
                     ) : <NoUserAddedInfo />}
                 </ScrollView>
             </View>
             {
-                ! parentSearchTerm.length
-                ? <AddNewCustomer />
-                : null
+                !parentSearchTerm.length && (
+                    <Animated.View entering={FadeInDown.delay(300)}>
+                        <AddNewCustomer />
+                    </Animated.View>
+                )
             }
-        </View>
+        </Animated.View>
     );
 }
 

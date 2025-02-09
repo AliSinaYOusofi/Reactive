@@ -156,7 +156,7 @@ export default function SingleCustomerView({navigation, route}) {
                 <CarouselOfTracker totalExpenseOfCustomer={singleCustomerExpense} />
             </Animated.View>
             
-            <View style={{flex: 1, paddingBottom: 40, backgroundColor: "white", marginTop: 20}}>
+            <View style={{flex: 1, paddingBottom: 40, backgroundColor: "white", marginTop: 50}}>
                 <ScrollView style={styles.container}>
                     {customers.length > 0 ? (
                         customers.map((customer, index) => (
@@ -232,8 +232,4 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
-
-   
-
-    
 })
