@@ -38,7 +38,6 @@ function AddNewCustomerPopup() {
     const db = SQLite.openDatabaseSync("green-red.db");
     const navigator = useNavigation();
 
-    // Animation setup
     const scale = useSharedValue(1);
     const buttonStyle = useAnimatedStyle(() => {
         return {

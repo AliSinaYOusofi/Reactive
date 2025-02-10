@@ -1,95 +1,132 @@
-import React, { useEffect, useState } from 'react'
-import { View, TextInput, StyleSheet, Pressable, Text, Image, ToastAndroid } from 'react-native'
-import { EvilIcons, FontAwesome, Fontisto } from '@expo/vector-icons';
-import { SimpleLineIcons } from '@expo/vector-icons';
-import money from '../assets/mony.png'
-import CurrencyDropdownListSearch from '../components/global/CurrencyDropdownList';
-import { validateUsername } from '../utils/validators/usernameValidator';
-import { isEmailValid } from '../utils/validators/emailValidator';
-import { phoneNumberValidator } from '../utils/validators/phoneNumberValidator';
-import { amountOfMoneyValidator } from '../utils/validators/amountOfMoneyValidator';
-import { RadioButton } from 'react-native-paper';
-import Toast from 'react-native-toast-message';
-import { openDatabase, openDatabaseSync } from 'expo-sqlite'
-import { useNavigation } from '@react-navigation/native';
-import { useAppContext } from '../context/useAppContext';
+import React, { useEffect, useState } from "react";
+import {
+    View,
+    TextInput,
+    StyleSheet,
+    Pressable,
+    Text,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+} from "react-native";
+import { EvilIcons, Fontisto, SimpleLineIcons } from "@expo/vector-icons";
+import CurrencyDropdownListSearch from "../components/global/CurrencyDropdownList";
+import { validateUsername } from "../utils/validators/usernameValidator";
+import { isEmailValid } from "../utils/validators/emailValidator";
+import { phoneNumberValidator } from "../utils/validators/phoneNumberValidator";
+import { amountOfMoneyValidator } from "../utils/validators/amountOfMoneyValidator";
+import { RadioButton } from "react-native-paper";
+import Toast from "react-native-toast-message";
+import * as SQLite from "expo-sqlite";
+import { useNavigation } from "@react-navigation/native";
+import { useAppContext } from "../context/useAppContext";
+import Animated, {
+    FadeIn,
+    FadeInDown,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from "react-native-reanimated";
+import money from "../assets/mony.png";
 
+export default function EditCustomerParent({ navigation, route }) {
+    // Destructure previous data from route.params
+    const {
+        username: prev_username,
+        totalAmount: prev_amount_of_money,
+        transaction_type: prev_payment_status,
+        currency: prev_selected_currency,
+    } = route.params;
 
-export default function EditCustomerParent({navigation, route}) {
+    // Convert amount to a string for the TextInput
+    const initialAmount = String(prev_amount_of_money);
 
-    let {username: prev_username, email: prev_email, phone: prev_phone,  totalAmount: prev_amount_of_money, transaction_type: prev_payment_status, currency: prev_selected_currency} = route.params;
-    prev_amount_of_money = String(prev_amount_of_money)
+    // Local state for updated fields
+    const [updatedUsername, setUpdatedUsername] = useState("");
+    const [updatedAmountOfMoney, setUpdatedAmountOfMoney] = useState("");
+    const [updatedPaymentStatus, setUpdatedPaymentStatus] = useState("");
+    const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState("");
 
-    const [updatedUsername, setUpdatedUsername] = useState();
-    const [updatedEmail, setUpdatedEmail] = useState();
-    const [updatedPhone, setUpdatedPhone] = useState();
-    const [updatedAmountOfMoney, setUpdatedAmountOfMoney] = useState()
-    const [updatedPaymentStatus, setUpdatedPaymentStatus] = useState()
-    const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState()
-    
     const navigator = useNavigation();
-    const {setRefreshHomeScreenOnChangeDatabase} = useAppContext()
-    const db = openDatabaseSync('green-red.db')
+    const { setRefreshHomeScreenOnChangeDatabase } = useAppContext();
+    const db = SQLite.openDatabaseSync("green-red.db");
 
-    useEffect( () => {
-        setUpdatedUsername(prev_username)
-        setUpdatedEmail(prev_email)
-        setUpdatedPhone(prev_phone)
-        setUpdatedAmountOfMoney(prev_amount_of_money)
-        setUpdatedPaymentStatus(prev_payment_status)
-        setUpdatedSelectedCurrency(prev_selected_currency)
-    }, [])
-    const handleUpdateCustomerParent = () => {
-        
-        if (!validateUsername(updatedUsername)) {
-            return showToast('Username is invalid');
-        }
-    
-        if (updatedEmail && !isEmailValid(updatedEmail)) {
-            return showToast('Email is invalid');
-        }
-    
-        if (updatedPhone && !phoneNumberValidator(updatedPhone)) {
-            return showToast('Phone number is invalid');
-        }
-    
-        if (updatedAmountOfMoney.length && !amountOfMoneyValidator(updatedAmountOfMoney)) {
-            return showToast('Amount of money is  invalid');
-        }
-    
-        if (!updatedPaymentStatus) {
-            return showToast('Please select a payment status');
-        }
-    
-        if (!updatedSelectedCurrency) {
-            return showToast('Please select a currency');
-        }
-        
-        updateParentCustomer()
-        updateParentChildren()
+    // Reanimated shared value for button scale
+    const scale = useSharedValue(1);
+    const buttonStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: scale.value }],
+        };
+    });
 
+    const onPressIn = () => {
+        scale.value = withSpring(0.95);
     };
-    
-    const showToast = (message, type = 'error') => {
+
+    const onPressOut = () => {
+        scale.value = withSpring(1);
+    };
+
+    // Preload previous values into state on mount
+    useEffect(() => {
+        setUpdatedUsername(prev_username);
+        setUpdatedAmountOfMoney(initialAmount);
+        setUpdatedPaymentStatus(prev_payment_status);
+        setUpdatedSelectedCurrency(prev_selected_currency);
+    }, []);
+
+    // Validate inputs and perform update
+    const handleUpdateCustomerParent = () => {
+        if (!validateUsername(updatedUsername)) {
+            return showToast("Username is invalid");
+        }
+
+        if (
+            updatedAmountOfMoney.length &&
+            !amountOfMoneyValidator(updatedAmountOfMoney)
+        ) {
+            return showToast("Amount of money is invalid");
+        }
+
+        if (!updatedPaymentStatus) {
+            return showToast("Please select a payment status");
+        }
+
+        if (!updatedSelectedCurrency) {
+            return showToast("Please select a currency");
+        }
+
+        updateParentCustomer();
+        updateParentChildren();
+    };
+
+    const showToast = (message, type = "error") => {
         Toast.show({
             type: type,
             text1: message,
-            position: 'top',
+            position: "top",
             onPress: () => Toast.hide(),
             swipeable: true,
             topOffset: 100,
         });
     };
-    
+
+    // Update the customer record in the customers table
     const updateParentCustomer = async () => {
         try {
             await db.runAsync(
-                "UPDATE customers SET username = ?, email = ?, phone = ?, amount = ?, transaction_type = ?, currency = ? WHERE username = ?",
-                [updatedUsername, updatedEmail, updatedPhone, updatedAmountOfMoney, updatedPaymentStatus, updatedSelectedCurrency, prev_username]
+                "UPDATE customers SET username = ?, amount = ?, transaction_type = ?, currency = ? WHERE username = ?",
+                [
+                    updatedUsername,
+                    updatedAmountOfMoney,
+                    updatedPaymentStatus,
+                    updatedSelectedCurrency,
+                    prev_username,
+                ]
             );
-            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
         } catch (error) {
-            showToast('Failed to update customer');
+            showToast("Failed to update customer");
             console.error(error);
         }
     };
@@ -100,195 +137,227 @@ export default function EditCustomerParent({navigation, route}) {
                 "UPDATE customer__records SET username = ? WHERE username = ?",
                 [updatedUsername, prev_username]
             );
-            showToast('Updated customer successfully', 'success');
+            showToast("Updated customer successfully", "success");
             setTimeout(() => navigator.navigate("homescreen"), 2000);
-            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
         } catch (error) {
-            showToast('Failed to update customer records');
+            showToast("Failed to update customer records");
             console.error(error);
         }
     };
-    
+
     return (
-        <>
-            <View style={styles.modalView}>
-                <Image 
-                    source={money} 
-                    style={styles.image_container}
-                    resizeMode="contain"  
-                />
-
-                <View style={styles.input_container}>
-
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+        >
+            <Animated.View
+                entering={FadeIn.duration(300)}
+                style={styles.modalView}
+            >
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(200)}
+                    style={styles.inputContainer}
+                >
                     <TextInput
                         style={styles.input}
                         value={updatedUsername}
-                        onChangeText={(text) => setUpdatedUsername(text)}
+                        onChangeText={setUpdatedUsername}
+                        placeholder="Username"
+                        placeholderTextColor="#94A3B8"
                     />
+                    <View style={styles.iconContainer}>
+                        <EvilIcons name="user" size={28} color="#64748B" />
+                    </View>
+                </Animated.View>
 
-                    <EvilIcons 
-                        name="user" 
-                        size={30} 
-                        color="black"
-                        style={styles.icon} 
-                    />
-                </View>
-
-                <View style={styles.input_container}>
-                    
-                    <TextInput
-                        style={styles.input}
-                        value={updatedEmail}
-                        onChangeText={(text) => setUpdatedEmail(text)}
-                        keyboardType="email-address"
-                    />
-                    <EvilIcons 
-                        name="envelope" 
-                        size={30} 
-                        color="black"
-                        style={styles.icon} 
-                    />
-                </View>
-
-                <View style={styles.input_container}>
-                    
-                    <SimpleLineIcons 
-                        name="phone" 
-                        size={24} 
-                        color="black"
-                        style={styles.icon}  
-                    />
-                    
-                    <TextInput
-                        style={styles.input}
-                        value={updatedPhone}
-                        onChangeText={(text) => setUpdatedPhone(text)}
-                        keyboardType="phone-pad"
-                    />
-                </View>
-
-                <View style={styles.input_container}>
-                    
-                    <Fontisto 
-                        name="money-symbol" 
-                        size={24} 
-                        color="black"
-                        style={styles.icon} 
-                    />
-                    
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(500)}
+                    style={styles.inputContainer}
+                >
                     <TextInput
                         style={styles.input}
                         value={updatedAmountOfMoney}
-                        onChangeText={(text) => setUpdatedAmountOfMoney(text)}
-                        keyboardType="phone-pad"
+                        onChangeText={setUpdatedAmountOfMoney}
+                        placeholder="Amount"
+                        keyboardType="decimal-pad"
+                        placeholderTextColor="#94A3B8"
                     />
-                </View>
-                
-                <View style={styles.payment_status}>
-                    
-                    <View >
-                        <Text style={styles.payment_text}> Money : </Text>
+                    <View style={styles.iconContainer}>
+                        <Fontisto
+                            name="money-symbol"
+                            size={24}
+                            color="#64748B"
+                        />
                     </View>
-                    
-                    <RadioButton.Group  onValueChange={newValue => setUpdatedPaymentStatus(newValue)} value={updatedPaymentStatus}>
+                </Animated.View>
 
-                        <View style={styles.payment_status}>
-
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <RadioButton color="green" value="received" />
-                                <Text>Received</Text>
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(600)}
+                    style={styles.paymentStatusContainer}
+                >
+                    <Text style={styles.paymentLabel}>Payment Status</Text>
+                    <RadioButton.Group
+                        onValueChange={setUpdatedPaymentStatus}
+                        value={updatedPaymentStatus}
+                    >
+                        <View style={styles.radioGroup}>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="received"
+                                    color="#10B981"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Received</Text>
                             </View>
-                            
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <RadioButton value="paid" color="red"/>
-                                <Text>Paid</Text>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="paid"
+                                    color="#EF4444"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Paid</Text>
                             </View>
                         </View>
                     </RadioButton.Group>
-                </View>
+                </Animated.View>
 
-                <View style={styles.drop_down_container}>
-                    <CurrencyDropdownListSearch setSelected={setUpdatedSelectedCurrency} selected={updatedSelectedCurrency}/>
-                </View>
-
-                <Pressable
-                    style={styles.add_new_customer_btn}
-                    onPress={handleUpdateCustomerParent}
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(700)}
+                    style={styles.dropDownContainer}
                 >
-                    <Text style={{color: "white", textAlign: "center", fontWeight: 'bold'}}>Update</Text>
-                </Pressable>
-            </View>
-        </>
-    )
+                    <CurrencyDropdownListSearch
+                        setSelected={setUpdatedSelectedCurrency}
+                        selected={updatedSelectedCurrency}
+                    />
+                </Animated.View>
+
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(800)}
+                    style={styles.buttonWrapper}
+                >
+                    <Animated.View style={buttonStyle}>
+                        <Pressable
+                            style={styles.addButton}
+                            onPress={handleUpdateCustomerParent}
+                            onPressIn={onPressIn}
+                            onPressOut={onPressOut}
+                        >
+                            <Text style={styles.buttonText}>
+                                Update Customer
+                            </Text>
+                        </Pressable>
+                    </Animated.View>
+                </Animated.View>
+            </Animated.View>
+        </KeyboardAvoidingView>
+    );
 }
 
-
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "white",
+    },
     modalView: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 24,
+        backgroundColor: "white",
+    },
+    image_container: {
+        width: 100,
+        height: 100,
+        marginBottom: 24,
+    },
+    inputContainer: {
+        width: "100%",
+        marginBottom: 16,
+        position: "relative",
     },
     input: {
-
-        borderColor: 'gray',
-        padding: 10,
-        marginBottom: 20,
-        width: '80%',
-        borderRadius: 10,
-        backgroundColor: "#FDFCFA"
+        width: "100%",
+        height: 56,
+        paddingHorizontal: 16,
+        paddingRight: 48,
+        fontSize: 16,
+        color: "#1E293B",
+        backgroundColor: "#FFFFFF",
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        borderRadius: 12,
+        shadowColor: "#64748B",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
     },
-    add_new_customer_btn: {
-        backgroundColor: 'black',
-        color: "white",
-        borderRadius: 999,
-        height: 'auto',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        marginTop: 10,
-        width: '60%',
-        textAlign: "center"
+    iconContainer: {
+        position: "absolute",
+        right: 16,
+        height: "100%",
+        justifyContent: "center",
     },
-
-    input_container: {
-        flexDirection: 'row',
-        alignContent: "center",
-        alignItems: "center",
+    paymentStatusContainer: {
+        width: "100%",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        shadowColor: "#64748B",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
     },
-
-    icon: {
-        position: 'absolute',
-        right: 10,
-        top: '10%',
-        color: "black",
-        zIndex: 1,
-        backgroundColor: "white",
-        padding: 5,
-        borderRadius: 50,
+    paymentLabel: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#1E293B",
+        marginBottom: 12,
     },
-
-    image_container: {
-        position: 'absolute',
-    },
-
-    drop_down_container: {
-       width: "80%",
-       marginTop: 20
-    },
-
-    payment_status: {
+    radioGroup: {
         flexDirection: "row",
-        width: "80%",
-        backgroundColor: "#FDFCFA",
-        borderRadius: 10,
-        justifyContent: "space-evenly",
+        justifyContent: "space-around",
         alignItems: "center",
-        padding: 5
     },
-    payment_text: {
-        fontSize: 14,
-        fontWeight: "bold",
-        marginLeft: 4
-    }
+    radioOption: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    radioLabel: {
+        fontSize: 16,
+        color: "#475569",
+        marginLeft: 8,
+    },
+    dropDownContainer: {
+        width: "100%",
+        marginBottom: 24,
+    },
+    addButton: {
+        width: "100%",
+        minWidth: 280,
+        backgroundColor: "black",
+        paddingVertical: 16,
+        borderRadius: 12,
+        shadowColor: "#3B82F6",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    buttonText: {
+        color: "#FFFFFF",
+        fontSize: 16,
+        fontWeight: "600",
+        textAlign: "center",
+        letterSpacing: 0.5,
+    },
+    buttonWrapper: {
+        width: "100%",
+        alignItems: "center",
+    },
 });

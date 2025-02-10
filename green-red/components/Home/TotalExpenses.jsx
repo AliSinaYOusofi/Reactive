@@ -48,18 +48,12 @@ export default function TotalExpenses(
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#FFFFFF', // Light background
         borderRadius: 12,
         padding: 20,
-        margin: 10, // Increased margin for better spacing
+        margin: 10,
         height: 180,
         width: "90%",
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 4, // For Android shadow
-        justifyContent: 'space-around', // Distribute space evenly
+        backgroundColor: "#f8f9fa",
         marginRight: 50
     },
     item: {
@@ -70,24 +64,26 @@ const styles = StyleSheet.create({
     text: {
         marginLeft: 12,
         fontSize: 16,
-        color: '#333333', // Darker text for readability
+        color: '#333333', 
     },
     paidText: {
-        color: '#E46C62', // Consistent red color
+        color: '#E46C62', 
     },
     receivedText: {
-        color: '#62B485', // Consistent green color
+        color: '#62B485',
     },
     totalContainer: {
-        backgroundColor: '#34495E', // Darker, more modern background
+        backgroundColor: '#111111', 
         borderRadius: 8,
         paddingVertical: 12,
         paddingHorizontal: 16,
         alignItems: 'center',
+        marginTop:20,
+        color: "black"
     },
     totalText: {
         fontSize: 18,
         fontWeight: '600',
-        color: "#FFFFFF",
+        color: "white",
     },
 });

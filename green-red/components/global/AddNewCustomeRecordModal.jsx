@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -8,9 +8,8 @@ import { openDatabaseSync } from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
-import { background_color } from './colors';
-// import { useInterstitialAd, TestIds } from 'react-native-google-mobile-ads';
-// const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : process.env.EXPO_PUBLIC_ADMOB_INTERSTIAL;
+import Animated, { FadeInDown, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+
 export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
 
     const [amount, setAmount] = useState("")
@@ -20,22 +19,6 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
     const db = openDatabaseSync('green-red.db')
     const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
 
-    // const { isLoaded, isClosed, load, show } = useInterstitialAd(adUnitId);
-
-    // useEffect(() => {
-    //     load();
-    // }, [load]);
-    
-    // useEffect(() => {
-    //     if (isClosed) {
-    //       navigator.navigate('homescreen');
-    //     }
-    // }, [isClosed, navigator]);
-
-    // create customer__records table if not exists
-    
-
-    // handle add new record
     const handleAddNewRecord = async () => {
         
         if (!amountOfMoneyValidator(amount)) {
@@ -84,8 +67,9 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
 
             showToast("User record added!", "success");
             setAddNewRecordModal(false);
-            setRefreshSingleViewChangeDatabase(prev => !prev);
-            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+            setRefreshSingleViewChangeDatabase(prev => !prev)
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev)
+
         } catch (error) {
             console.error("Error while inserting new record:", error.message);
             showToast("Error while inserting new record");
@@ -97,11 +81,18 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
     }
 
     return (
-        <View style={styles.modalView}>
+        <Animated.View 
+            entering={SlideInDown.duration(500)} 
+            style={styles.modalView}
+            exiting={SlideOutDown.duration(400)}
+        >
 
             <View style={styles.options_container}>
 
-                <View style={styles.input_container}>
+                <Animated.View 
+                    entering={FadeInDown.duration(300).delay(100)} 
+                    style={styles.input_container}
+                >
 
                     <TextInput
                         style={styles.input}
@@ -110,50 +101,52 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         keyboardType='phone-pad'
                     />
 
-                    <FontAwesome 
-                        name="money" 
-                        size={24} 
-                        color="black" 
-                        style={styles.icon}
-                    />
-                </View>
+                    <MaterialIcons name="currency-exchange" size={24} color="black" />
+                </Animated.View>
 
-                <View style={styles.payment_status}>
-                        
-                    <View >
-                        <Text style={styles.payment_text}> Money : </Text>
-                    </View>
-                    
-                    <RadioButton.Group  onValueChange={newValue => setTransactionType(newValue)} value={transactionType}>
-
-                        <View style={styles.payment_status}>
-
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <RadioButton color="green" value="received" />
-                                <Text>Received</Text>
+                <Animated.View
+                    entering={FadeInDown.duration(300).delay(200)}
+                    style={styles.paymentStatusContainer}
+                >
+                    <Text style={styles.paymentLabel}>Payment Status</Text>
+                    <RadioButton.Group
+                        onValueChange={setTransactionType}
+                        value={transactionType}
+                    >
+                        <View style={styles.radioGroup}>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="received"
+                                    color="#10B981"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Received</Text>
                             </View>
-                            
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <RadioButton value="paid" color="red"/>
-                                <Text>Paid</Text>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="paid"
+                                    color="#EF4444"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Paid</Text>
                             </View>
                         </View>
                     </RadioButton.Group>
-                </View>
+                </Animated.View>
 
-                <View style={styles.drop_down_container}>
+                <Animated.View entering={FadeInDown.duration(300).delay(300)} style={styles.drop_down_container}>
                     <CurrencyDropdownListSearch setSelected={setCurrency} selected={currency}/>
-                </View>
+                </Animated.View>
 
-                <View>
+                <Animated.View entering={FadeInDown.duration(300).delay(400)}>
                     <Pressable
                         style={styles.add_new_customer_btn}
                         onPress={handleAddNewRecord}
                         title='add new customer'
                     >
-                        <Text style={{color: "white"}}>Save new record</Text>
+                        <Text style={{color: "white"}}>Save Record</Text>
                     </Pressable>
-                </View>
+                </Animated.View>
 
                 <Pressable 
                     onPress={() => setAddNewRecordModal(false)} 
@@ -166,7 +159,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                     />
                 </Pressable>
             </View>
-        </View>
+        </Animated.View>
     )
 }
 
@@ -266,5 +259,39 @@ const styles = StyleSheet.create({
         color: "black",
         top: 10,
         right: 10,
+    },
+    paymentStatusContainer: {
+        width: "100%",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        shadowColor: "#64748B",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    paymentLabel: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#1E293B",
+        marginBottom: 12,
+    },
+    radioGroup: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        alignItems: "center",
+    },
+    radioOption: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    radioLabel: {
+        fontSize: 16,
+        color: "#475569",
+        marginLeft: 8,
     },
 })
