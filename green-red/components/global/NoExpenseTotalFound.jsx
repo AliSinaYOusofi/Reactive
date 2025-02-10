@@ -16,7 +16,7 @@ const styles = StyleSheet.create( {
     container: {
         
         padding: 20,
-        backgroundColor: "#1D224E", 
+        backgroundColor: "#f8f9fa", 
         width: "100%",
         borderRadius: 10
     }

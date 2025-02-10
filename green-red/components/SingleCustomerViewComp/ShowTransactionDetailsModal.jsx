@@ -1,75 +1,64 @@
-import React, { useState } from 'react'
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNowStrict } from 'date-fns';
 import DateDiffDetails from './DateDiffDetails';
 import * as Clipboard from 'expo-clipboard';
+import Animated, { SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 
-export default function ShowTransactionDetailsModal({username, amount, currency, transaction_type, transaction_date, email, phone, closeModal}) {
-    const [copied, setCopied] = useState(false)
+export default function ShowTransactionDetailsModal({ username, amount, currency, transaction_type, transaction_date, closeModal }) {
+    const [copied, setCopied] = useState(false);
     
     const copy_to_clipboard = async () => {
-        setCopied(true)
+        setCopied(true);
         const content = `
 ${transaction_type.toUpperCase()}
 ${amount} ${currency}
 ${transaction_type !== 'received' ? 'To' : 'From'}: ${username}
 On: ${transaction_date} ${transaction_date ? formatDistanceToNowStrict(new Date(transaction_date), { addSuffix: true }) : 'N/A'}
-Email: ${email || 'N/A'}
-Phone: ${phone || 'N/A'}
         `;
         await Clipboard.setStringAsync(content);
-        setTimeout(() => setCopied(false), 2000)
-    }
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
-        <View style={styles.modalContainer}>
-            <View style={styles.all_text_container}>
-                <Text style={[styles.transaction_type_, {color: transaction_type === "received" ? "#4CAF50" : "#F44336"}]}>
+        <Animated.View 
+            style={styles.modalContainer} 
+            entering={SlideInDown.duration(500)} 
+            exiting={SlideOutDown.duration(400)}
+        >
+            <Animated.View entering={SlideInDown.duration(500)} style={styles.all_text_container}>
+                <Animated.Text entering={SlideInDown.duration(400)}  style={[styles.transaction_type_, { color: transaction_type === "received" ? "#4CAF50" : "#F44336" }]}>
                     {transaction_type}
-                </Text>
+                </Animated.Text>
                 
-                <View style={styles.two_texts}>
+                <Animated.View entering={SlideInDown.duration(300)}  style={styles.two_texts}>
                     <Text style={styles.amount}>{amount}</Text>
                     <Text style={styles.currency}>{currency}</Text>
-                </View>
+                </Animated.View>
                 
-                <View style={styles.row}>
+                <Animated.View entering={SlideInDown.duration(200)} style={styles.row}>
                     <Text style={styles.label}>{transaction_type !== 'received' ? 'To' : 'From'}:</Text>
                     <Text style={styles.value}>{username}</Text>
-                </View>
+                </Animated.View>
 
-                <View style={styles.row}>
+                <Animated.View entering={SlideInDown.duration(200)} style={styles.row}>
                     <Text style={styles.label}>On:</Text>
                     <Text style={styles.value}>
-                        {transaction_date ? <DateDiffDetails date={transaction_date}/> : 'N/A'}
+                        {transaction_date ? <DateDiffDetails date={transaction_date} /> : 'N/A'}
                     </Text>
-                </View>
-
-                {email && (
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Email:</Text>
-                        <Text style={styles.value}>{email}</Text>
-                    </View>
-                )}
-
-                {phone && (
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Phone:</Text>
-                        <Text style={styles.value}>{phone}</Text>
-                    </View>
-                )}
+                </Animated.View>
                 
                 <Pressable onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
-                    <Ionicons name="close-outline" size={24} color="#FFF" />
+                    <Ionicons name="close-outline" size={24} color="black" />
                 </Pressable>
                 
                 <Pressable onPress={copy_to_clipboard} style={[styles.pressable, styles.pressable_clipboard]}>
-                    <Ionicons name={copied ? "checkmark-circle-outline" : "clipboard-outline"} size={24} color="#FFF" />
+                    <Ionicons name={copied ? "checkmark-circle-outline" : "clipboard-outline"} size={24} color="black" />
                 </Pressable>
-            </View>
-        </View>
-    )
+            </Animated.View>
+        </Animated.View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -77,7 +66,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-end',
         alignItems: 'center',
-        
     },
     all_text_container: {
         backgroundColor: "black",
@@ -134,7 +122,7 @@ const styles = StyleSheet.create({
     pressable: {
         position: 'absolute',
         zIndex: 1,
-        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: 'white',
         padding: 8,
         borderRadius: 50,
     },

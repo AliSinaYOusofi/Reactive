@@ -17,7 +17,7 @@ import Animated, {
 import TotalExpenses from '../components/Home/TotalExpenses'
 import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
 import Carousel from 'react-native-reanimated-carousel'
-import { Ionicons } from '@expo/vector-icons'
+import { AntDesign, Ionicons } from '@expo/vector-icons'
 import AnimatedUserListView from '../components/global/AnimatedUserListView'
 import useAnimatedFloating from '../components/animations/useAnimatedFloating'
 import CarouselOfTracker from '../components/carousel/Carouself'
@@ -145,8 +145,6 @@ export default function SingleCustomerView({navigation, route}) {
         setAddNewRecordModal(true)
     }
 
-    const width = Dimensions.get('window').width
-
     return (
         <>
             <Animated.View 
@@ -172,12 +170,13 @@ export default function SingleCustomerView({navigation, route}) {
                 </ScrollView>
             </View>
 
-            <Animated.View style={[floatingButtonStyle]}>
+            <Animated.View>
                 <Pressable
                     style={styles.add_new_customer_btn}
                     onPress={handleAddNewCustomer}
                 >
-                    <Text style={{color: "white"}}>Add new record</Text>
+                    <AntDesign name="plus" size={24} color="white" />
+                    <Text style={{color: "white", fontWeight: "bold"}}>Add Record</Text>
                 </Pressable>
             </Animated.View>
             
@@ -226,10 +225,9 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 16,
         width: "90%",
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10
     },
 })

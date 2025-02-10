@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import { FontAwesome, Fontisto, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -8,13 +8,14 @@ import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
-import { background_color } from './colors';
+import  Animated, { SlideInDown, SlideOutDown }  from 'react-native-reanimated';
+import { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {
 
-    const [newAmount, setNewAmount] = useState("")
-    const [newTransactionType, setNewTransactionType] = useState("")
-    const [newCurrency, setNewCurrency] = useState("")
+    const [newTransactionType, setNewTransactionType] = useState(transaction_type)
+    const [newCurrency, setNewCurrency] = useState(currency)
+    const [newAmount, setNewAmount] = useState(amount)
 
     const db = SQLite.openDatabaseSync('green-red.db')
     const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
@@ -32,10 +33,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
         if (!newCurrency) {
             return showToast('Please select a currency');
         }
-
-        // updating the customer record
-        insertToCustomerChild()
-
+        updateCustomerRecrod()
     }
 
     const showToast = (message, type = 'error') => {
@@ -50,7 +48,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
         });
     };
 
-    const insertToCustomerChild = async () => {
+    const updateCustomerRecrod = async () => {
         try {
             const query = 'UPDATE customer__records SET amount = ?, transaction_type = ?, currency = ?, transaction_updated_at = ? WHERE id = ?';
             const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
@@ -61,6 +59,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
             setUpdateRecordModal(false);
             setRefreshSingleViewChangeDatabase(prev => !prev);
             setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+            
         } catch (error) {
             console.error("Error while updating record", error);
             showToast("Failed to update record");
@@ -71,82 +70,83 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
         }
     };
 
-    useEffect( () => {
-        setNewCurrency(currency)
-        setNewAmount(amount)
-        setNewTransactionType(transaction_type)
-    }, [])
-
+    console.log(newAmount, 'new one')
     return (
-        <View style={styles.modalView}>
+        <Animated.View 
+            entering={SlideInDown.duration(500)} 
+            style={styles.modalView}
+            exiting={SlideOutDown.duration(400)}
+        >
 
-            <View style={styles.options_container}>
+            <Animated.View style={styles.options_container}>
 
-                <View style={styles.input_container}>
+                <Animated.View 
+                    entering={FadeIn.duration(300).delay(300)} 
+                    style={styles.input_container}
+                >
 
                     <TextInput
                         style={styles.input}
-                        value={String(newAmount)}
                         onChangeText={(text) => setNewAmount(text)}
                         keyboardType='phone-pad'
+                        value={newAmount}
                     />
 
-                    <Fontisto 
-                        name="money-symbol" 
-                        size={24} 
-                        color="black"
-                        style={styles.icon} 
-                    />
-                </View>
+                    <MaterialIcons name="currency-exchange" size={24} color="black" />
+                </Animated.View>
 
-                <View style={styles.payment_status}>
-                        
-                    <View >
-                        <Text style={styles.payment_text}> Money : </Text>
-                    </View>
-                    
-                    <RadioButton.Group  onValueChange={newValue => setNewTransactionType(newValue)} value={newTransactionType}>
-
-                        <View style={styles.payment_status}>
-
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <RadioButton color="green" value="received" />
-                                <Text>Received</Text>
+                <Animated.View
+                    entering={FadeIn.duration(300).delay(200)}
+                    style={styles.paymentStatusContainer}
+                >
+                    <Text style={styles.paymentLabel}>Payment Status</Text>
+                    <RadioButton.Group
+                        onValueChange={setNewTransactionType}
+                        value={newTransactionType}
+                    >
+                        <View style={styles.radioGroup}>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="received"
+                                    color="#10B981"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Received</Text>
                             </View>
-                            
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
-                                <RadioButton value="paid" color="red"/>
-                                <Text>Paid</Text>
+                            <View style={styles.radioOption}>
+                                <RadioButton
+                                    value="paid"
+                                    color="#EF4444"
+                                    uncheckedColor="#CBD5E1"
+                                />
+                                <Text style={styles.radioLabel}>Paid</Text>
                             </View>
                         </View>
                     </RadioButton.Group>
-                </View>
+                </Animated.View>
 
-                <View style={styles.drop_down_container}>
+                <Animated.View entering={FadeIn.duration(300).delay(100)} style={styles.drop_down_container}>
                     <CurrencyDropdownListSearch setSelected={setNewCurrency} selected={newCurrency}/>
-                </View>
+                </Animated.View>
 
-                <View>
+                <Animated.View entering={FadeInDown.duration(300).delay(400)}>
                     <Pressable
                         style={styles.add_new_customer_btn}
-                        onPress={handleAddNewRecord}
+                        onPress={updateCustomerRecrod}
                         title='add new customer'
                     >
-                        <Text style={{color: "white", textAlign: "center"}}>Update record</Text>
+                        <Text style={{color: "white"}}>Save Record</Text>
                     </Pressable>
-                </View>
+                </Animated.View>
+
                 <Pressable 
                     onPress={() => setUpdateRecordModal(false)} 
                     style={[styles.pressable, styles.pressable_close]}
                 >
-                    <Ionicons 
-                        name="close-outline" 
-                        size={20} 
-                        color="black" 
-                    />
+                    <Ionicons name="close-outline" size={24} color="black" />
                 </Pressable>
-            </View>
-        </View>
+            </Animated.View>
+        </Animated.View>
     )
 }
 
@@ -162,16 +162,17 @@ const styles = StyleSheet.create({
         borderColor: 'gray',
         padding: 10,
         marginBottom: 20,
-        borderRadius: 10,
+        borderRadius: 5,
         backgroundColor: "#FDFCFA",
         width: "100%",
+        color: "black"
     },
     input_container: {
         flexDirection: 'row',
         alignContent: "center",
         alignItems: "center",
         position: 'relative',
-        marginTop: 10
+        marginTop: 20
     },
 
     icon: {
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     payment_status: {
         flexDirection: "row",
         backgroundColor: "#FDFCFA",
-        borderRadius: 10,
+        borderRadius: 5,
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
@@ -209,30 +210,79 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
         width: '100%',
         position: "relative",
+        
     },
+
     add_new_customer_btn: {
         backgroundColor: 'green',
         color: "white",
-        borderRadius: 99,
+        borderRadius: 8,
         paddingHorizontal: 20,
         paddingVertical: 10,
         marginTop: 20,
         textAlign: 'center',
         alignSelf: 'center',
-        width: "50%"
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 9999,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        width: "90%",
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
+
     drop_down_container: {
-        marginTop: 20,
-     },
+        marginTop: 0,
+    },
 
     pressable: {
         position: 'absolute',
+        borderRadius: 50,
+        color: "white",
+        top: 10,
+        right: 10,
+        position: 'absolute',
         zIndex: 1,
         backgroundColor: "white",
-        padding: 5,
+        padding: 8,
         borderRadius: 50,
-        color: "black",
-        top: 10,
-        right: 10
+    },
+    paymentStatusContainer: {
+        width: "100%",
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        shadowColor: "#64748B",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    paymentLabel: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#1E293B",
+        marginBottom: 12,
+    },
+    radioGroup: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        alignItems: "center",
+    },
+    radioOption: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    radioLabel: {
+        fontSize: 16,
+        color: "#475569",
+        marginLeft: 8,
     },
 })
