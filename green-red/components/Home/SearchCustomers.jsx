@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, StyleSheet, Pressable, Modal } from 'react-native';
-import { EvilIcons } from '@expo/vector-icons';
-import { AntDesign } from '@expo/vector-icons';
-import { MaterialIcons } from '@expo/vector-icons';
 import SortOptionsDropDownModal from '../global/SortOptionsDropDownModal';
 import { format, parseISO } from 'date-fns';
 import * as Print from 'expo-print'
@@ -10,6 +7,7 @@ import * as SQLite from 'expo-sqlite'
 import * as Sharing from 'expo-sharing';
 import { formatDistanceToNowStrict } from 'date-fns';
 import Toast from 'react-native-toast-message';
+import { ArrowUpDown, FileDown, Search } from 'lucide-react-native';
 
 export default function SearchCustomers({handleSearch, setCustomers}) {
     
@@ -263,7 +261,7 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
                 
                 <View style={styles.searchContainer}>
                     
-                    <EvilIcons name="search" size={24} color="black" style={styles.icon}/>
+                    <Search  size={20} color="#64748B" style={styles.icon}/>
                     
                     <TextInput
                         style={styles.input}
@@ -275,11 +273,11 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
 
                 <View style={styles.sort_and_pdf_container}>
                     <Pressable onPress={() => setSortModalVisible(true)}>
-                        <MaterialIcons name="sort" size={24} color="black" style={styles.icon}/>
+                        <ArrowUpDown size={24} color="black" style={styles.icon}/>
                     </Pressable>
 
                     <Pressable onPress={ () => convertQueryResultToPdf()}>
-                        <AntDesign name="pdffile1" size={24} color="black" style={styles.icon}/>
+                        <FileDown size={24} color="black" style={styles.icon}/>
                     </Pressable>
                 </View>
             </View>
@@ -332,6 +330,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        columnGap: 10
     },
 
     searchContainer: {

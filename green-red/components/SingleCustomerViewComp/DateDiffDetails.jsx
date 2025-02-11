@@ -13,7 +13,7 @@ export default function DateDiffDetails({date}) {
             </Text>
 
             <Text style={style.text_margin}>
-                ({
+                &nbsp;({
                     formatDistanceToNowStrict(new Date(date), { addSuffix: true })
                 })
             </Text>
@@ -25,12 +25,13 @@ export default function DateDiffDetails({date}) {
 const style = StyleSheet.create( { 
 
     text: {
-        color: 'white',
+        color: 'black',
     },
 
     text_margin: {
-        color: 'white',
-        padding: 5
+        color: 'gray',
+        padding: 5,
+        fontSize: 16,
     },
 
     container: {

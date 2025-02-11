@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
 
 const AboutScreen = () => {
     const appSummary = "PairPay is a financial management app that helps you track your transactions and manage your finances easily. With OurApp, you can record transactions, view reports, and stay on top of your finances effortlessly.";
@@ -14,7 +13,7 @@ const AboutScreen = () => {
         <View style={styles.container}>
             <Text style={styles.summary}>{appSummary}</Text>
             <Pressable onPress={handleRateApp} style={styles.rateButton}>
-                <FontAwesome5 name="star" size={20} color="white" />
+                
                 <Text style={styles.rateButtonText}>Rate OurApp</Text>
             </Pressable>
         </View>

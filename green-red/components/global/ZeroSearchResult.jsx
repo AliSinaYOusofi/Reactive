@@ -1,71 +1,41 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming } from 'react-native-reanimated';
-import { Fontisto } from '@expo/vector-icons';
+import Animated, { SlideInUp } from 'react-native-reanimated';
+import { SearchX } from 'lucide-react-native';
 
 export default function ZeroSearchResult() {
-    const offset = useSharedValue(10);
-
-    const animatedStyle = useAnimatedStyle( () => (
-        {
-            transform: [{translateY: offset.value}]
-        }
-        )
-    )
-    
-    React.useEffect( () => {
-        offset.value = withRepeat(
-            withTiming(-offset.value, { duration: 470}), -1, true
-        )
-    }, [])
-
     return (
-        <View style={styles.container}>
-            <Text style={styles.text_big}>Your search retunred zero results</Text>
-            
-            <Animated.View style={[styles.iconContainer, styles.icon, animatedStyle]}>
-                <Fontisto name="confused" size={24} color="black" />
-            </Animated.View>
-        </View>
+        <Animated.View entering={SlideInUp.duration(500)} style={styles.container}>
+            <SearchX size={36} color="black" style={styles.icon} />
+            <Text style={styles.text_big}>No results found</Text>
+            <Text style={styles.text_small}>Try using different keywords</Text>
+        </Animated.View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: "#F8F8FF",
+        backgroundColor: "#f8f9fa",
         borderRadius: 10,
-        padding: 10,
-        marginTop: 80,
-    },
-    iconContainer: {
-        marginBottom: 20,
-    },
-    text: {
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    button: {
-        backgroundColor: 'blue',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 5,
-    },
-    buttonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    text_big: {
-        marginBottom: 10,
-        textAlign: 'center',
-        fontSize: 20,
-        fontWeight: 'bold',
+        padding: 20,
+        
     },
     icon: {
-        backgroundColor: "white",
-        padding: 10,
-        borderRadius: 50,
-        marginTop: 20
+        marginBottom: 15,
+    },
+    text_big: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: "#333",
+        marginBottom: 5,
+    },
+    text_small: {
+        fontSize: 14,
+        color: "#666",
+        textAlign: 'center',
     }
 });

@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react'
-import { FontAwesome, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -10,17 +9,18 @@ import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
 import  Animated, { SlideInDown, SlideOutDown }  from 'react-native-reanimated';
 import { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { Banknote, X } from 'lucide-react-native';
 
 export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {
 
     const [newTransactionType, setNewTransactionType] = useState(transaction_type)
     const [newCurrency, setNewCurrency] = useState(currency)
-    const [newAmount, setNewAmount] = useState(amount)
+    const [newAmount, setNewAmount] = useState(String(amount))
 
     const db = SQLite.openDatabaseSync('green-red.db')
     const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
 
-    const handleAddNewRecord = () => {
+    const handleAddNewRecord = async () => {
         
         if (!amountOfMoneyValidator(newAmount)) {
             return showToast('Amount of money is not valid');
@@ -33,7 +33,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
         if (!newCurrency) {
             return showToast('Please select a currency');
         }
-        updateCustomerRecrod()
+        await updateCustomerRecrod()
     }
 
     const showToast = (message, type = 'error') => {
@@ -84,7 +84,6 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                     entering={FadeIn.duration(300).delay(300)} 
                     style={styles.input_container}
                 >
-
                     <TextInput
                         style={styles.input}
                         onChangeText={(text) => setNewAmount(text)}
@@ -92,7 +91,9 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                         value={newAmount}
                     />
 
-                    <MaterialIcons name="currency-exchange" size={24} color="black" />
+                    <View style={styles.iconContainer}>
+                        <Banknote size={28} color="#64748B" />
+                    </View>
                 </Animated.View>
 
                 <Animated.View
@@ -132,10 +133,10 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                 <Animated.View entering={FadeInDown.duration(300).delay(400)}>
                     <Pressable
                         style={styles.add_new_customer_btn}
-                        onPress={updateCustomerRecrod}
+                        onPress={handleAddNewRecord}
                         title='add new customer'
                     >
-                        <Text style={{color: "white"}}>Save Record</Text>
+                        <Text style={{color: "white"}}>Update Record</Text>
                     </Pressable>
                 </Animated.View>
 
@@ -143,7 +144,7 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                     onPress={() => setUpdateRecordModal(false)} 
                     style={[styles.pressable, styles.pressable_close]}
                 >
-                    <Ionicons name="close-outline" size={24} color="black" />
+                    <X name="close-outline" size={24} color="black" />
                 </Pressable>
             </Animated.View>
         </Animated.View>
@@ -284,5 +285,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#475569",
         marginLeft: 8,
+    },
+    iconContainer: {
+        position: "absolute",
+        right: 16,
+        height: "100%",
+        justifyContent: "center",
+        bottom: 10
+        
     },
 })

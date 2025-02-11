@@ -1,11 +1,11 @@
 import React from "react";
-import { View, StyleSheet, Text, Pressable } from "react-native";
+import {  StyleSheet, Text, Pressable } from "react-native";
 import { cancel_button_color, delete_button_color } from "./colors";
-import { Ionicons } from "@expo/vector-icons";
 import * as SQLite from "expo-sqlite";
 import Toast from "react-native-toast-message";
 import { useAppContext } from "../../context/useAppContext";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { X } from "lucide-react-native";
 
 export default function DeleteRecordModal({
     message,
@@ -123,8 +123,7 @@ export default function DeleteRecordModal({
                     entering={FadeIn.duration(300).delay(400)}
                 >
                     <Pressable onPress={() => setCloseModal(false)}>
-                        <Ionicons
-                            name="close-outline"
+                        <X
                             size={20}
                             color="black"
                         />

@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react'
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
@@ -9,6 +8,7 @@ import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyVali
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
 import Animated, { FadeInDown, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { Banknote, X } from 'lucide-react-native';
 
 export default function AddNewCustomeRecordModal({username, setAddNewRecordModal}) {
 
@@ -101,7 +101,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                         keyboardType='phone-pad'
                     />
 
-                    <MaterialIcons name="currency-exchange" size={24} color="black" />
+                    <Banknote  size={24} color="black" />
                 </Animated.View>
 
                 <Animated.View
@@ -152,8 +152,7 @@ export default function AddNewCustomeRecordModal({username, setAddNewRecordModal
                     onPress={() => setAddNewRecordModal(false)} 
                     style={[styles.pressable, styles.pressable_close]}
                 >
-                    <Ionicons 
-                        name="close-outline" 
+                    <X 
                         size={20} 
                         color="black" 
                     />

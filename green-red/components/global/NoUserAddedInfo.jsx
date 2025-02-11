@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, interpolate, Easing, withRepeat, withTiming } from 'react-native-reanimated';
-import { AntDesign } from '@expo/vector-icons';
+import { ArrowDown } from 'lucide-react-native';
 
 export default function NoUserAddedInfo() {
 
@@ -26,7 +26,7 @@ export default function NoUserAddedInfo() {
             <Text style={styles.text}>Add a new customer by clicking the button below</Text>
             
             <Animated.View style={[styles.iconContainer, styles.icon, animatedStyle]}>
-                <AntDesign name="arrowdown" size={24} color="black" />
+                <ArrowDown size={24} color="black" />
             </Animated.View>
         </View>
     );
