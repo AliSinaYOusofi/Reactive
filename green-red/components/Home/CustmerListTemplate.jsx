@@ -2,13 +2,14 @@
 import React, { useState } from 'react'
 import { View, StyleSheet, Text, Pressable, Modal } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import { format_username } from '../../utils/username_shortcut';
 import { padi_color, received_color } from '../global/colors';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
+import { Trash2 } from 'lucide-react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 export default function CustomerListTemplate({ index, username, totalAmount, transaction_type, currency, phone, email, isSearchComponent, searchResultLength, onDelete }) {
     const navigator = useNavigation();
@@ -61,7 +62,7 @@ export default function CustomerListTemplate({ index, username, totalAmount, tra
                         onPress={() => setDeleteModal(true)} 
                         style={styles.delete_icon}
                     >
-                        <MaterialCommunityIcons 
+                        <Trash2 
                             name="delete-alert-outline" 
                             size={24} 
                             color="black" 

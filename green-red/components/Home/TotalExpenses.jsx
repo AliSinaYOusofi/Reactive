@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-
+import { ArrowDownLeft, ArrowUpRight, Trash } from 'lucide-react-native';
 export default function TotalExpenses(
     {
         totalAmountToGive,
@@ -16,7 +15,7 @@ export default function TotalExpenses(
         <View style={styles.container}>
             
             <View style={styles.item}>
-                <MaterialCommunityIcons 
+                <ArrowUpRight 
                     name="arrow-top-right" 
                     size={28} 
                     color="#E46C62" 
@@ -27,7 +26,7 @@ export default function TotalExpenses(
             </View>
 
             <View style={styles.item}>
-                <MaterialCommunityIcons 
+                <ArrowDownLeft 
                     name="arrow-bottom-left" 
                     size={28} 
                     color="#62B485" 

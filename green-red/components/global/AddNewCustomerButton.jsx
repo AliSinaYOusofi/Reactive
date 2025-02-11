@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Linking, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
-import { EvilIcons } from '@expo/vector-icons';
+import { UserRoundPlus } from 'lucide-react-native';
 
 export default function ActionButtons() {
     const navigation = useNavigation();
@@ -23,7 +22,7 @@ export default function ActionButtons() {
         <View style={styles.container}>
             
             <Pressable style={styles.button} onPress={handleAddCustomer}>
-                <AntDesign name="adduser" size={24} color="white" />
+                <UserRoundPlus size={24} color="white" />
                 <Text style={styles.text}>Add User</Text>
             </Pressable>
             

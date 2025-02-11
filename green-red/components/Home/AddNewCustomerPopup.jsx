@@ -10,7 +10,6 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from "react-native";
-import { EvilIcons, Fontisto } from "@expo/vector-icons";
 import CurrencyDropdownListSearch from "../global/CurrencyDropdownList";
 import { validateUsername } from "../../utils/validators/usernameValidator";
 import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyValidator";
@@ -27,6 +26,7 @@ import Animated, {
     useSharedValue,
     withSpring,
 } from "react-native-reanimated";
+import { User, Banknote } from 'lucide-react-native';
 
 function AddNewCustomerPopup() {
     const [username, setUsername] = useState("");
@@ -194,7 +194,8 @@ function AddNewCustomerPopup() {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <EvilIcons name="user" size={28} color="#64748B" />
+                       
+                        <User size={28} color="#64748B"/>
                     </View>
                 </Animated.View>
 
@@ -210,11 +211,7 @@ function AddNewCustomerPopup() {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <Fontisto
-                            name="money-symbol"
-                            size={20}
-                            color="#64748B"
-                        />
+                        <Banknote size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 

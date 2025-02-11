@@ -1,28 +1,19 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import HomeScreen from './screens/HomeScreen';
 import Toast from 'react-native-toast-message';
-import AddNewCustomer from './components/global/AddNewCustomerButton';
 import AddUser from './screens/AddUser';
 import SingleCustomerView from './screens/SingleCustomerView';
 import EditCustomerParent from './screens/EditCustomerParent';
 import { AppContextProvider } from './context/useAppContext';
 const StackNavigator = createNativeStackNavigator()
-import { EvilIcons, Feather } from '@expo/vector-icons';
 import ByMeACoffe from './components/Stripe/ByMeACoffe';
-import { Ionicons } from '@expo/vector-icons';
 import * as SystemUI from 'expo-system-ui';
 SystemUI.setBackgroundColorAsync("white");
-// import mobileAds, { AppOpenAd, InterstitialAd, RewardedAd, BannerAd, TestIds } from 'react-native-google-mobile-ads'
 import AboutScreen from './components/about/About';
 import TransactionsChart from './components/chart/TransactionsChart';
-
-// mobileAds()
-//   .initialize()
-//   .then(() => console.log('Ads initialized'))
-//   .catch(error => console.error(error));
+import { House } from 'lucide-react-native';
 
 export default function App() {
 
@@ -57,7 +48,7 @@ export default function App() {
                 fontSize: 25,
               },
               headerTitle: () => (
-                <Ionicons name="home-outline" size={24} color="black" />
+                <House size={24} color="black" />
               )
             }}
           />

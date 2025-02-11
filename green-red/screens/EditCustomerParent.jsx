@@ -9,11 +9,9 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from "react-native";
-import { EvilIcons, Fontisto, SimpleLineIcons } from "@expo/vector-icons";
 import CurrencyDropdownListSearch from "../components/global/CurrencyDropdownList";
 import { validateUsername } from "../utils/validators/usernameValidator";
-import { isEmailValid } from "../utils/validators/emailValidator";
-import { phoneNumberValidator } from "../utils/validators/phoneNumberValidator";
+
 import { amountOfMoneyValidator } from "../utils/validators/amountOfMoneyValidator";
 import { RadioButton } from "react-native-paper";
 import Toast from "react-native-toast-message";
@@ -28,6 +26,7 @@ import Animated, {
     withSpring,
 } from "react-native-reanimated";
 import money from "../assets/mony.png";
+import { User, Banknote } from 'lucide-react-native';
 
 export default function EditCustomerParent({ navigation, route }) {
     // Destructure previous data from route.params
@@ -167,7 +166,7 @@ export default function EditCustomerParent({ navigation, route }) {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <EvilIcons name="user" size={28} color="#64748B" />
+                        <User size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -184,8 +183,7 @@ export default function EditCustomerParent({ navigation, route }) {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <Fontisto
-                            name="money-symbol"
+                        <Banknote
                             size={24}
                             color="#64748B"
                         />

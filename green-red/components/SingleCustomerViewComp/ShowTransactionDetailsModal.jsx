@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Text, StyleSheet, Pressable } from 'react-native';
 import { formatDistanceToNowStrict } from 'date-fns';
 import DateDiffDetails from './DateDiffDetails';
 import * as Clipboard from 'expo-clipboard';
-import Animated, { SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import Animated, { 
+    FadeIn, 
+    BounceInDown, 
+    ZoomOut, 
+    SlideInDown, 
+    SlideOutDown, 
+    FadeInLeft
+} from 'react-native-reanimated';
+import { ClipboardCheck, ClipboardCopy, X } from 'lucide-react-native';
 
 export default function ShowTransactionDetailsModal({ username, amount, currency, transaction_type, transaction_date, closeModal }) {
     const [copied, setCopied] = useState(false);
@@ -24,37 +31,44 @@ On: ${transaction_date} ${transaction_date ? formatDistanceToNowStrict(new Date(
     return (
         <Animated.View 
             style={styles.modalContainer} 
-            entering={SlideInDown.duration(500)} 
-            exiting={SlideOutDown.duration(400)}
+            entering={BounceInDown.springify()} 
+            exiting={ZoomOut.duration(400)} 
         >
-            <Animated.View entering={SlideInDown.duration(500)} style={styles.all_text_container}>
-                <Animated.Text entering={SlideInDown.duration(400)}  style={[styles.transaction_type_, { color: transaction_type === "received" ? "#4CAF50" : "#F44336" }]}>
+            <Animated.View entering={FadeIn.duration(600).delay(200)} style={styles.all_text_container}>
+                <Animated.Text entering={FadeInLeft.duration(400)}  style={[styles.transaction_type_, { color: transaction_type === "received" ? "#4CAF50" : "#F44336" }]}>
                     {transaction_type}
                 </Animated.Text>
                 
-                <Animated.View entering={SlideInDown.duration(300)}  style={styles.two_texts}>
+                <Animated.View entering={FadeIn.duration(500).delay(400)}  style={styles.two_texts}>
                     <Text style={styles.amount}>{amount}</Text>
                     <Text style={styles.currency}>{currency}</Text>
                 </Animated.View>
                 
-                <Animated.View entering={SlideInDown.duration(200)} style={styles.row}>
+                <Animated.View entering={FadeIn.duration(400).delay(500)} style={styles.row}>
                     <Text style={styles.label}>{transaction_type !== 'received' ? 'To' : 'From'}:</Text>
                     <Text style={styles.value}>{username}</Text>
                 </Animated.View>
 
-                <Animated.View entering={SlideInDown.duration(200)} style={styles.row}>
+                <Animated.View entering={FadeIn.duration(400).delay(600)} style={styles.row}>
                     <Text style={styles.label}>On:</Text>
-                    <Text style={styles.value}>
+                    <Text style={[styles.value]}>
                         {transaction_date ? <DateDiffDetails date={transaction_date} /> : 'N/A'}
                     </Text>
                 </Animated.View>
                 
                 <Pressable onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
-                    <Ionicons name="close-outline" size={24} color="black" />
+                    <X  size={24} color="black" />
                 </Pressable>
                 
                 <Pressable onPress={copy_to_clipboard} style={[styles.pressable, styles.pressable_clipboard]}>
-                    <Ionicons name={copied ? "checkmark-circle-outline" : "clipboard-outline"} size={24} color="black" />
+                    {
+                        copied
+                        ?
+                        <ClipboardCheck size={24} color="black"/>
+                        :
+                        <ClipboardCopy size={24} color="black"/>
+                    }
+                    
                 </Pressable>
             </Animated.View>
         </Animated.View>
@@ -134,4 +148,8 @@ const styles = StyleSheet.create({
         top: 10,
         right: 60,
     },
+    date_diff: {
+        color: "gray",
+        fontSize: 15
+    }
 });
