@@ -8,11 +8,9 @@ import SingleCustomerView from './screens/SingleCustomerView';
 import EditCustomerParent from './screens/EditCustomerParent';
 import { AppContextProvider } from './context/useAppContext';
 const StackNavigator = createNativeStackNavigator()
-import ByMeACoffe from './components/Stripe/ByMeACoffe';
 import * as SystemUI from 'expo-system-ui';
 SystemUI.setBackgroundColorAsync("white");
-import AboutScreen from './components/about/About';
-import TransactionsChart from './components/chart/TransactionsChart';
+
 import { House } from 'lucide-react-native';
 
 export default function App() {
@@ -100,34 +98,7 @@ export default function App() {
               }
             }
           />
-          <StackNavigator.Screen
-            name={"about"}
-            component={AboutScreen}
-            options={
-              {
-                title: "About",
-                headerTitle: () => (
-                  <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                      {/* <EvilIcons name="exclamation" size={34} color="black" /> */}
-                      <Text style={{fontWeight: "bold"}}>About PayPair</Text>
-                  </View>
-                )
-              }
-            }
-          />
-          <StackNavigator.Screen
-            name="Charts"
-            component={TransactionsChart}
-            options={{
-              title: "Charts",
-              headerTitle: () => (
-                <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                  {/* <Ionicons name="bar-chart-outline" size={24} color="black" /> */}
-                  <Text>Charts</Text>
-                </View>
-              )
-            }}
-          />
+          
         </StackNavigator.Navigator>
         <Toast />
       </NavigationContainer>

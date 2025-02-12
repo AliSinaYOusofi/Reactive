@@ -38,7 +38,7 @@ export default function TotalExpenses(
             
             <View style={styles.totalContainer}>
                 <Text style={styles.totalText}>
-                    {isOwed ? 'You are owed' : 'You owe'} {Math.abs(netAmount)} {currency}
+                    {isOwed ? 'Must Receive' : 'Must Pay'} {Math.abs(netAmount)} {currency}
                 </Text>
             </View>
         </View>
