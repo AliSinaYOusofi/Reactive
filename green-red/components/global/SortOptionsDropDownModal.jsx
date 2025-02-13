@@ -1,28 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Pressable, Animated } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Pressable } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { ArrowDown, X } from 'lucide-react-native';
 
 export default function SortOptionsDropDownModal({ setSelected, selected, setCloseSortMOdal }) {
-    const slideAnim = useRef(new Animated.Value(300)).current; // Start off-screen
-
-    useEffect(() => {
-        // Slide up animation
-        Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-    }, []);
-
-    const closeModal = () => {
-        // Slide down animation before closing
-        Animated.timing(slideAnim, {
-            toValue: 300,
-            duration: 200,
-            useNativeDriver: true,
-        }).start(() => setCloseSortMOdal(false));
-    };
 
     const options = [
         { label: 'Alphabetical (ascending)', value: 'ASC ALPHA' },
@@ -44,7 +25,7 @@ export default function SortOptionsDropDownModal({ setSelected, selected, setClo
 
     return (
         <View style={styles.modalContainer}>
-            <Animated.View style={[styles.drop_down_container, { transform: [{ translateY: slideAnim }] }]}>
+            <View style={[styles.drop_down_container]}>
                 <View style={styles.dropdown_}>
                     <RNPickerSelect
                         placeholder={placeholder}
@@ -56,10 +37,10 @@ export default function SortOptionsDropDownModal({ setSelected, selected, setClo
                         Icon={() => <ArrowDown size={24} color="white" />}
                     />
                 </View>
-                <Pressable onPress={closeModal} style={styles.pressable_close}>
+                <Pressable onPress={() => setCloseSortMOdal(false)} style={styles.pressable_close}>
                     <X size={24} color="black" />
                 </Pressable>
-            </Animated.View>
+            </View>
         </View>
     );
 }

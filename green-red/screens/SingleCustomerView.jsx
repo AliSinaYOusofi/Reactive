@@ -1,41 +1,33 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, Pressable, Modal, Dimensions } from 'react-native'
-import { useIsFocused } from '@react-navigation/native'
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native'
 import { openDatabaseSync } from 'expo-sqlite'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
 import { useAppContext } from '../context/useAppContext'
 import Animated, { 
     FadeIn,
-    FadeInDown,
     useAnimatedStyle,
     withSpring,
     withSequence,
     withTiming,
     useSharedValue
 } from 'react-native-reanimated'
-import TotalExpenses from '../components/Home/TotalExpenses'
 import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
-import Carousel from 'react-native-reanimated-carousel'
-import { AntDesign, Ionicons } from '@expo/vector-icons'
+import { AntDesign } from '@expo/vector-icons'
 import AnimatedUserListView from '../components/global/AnimatedUserListView'
-import useAnimatedFloating from '../components/animations/useAnimatedFloating'
 import CarouselOfTracker from '../components/carousel/Carouself'
 
 export default function SingleCustomerView({navigation, route}) {
     const [customers, setCustomers] = useState([])
     const [isLoading, setIsLoading] = useState(true)
-    const isFocused = useIsFocused()
     const username = route.params.username
     const [addNewRecordModal, setAddNewRecordModal] = useState(false)
-    const { refreshSingelViewChangeDatabase } = useAppContext()
+    const { refreshSingelViewChangeDatabase, refreshHomeScreenOnChangeDatabase } = useAppContext()
     const [singleCustomerExpense, setSingleCustomerExpense] = useState([])
 
     const db = openDatabaseSync('green-red.db')
     
-    // Animation shared values
     const modalScale = useSharedValue(0)
-    const { translateY } = useAnimatedFloating()
     
     const loadingRotation = useSharedValue(0)
 
@@ -47,14 +39,6 @@ export default function SingleCustomerView({navigation, route}) {
             )
         }
     }, [isLoading])
-
-    const floatingButtonStyle = useAnimatedStyle(() => {
-        return {
-            transform: [
-                { translateY: translateY.value }
-            ]
-        }
-    })
 
     const modalAnimatedStyle = useAnimatedStyle(() => {
         return {
@@ -68,7 +52,6 @@ export default function SingleCustomerView({navigation, route}) {
             let totalAmountsByCurrency = {}
 
             try {
-                // ... existing expense calculation logic ...
                 const initialTransactionQuery = "SELECT amount, currency, transaction_type FROM customers WHERE username = ?"
                 const initialTransaction = await db.getFirstAsync(initialTransactionQuery, [username])
 
@@ -118,7 +101,7 @@ export default function SingleCustomerView({navigation, route}) {
         }
 
         fetchAllCustomerExpense()
-    }, [username])
+    }, [username, refreshSingelViewChangeDatabase])
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
@@ -138,7 +121,7 @@ export default function SingleCustomerView({navigation, route}) {
         }
 
         loadCustomerDataList()
-    }, [refreshSingelViewChangeDatabase, username])
+    }, [refreshSingelViewChangeDatabase, username, refreshHomeScreenOnChangeDatabase])
     
     const handleAddNewCustomer = () => {
         modalScale.value = withSpring(1)

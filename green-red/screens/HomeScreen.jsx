@@ -102,7 +102,9 @@ export default function HomeScreen() {
 
     return (
         <Animated.View style={style.container} entering={FadeIn.duration(500)}>
-            <CarouselOfTracker totalExpenseOfCustomer={totalExpenseOfCustomer}/>
+            <Animated.View entering={FadeIn.duration(500).delay(900)}>
+                <CarouselOfTracker totalExpenseOfCustomer={totalExpenseOfCustomer}/>
+            </Animated.View>
 
             <Animated.View style={{marginTop: 50}} entering={FadeInDown.delay(200)}>
                 {customer.length ? (
