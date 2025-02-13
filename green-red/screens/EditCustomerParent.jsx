@@ -25,11 +25,9 @@ import Animated, {
     useSharedValue,
     withSpring,
 } from "react-native-reanimated";
-import money from "../assets/mony.png";
 import { User, Banknote } from 'lucide-react-native';
 
 export default function EditCustomerParent({ navigation, route }) {
-    // Destructure previous data from route.params
     const {
         username: prev_username,
         totalAmount: prev_amount_of_money,

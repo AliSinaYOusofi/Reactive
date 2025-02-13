@@ -89,8 +89,6 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
         }
     };
     
-    
-
     useEffect( () => {
         
         const handleSortOptionsChange = () => {

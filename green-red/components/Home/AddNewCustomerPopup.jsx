@@ -75,7 +75,7 @@ function AddNewCustomerPopup() {
         };
 
         initializeDatabase();
-    }, [db.execAsync]); // Added db.execAsync to dependencies
+    }, [db.execAsync]);
 
     const addNewCustomer = async () => {
         if (!validateUsername(username)) {
@@ -177,14 +177,14 @@ function AddNewCustomerPopup() {
                 style={styles.modalView}
             >
                 <Animated.Text
-                    entering={FadeInDown.duration(300).delay(100)}
+                    entering={FadeInDown.duration(300).delay(300)}
                     style={styles.title}
                 >
                     Add New Customer
                 </Animated.Text>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(200)}
+                    entering={FadeInDown.duration(300).delay(290)}
                     style={styles.inputContainer}
                 >
                     <TextInput
@@ -200,7 +200,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(300)}
+                    entering={FadeInDown.duration(300).delay(280)}
                     style={styles.inputContainer}
                 >
                     <TextInput
@@ -216,7 +216,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(400)}
+                    entering={FadeInDown.duration(300).delay(270)}
                     style={styles.paymentStatusContainer}
                 >
                     <Text style={styles.paymentLabel}>Payment Status</Text>
@@ -246,7 +246,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(500)}
+                    entering={FadeInDown.duration(300).delay(260)}
                     style={styles.dropDownContainer}
                 >
                     <CurrencyDropdownListSearch
@@ -256,7 +256,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(600)}
+                    entering={FadeInDown.duration(300).delay(250)}
                     style={styles.buttonWrapper}
                 >
                     <Animated.View style={[buttonStyle]}>

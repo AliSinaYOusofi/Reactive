@@ -19,16 +19,16 @@ export default function DeleteRecordModal({
         setRefreshSingleViewChangeDatabase,
     } = useAppContext();
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (record_id) {
             console.log("deleting by record_id", record_id);
-            deleteByRecoredId();
-            setRefreshSingleViewChangeDatabase((prev) => !prev);
+            await deleteByRecoredId();
         } else {
             console.log("deleting by username", username);
-            deleteByUsername();
-            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            await deleteByUsername();
         }
+        setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+        setRefreshSingleViewChangeDatabase((prev) => !prev);
     };
 
     const handleCancel = () => {
@@ -74,11 +74,14 @@ export default function DeleteRecordModal({
             // Delete from customer__records table
             const deleteRecordsQuery =
                 "DELETE FROM customer__records WHERE username = ?;";
-            const result = await db.runAsync(deleteRecordsQuery, [username]);
+            await db.runAsync(deleteRecordsQuery, [username]);
+            
+            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            setRefreshSingleViewChangeDatabase((prev) => !prev);
 
             setCloseModal(false);
             showToast("User and all associated records deleted.", "success");
-            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+
         } catch (error) {
             console.error("Failed to delete user", error.message);
             showToast("Failed to delete user");

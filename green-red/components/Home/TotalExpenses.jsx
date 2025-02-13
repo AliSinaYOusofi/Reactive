@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { ArrowDownLeft, ArrowUpRight, Trash } from 'lucide-react-native';
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react-native';
 export default function TotalExpenses(
     {
         totalAmountToGive,
