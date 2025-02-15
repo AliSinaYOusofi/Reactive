@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
         color: '#62B485',
     },
     totalContainer: {
-        backgroundColor: '#111111', 
+        backgroundColor: '#37371F', 
         borderRadius: 8,
         paddingVertical: 12,
         paddingHorizontal: 16,

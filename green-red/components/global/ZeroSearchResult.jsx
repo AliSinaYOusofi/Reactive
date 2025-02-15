@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, { SlideInUp } from 'react-native-reanimated';
+import Animated, { SlideInDown, SlideInUp } from 'react-native-reanimated';
 import { SearchX } from 'lucide-react-native';
 
 export default function ZeroSearchResult() {
     return (
-        <Animated.View entering={SlideInUp.duration(500)} style={styles.container}>
+        <Animated.View entering={SlideInDown.duration(500)} style={styles.container}>
             <SearchX size={36} color="black" style={styles.icon} />
             <Text style={styles.text_big}>No results found</Text>
             <Text style={styles.text_small}>Try using different keywords</Text>

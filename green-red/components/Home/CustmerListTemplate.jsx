@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react'
-import { View, StyleSheet, Text, Pressable, Modal } from 'react-native'
+import { View, StyleSheet, Text, Pressable, Modal, Dimensions } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import { format_username } from '../../utils/username_shortcut';
@@ -10,6 +9,8 @@ import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
 import { Trash2 } from 'lucide-react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+
+const { width } = Dimensions.get('window')
 
 export default function CustomerListTemplate({ index, username, totalAmount, transaction_type, currency, phone, email, isSearchComponent, searchResultLength, onDelete }) {
     const navigator = useNavigation();
@@ -40,27 +41,41 @@ export default function CustomerListTemplate({ index, username, totalAmount, tra
 
     return (
         <>
-            
             <Animated.View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}, animatedStyle]}>
-                <Pressable onPress={handleCustomerViewClick} style={[styles.container]}>
-                    <View style={styles.username_and_shortcut_container}>
+                <Pressable 
+                    onPress={handleCustomerViewClick} 
+                    style={styles.pressableContainer}
+                >
+                    <View style={styles.mainContent}>
                         <View style={styles.usernameShortCutStyle}>
-                            <Text>{format_username(username)}</Text>
+                            <Text style={styles.shortcutText}>
+                                {format_username(username)}
+                            </Text>
                         </View>
-                        <View>
-                            <Text> {username} </Text>
+                        
+                        <View style={styles.textContainer}>
+                            <Text 
+                                numberOfLines={1} 
+                                ellipsizeMode="tail" 
+                                style={styles.usernameText}
+                            >
+                                {username}
+                            </Text>
+                            <Text 
+                                numberOfLines={1} 
+                                ellipsizeMode="tail" 
+                                style={styles.amountText}
+                            >
+                                {totalAmount} {currency}
+                            </Text>
                         </View>
                     </View>
-
-                    <View>
-                        <Text>  {totalAmount} {currency} </Text>
-                    </View>                
                 </Pressable>
                 
-                <View style={styles._icons_container}>
+                <View style={styles.iconsContainer}>
                     <Pressable 
                         onPress={() => setDeleteModal(true)} 
-                        style={styles.delete_icon}
+                        style={styles.iconButton}
                     >
                         <Trash2 
                             name="delete-alert-outline" 
@@ -69,9 +84,11 @@ export default function CustomerListTemplate({ index, username, totalAmount, tra
                         />
                     </Pressable>
 
-                    <Pressable onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type, email, phone})}>
+                    <Pressable 
+                        onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type, email, phone})}
+                        style={[styles.iconButton, styles.edit_icon]}
+                    >
                         <MaterialCommunityIcons 
-                            style={styles.pdf_icon} 
                             name="circle-edit-outline" 
                             size={24} 
                             color="black"
@@ -99,48 +116,58 @@ export default function CustomerListTemplate({ index, username, totalAmount, tra
 
 const styles = StyleSheet.create({
     container: {
-        display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 5,
+        padding: 12,
         marginVertical: 5,
         borderRadius: 10,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        width: width - 32,
+    },
+    pressableContainer: {
+        flex: 1,
+    },
+    mainContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
     },
     usernameShortCutStyle: {
         backgroundColor: "white",
         borderRadius: 50,
-        padding: 8
+        padding: 10,
+        marginRight: 12,
     },
-    username_and_shortcut_container: {
-        display: 'flex',
+    shortcutText: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    textContainer: {
+        flex: 1,
+        marginRight: 12,
+    },
+    usernameText: {
+        fontSize: 16,
+        fontWeight: '500',
+        maxWidth: width * 0.5,
+    },
+    amountText: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 4,
+    },
+    iconsContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        columnGap: 10
+        gap: 7,
+        paddingLeft: 12,
     },
-    delete_icon: {
+    iconButton: {
         backgroundColor: "white",
         padding: 8,
         borderRadius: 50,
     },
-    _icons_container: {
-        display: "flex",
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        columnGap: 10,
-    },
-    search_header: {
-        fontSize: 17,
-        fontWeight: "bold",
-        marginTop: 10,
-    },
-    pdf_icon: {
-        backgroundColor: "white",
-        padding: 8,
-        borderRadius: 50,
-    },
-    
+    edit_icon: {
+        marginRight: 10
+    }
 });

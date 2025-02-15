@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import {
     View,
@@ -22,6 +20,8 @@ import { format } from "date-fns";
 import Animated, {
     FadeIn,
     FadeInDown,
+    SlideInLeft,
+    SlideInRight,
     useAnimatedStyle,
     useSharedValue,
     withSpring,
@@ -173,18 +173,18 @@ function AddNewCustomerPopup() {
             style={styles.container}
         >
             <Animated.View
-                entering={FadeIn.duration(300)}
+                entering={FadeIn.duration(300).delay(330)}
                 style={styles.modalView}
             >
                 <Animated.Text
-                    entering={FadeInDown.duration(300).delay(300)}
+                    entering={SlideInRight.duration(300).delay(300)}
                     style={styles.title}
                 >
                     Add New Customer
                 </Animated.Text>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(290)}
+                    entering={SlideInLeft.duration(300).delay(250)}
                     style={styles.inputContainer}
                 >
                     <TextInput
@@ -200,7 +200,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(280)}
+                    entering={SlideInRight.duration(300).delay(200)}
                     style={styles.inputContainer}
                 >
                     <TextInput
@@ -216,7 +216,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(270)}
+                    entering={SlideInLeft.duration(300).delay(150)}
                     style={styles.paymentStatusContainer}
                 >
                     <Text style={styles.paymentLabel}>Payment Status</Text>
@@ -246,7 +246,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(260)}
+                    entering={SlideInRight.duration(300).delay(100)}
                     style={styles.dropDownContainer}
                 >
                     <CurrencyDropdownListSearch
@@ -256,7 +256,7 @@ function AddNewCustomerPopup() {
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(250)}
+                    entering={FadeInDown.duration(300).delay(50)}
                     style={styles.buttonWrapper}
                 >
                     <Animated.View style={[buttonStyle]}>

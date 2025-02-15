@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { Pressable, View, Text, StyleSheet, Modal } from 'react-native'
+import { Pressable, View, Text, StyleSheet, Modal, Dimensions } from 'react-native'
 import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import EditCustomerRecordModal from '../global/EditCustomerRecordModal';
 import { format_username } from '../../utils/username_shortcut';
 import { padi_color, received_color } from '../global/colors';
+const { width } = Dimensions.get('window')
 
 export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone, record_id}) {
 
@@ -23,13 +24,24 @@ export default function UserListView({username, amount, currency, transaction_ty
                         <View style={styles.usernameShortCutStyle}>
                             <Text >{format_username(username)}</Text>
                         </View>
-                        <View>
-                            <Text> {username} </Text>
-                        </View>
+                        
                     </View>
 
-                    <View>
-                        <Text>  {amount} {currency} </Text>
+                    <View style={styles.textContainer}>
+                        
+                        <Text 
+                            style={styles.usernameText}
+                            numberOfLines={1} 
+                            ellipsizeMode="tail"> 
+                            {username} 
+                        </Text>
+                        
+                        <Text style={styles.amountText}
+                            numberOfLines={1} 
+                            ellipsizeMode="tail">  
+                            {amount} {currency} 
+                        </Text>
+                        
                     </View>                
                 </Pressable>
                 
@@ -154,5 +166,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         columnGap: 10,
-    }
+    },
+    textContainer: {
+        marginLeft: 10,
+        
+    },
+    usernameText: {
+        fontSize: 16,
+        fontWeight: '500',
+        maxWidth: width * 0.5,
+    },
+    amountText: {
+        fontSize: 14,
+        color: 'gray',
+        marginTop: 4,
+    },
 })
