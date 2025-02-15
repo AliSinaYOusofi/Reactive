@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import TotalExpenses from '../components/Home/TotalExpenses';
 import SearchCustomers from '../components/Home/SearchCustomers';
 import CustomerListTemplate from '../components/Home/CustmerListTemplate';
@@ -13,6 +13,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import { createCustomerRecordsTable } from '../database/createCustomerRecordsTable';
 import CarouselOfTracker from '../components/carousel/Carouself';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { err } from 'react-native-svg';
 
 export default function HomeScreen() {
     const [customer, setCustomers] = useState([]);
@@ -21,10 +22,12 @@ export default function HomeScreen() {
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([]);
     const db = SQLite.openDatabaseSync('green-red.db');
     const { refreshHomeScreenOnChangeDatabase } = useAppContext();
-    const width = Dimensions.get('window').width;
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(false)
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
+            setLoading(true)
             try {
                 const customers = await db.getAllAsync("SELECT * FROM customers");
                 if (!customers || customers.length === 0) {
@@ -51,6 +54,9 @@ export default function HomeScreen() {
                 setCustomers(updatedCustomers.sort((a, b) => new Date(b.at) - new Date(a.at)));
             } catch (error) {
                 console.error("Error loading customer data:", error);
+                setError(error.message || " Error Fetching users table")
+            } finally {
+                setLoading(false)
             }
         };
         loadCustomerDataList();
@@ -100,6 +106,17 @@ export default function HomeScreen() {
         fetchTotalOfAmountsBasedOnCurrency();
     }, [customer]);
 
+    if (loading) {
+        return <ActivityIndicator style={{flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white"}} color="black" size={"large"}/>
+    }
+
+    else if (error) {
+        return (
+            <View style={style.errorContainer}>
+                <Text style={style.errorText}>Fetching users failed</Text>
+            </View>
+        );
+    }
     return (
         <Animated.View style={style.container} entering={FadeIn.duration(500)}>
             <Animated.View entering={FadeIn.duration(500).delay(900)}>
@@ -199,5 +216,19 @@ const style = StyleSheet.create({
         backgroundColor: 'white',
         height: "auto",
         width: "85%"
+    },
+    spinner: {
+        flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white"
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'black',
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });

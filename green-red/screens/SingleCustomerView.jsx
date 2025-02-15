@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native'
 import { openDatabaseSync } from 'expo-sqlite'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
@@ -24,6 +24,8 @@ export default function SingleCustomerView({navigation, route}) {
     const [addNewRecordModal, setAddNewRecordModal] = useState(false)
     const { refreshSingelViewChangeDatabase, refreshHomeScreenOnChangeDatabase } = useAppContext()
     const [singleCustomerExpense, setSingleCustomerExpense] = useState([])
+    const [ loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
 
     const db = openDatabaseSync('green-red.db')
     
@@ -95,6 +97,7 @@ export default function SingleCustomerView({navigation, route}) {
                 setSingleCustomerExpense(total_expense_data)
             } catch (error) {
                 console.error("Error fetching customer expenses:", error.message)
+                setError(error.message || "Failed to fetch customers")
             } finally {
                 setIsLoading(false)
             }
@@ -126,6 +129,18 @@ export default function SingleCustomerView({navigation, route}) {
     const handleAddNewCustomer = () => {
         modalScale.value = withSpring(1)
         setAddNewRecordModal(true)
+    }
+
+    if (isLoading) {
+        return <ActivityIndicator style={{flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white"}} color="black" size={"large"}/>
+    }
+
+    else if (error) {
+        return (
+            <View style={style.errorContainer}>
+                <Text style={style.errorText}>Fetching users failed</Text>
+            </View>
+        );
     }
 
     return (
@@ -212,5 +227,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         gap: 10
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'black',
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 })
