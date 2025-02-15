@@ -11,14 +11,14 @@ const StackNavigator = createNativeStackNavigator()
 import * as SystemUI from 'expo-system-ui';
 SystemUI.setBackgroundColorAsync("white");
 
-import { House } from 'lucide-react-native';
+import { Database, House, PenSquare, UserPlus } from 'lucide-react-native';
 
 export default function App() {
 
   return (
     <AppContextProvider>
-
-      <NavigationContainer>
+      
+      <NavigationContainer >
         <StackNavigator.Navigator
           screenOptions={{
             headerShown: true,
@@ -29,9 +29,6 @@ export default function App() {
               fontSize: 20
               
             },
-            
-            // headerRight: () => <ByMeACoffe />,
-          
           }}
         >
           <StackNavigator.Screen
@@ -61,7 +58,7 @@ export default function App() {
               },
               headerTitle: () => (
                 <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                    {/* <EvilIcons name="plus" size={24} color="black" /> */}
+                    <UserPlus color="black"/>
                     <Text>Add Customer</Text>
                 </View>
               )
@@ -76,7 +73,7 @@ export default function App() {
                 title: "Customer Data",
                 headerTitle: () => (
                   <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                      {/* <Feather name="database" size={24} color="black" /> */}
+                      <Database name="database" size={24} color="black" />
                       <Text>Records</Text>
                   </View>
                 )
@@ -91,7 +88,7 @@ export default function App() {
                 title: "Customer Data",
                 headerTitle: () => (
                   <View style={{flexDirection: "row", flex: 1, justifyContent: "start", alignItems: "center", columnGap: 4}}>
-                      {/* <EvilIcons name="pencil" size={34} color="black" /> */}
+                      <PenSquare  color="black" />
                       <Text>Edit customer</Text>
                   </View>
                 )
@@ -105,12 +102,3 @@ export default function App() {
     </AppContextProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

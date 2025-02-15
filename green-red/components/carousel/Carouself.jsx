@@ -7,7 +7,9 @@ const style = StyleSheet.create({
     container: {
         backgroundColor: 'white',
         width: "100%",
-        marginTop: 10
+        marginTop: 10,
+        overflow: 'visible',
+        height: 'auto'
     },
     slide: {
         justifyContent: 'center',
