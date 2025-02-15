@@ -5,11 +5,9 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import FlatListData from './components/FlatListData';
 import SectionListData from './components/SectionListData';
-
 const Stack = createNativeStackNavigator()
 
 export default function App() {
-  
   return (
     <>
       <StatusBar style="auto" />
