@@ -1,50 +1,72 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import TotalExpenses from '../components/Home/TotalExpenses';
 import SearchCustomers from '../components/Home/SearchCustomers';
 import CustomerListTemplate from '../components/Home/CustmerListTemplate';
 import AddNewCustomer from '../components/global/AddNewCustomerButton';
-import * as SQLite from 'expo-sqlite';
 import { useAppContext } from '../context/useAppContext';
 import NoUserAddedInfo from '../components/global/NoUserAddedInfo';
 import ZeroSearchResult from '../components/global/ZeroSearchResult';
-import Carousel from 'react-native-reanimated-carousel';
-import { createCustomerRecordsTable } from '../database/createCustomerRecordsTable';
+
 import CarouselOfTracker from '../components/carousel/Carouself';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { err } from 'react-native-svg';
+import { supabase } from '../utils/supabase';
 
 export default function HomeScreen() {
     const [customer, setCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("");
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([]);
-    const db = SQLite.openDatabaseSync('green-red.db');
     const { refreshHomeScreenOnChangeDatabase } = useAppContext();
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
-            setLoading(true)
+            setLoading(true);
             try {
-                const customers = await db.getAllAsync("SELECT * FROM customers");
+                const { data: customers, error } = await supabase
+                    .from('customers')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Error fetching customers:', error);
+                    setError(error.message || "Error Fetching customers table");
+                    return;
+                }
+    
                 if (!customers || customers.length === 0) {
                     console.log("No customers found");
                     setCustomers([]);
                     return;
                 }
+                
                 const updatedCustomers = await Promise.all(customers.map(async (customer) => {
                     try {
                         const [receivedResult, paidResult] = await Promise.all([
-                            db.getAllAsync("SELECT SUM(amount) as total FROM customers WHERE transaction_type = 'received' AND username = ?", [customer.username]),
-                            db.getAllAsync("SELECT SUM(amount) as total FROM customers WHERE transaction_type = 'paid' AND username = ?", [customer.username])
+                            supabase
+                                .from('customers')
+                                .select('amount')
+                                .eq('transaction_type', 'received')
+                                .eq('username', customer.username),
+                            supabase
+                                .from('customers')
+                                .select('amount')
+                                .eq('transaction_type', 'paid')
+                                .eq('username', customer.username)
                         ]);
-                        const received_amount_total = receivedResult[0]?.total ?? 0;
-                        const paid_amount_total = paidResult[0]?.total ?? 0;
-                        const border_color_status = parseFloat(received_amount_total) > parseFloat(paid_amount_total) ? "green" : "red";
-                        const current_total_amount_status_count = parseFloat(received_amount_total) - parseFloat(paid_amount_total);
+    
+                        if (receivedResult.error || paidResult.error) {
+                            console.error('Error fetching transaction data:', receivedResult.error || paidResult.error);
+                            return customer; // Return original customer data if error occurs
+                        }
+    
+                        const receivedTotal = receivedResult.data.reduce((sum, record) => sum + record.amount, 0);
+                        const paidTotal = paidResult.data.reduce((sum, record) => sum + record.amount, 0);
+    
+                        const border_color_status = receivedTotal > paidTotal ? "green" : "red";
+                        const current_total_amount_status_count = receivedTotal - paidTotal;
+    
                         return { ...customer, amount: Math.abs(current_total_amount_status_count), border_color: border_color_status };
                     } catch (itemError) {
                         console.error(`Error processing customer ${customer.username}:`, itemError);
@@ -54,13 +76,12 @@ export default function HomeScreen() {
                 setCustomers(updatedCustomers.sort((a, b) => new Date(b.at) - new Date(a.at)));
             } catch (error) {
                 console.error("Error loading customer data:", error);
-                setError(error.message || " Error Fetching users table")
+                setError(error.message || "Error Fetching users table");
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
         };
         loadCustomerDataList();
-        createCustomerRecordsTable();
     }, [refreshHomeScreenOnChangeDatabase]);
 
     const handleSearch = (searchTerm) => {
@@ -72,28 +93,59 @@ export default function HomeScreen() {
         const fetchTotalOfAmountsBasedOnCurrency = async () => {
             try {
                 let totalAmountsByCurrency = {};
-                const distinctCurrenciesResult = await db.getAllAsync("SELECT DISTINCT currency FROM customer__records");
-                const distinctCurrencies = distinctCurrenciesResult.map(row => row.currency);
+    
+                // Fetch all customer records to get unique currencies
+                const { data: customerRecords, error: error1 } = await supabase
+                    .from('customer__records')
+                    .select('currency');
+    
+                if (error1) {
+                    console.error('Error fetching customer records:', error1);
+                    return;
+                }
+    
+                // Get unique currencies
+                const distinctCurrencies = [...new Set(customerRecords.map(record => record.currency))];
+    
                 await Promise.all(distinctCurrencies.map(async currency => {
                     const [toGiveResult, toTakeResult] = await Promise.all([
-                        db.getAllAsync("SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'received' AND currency = ?", [currency]),
-                        db.getAllAsync("SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'paid' AND currency = ?", [currency])
+                        supabase
+                            .from('customer__records')
+                            .select('amount')
+                            .eq('transaction_type', 'received')
+                            .eq('currency', currency),
+                        supabase
+                            .from('customer__records')
+                            .select('amount')
+                            .eq('transaction_type', 'paid')
+                            .eq('currency', currency)
                     ]);
+    
+                    if (toGiveResult.error || toTakeResult.error) {
+                        console.error('Error fetching transaction data:', toGiveResult.error || toTakeResult.error);
+                        return;
+                    }
+    
+                    const toGiveTotal = toGiveResult.data.reduce((sum, record) => sum + record.amount, 0);
+                    const toTakeTotal = toTakeResult.data.reduce((sum, record) => sum + record.amount, 0);
+    
                     totalAmountsByCurrency[currency] = {
-                        totalAmountBasedOnCurrencyToGive: parseFloat(toGiveResult[0]?.total ?? 0),
-                        totalAmountBasedOnCurrencyToTake: parseFloat(toTakeResult[0]?.total ?? 0)
+                        totalAmountBasedOnCurrencyToGive: toGiveTotal,
+                        totalAmountBasedOnCurrencyToTake: toTakeTotal
                     };
                 }));
-                customer.forEach(customerr => {
-                    if (!totalAmountsByCurrency[customerr.currency]) {
-                        totalAmountsByCurrency[customerr.currency] = { totalAmountBasedOnCurrencyToGive: 0, totalAmountBasedOnCurrencyToTake: 0 };
+    
+                customer.forEach(customer => {
+                    if (!totalAmountsByCurrency[customer.currency]) {
+                        totalAmountsByCurrency[customer.currency] = { totalAmountBasedOnCurrencyToGive: 0, totalAmountBasedOnCurrencyToTake: 0 };
                     }
-                    if (customerr.transaction_type === 'received') {
-                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToGive += parseFloat(customerr.amount);
+                    if (customer.transaction_type === 'received') {
+                        totalAmountsByCurrency[customer.currency].totalAmountBasedOnCurrencyToGive += parseFloat(customer.amount);
                     } else {
-                        totalAmountsByCurrency[customerr.currency].totalAmountBasedOnCurrencyToTake += parseFloat(customerr.amount);
+                        totalAmountsByCurrency[customer.currency].totalAmountBasedOnCurrencyToTake += parseFloat(customer.amount);
                     }
                 });
+    
                 setTotalExpenseOfCustomers(Object.entries(totalAmountsByCurrency).map(([currency, amounts]) => ({
                     currency,
                     totalAmountBasedOnCurrencyToGive: amounts.totalAmountBasedOnCurrencyToGive,
@@ -105,6 +157,8 @@ export default function HomeScreen() {
         };
         fetchTotalOfAmountsBasedOnCurrency();
     }, [customer]);
+    
+    
 
     if (loading) {
         return <ActivityIndicator style={{flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "white"}} color="black" size={"large"}/>

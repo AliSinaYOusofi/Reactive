@@ -15,7 +15,6 @@ import { validateUsername } from "../utils/validators/usernameValidator";
 import { amountOfMoneyValidator } from "../utils/validators/amountOfMoneyValidator";
 import { RadioButton } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import * as SQLite from "expo-sqlite";
 import { useNavigation } from "@react-navigation/native";
 import { useAppContext } from "../context/useAppContext";
 import Animated, {
@@ -26,6 +25,7 @@ import Animated, {
     withSpring,
 } from "react-native-reanimated";
 import { User, Banknote } from 'lucide-react-native';
+import { supabase } from "../utils/supabase";
 
 export default function EditCustomerParent({ navigation, route }) {
     const {
@@ -46,7 +46,6 @@ export default function EditCustomerParent({ navigation, route }) {
 
     const navigator = useNavigation();
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext();
-    const db = SQLite.openDatabaseSync("green-red.db");
 
     // Reanimated shared value for button scale
     const scale = useSharedValue(1);
@@ -111,37 +110,52 @@ export default function EditCustomerParent({ navigation, route }) {
     // Update the customer record in the customers table
     const updateParentCustomer = async () => {
         try {
-            await db.runAsync(
-                "UPDATE customers SET username = ?, amount = ?, transaction_type = ?, currency = ? WHERE username = ?",
-                [
-                    updatedUsername,
-                    updatedAmountOfMoney,
-                    updatedPaymentStatus,
-                    updatedSelectedCurrency,
-                    prev_username,
-                ]
-            );
-            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            const { data, error } = await supabase
+                .from('customers')
+                .update({
+                    username: updatedUsername,
+                    amount: updatedAmountOfMoney,
+                    transaction_type: updatedPaymentStatus,
+                    currency: updatedSelectedCurrency
+                })
+                .eq('username', prev_username);
+    
+    
+            if (error) {
+                showToast("Failed to update");
+            } else {
+                setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+                showToast("Customer updated", "success");
+            }
         } catch (error) {
+            console.error("Error updating customer:", error.message);
             showToast("Failed to update customer");
-            console.error(error);
         }
     };
+    
 
     const updateParentChildren = async () => {
         try {
-            await db.runAsync(
-                "UPDATE customer__records SET username = ? WHERE username = ?",
-                [updatedUsername, prev_username]
-            );
-            showToast("Updated customer successfully", "success");
-            setTimeout(() => navigator.navigate("homescreen"), 2000);
-            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            const { data, error } = await supabase
+                .from('customer__records')
+                .update({
+                    username: updatedUsername
+                })
+                .eq('username', prev_username);
+    
+            if (error) {
+                showToast("No records found to update", "error");
+            } else {
+                showToast("Updated customer", "success");
+                setTimeout(() => navigator.navigate("homescreen"), 2000);
+                setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            }
         } catch (error) {
+            console.error("Error updating customer records:", error.message);
             showToast("Failed to update customer records");
-            console.error(error);
         }
     };
+    
 
     return (
         <KeyboardAvoidingView

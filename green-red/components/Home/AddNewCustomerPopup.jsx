@@ -7,13 +7,13 @@ import {
     Text,
     KeyboardAvoidingView,
     Platform,
+    ActivityIndicator,
 } from "react-native";
 import CurrencyDropdownListSearch from "../global/CurrencyDropdownList";
 import { validateUsername } from "../../utils/validators/usernameValidator";
 import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyValidator";
 import { RadioButton } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import * as SQLite from "expo-sqlite";
 import { useNavigation } from "@react-navigation/native";
 import { useAppContext } from "../../context/useAppContext";
 import { format } from "date-fns";
@@ -26,16 +26,17 @@ import Animated, {
     useSharedValue,
     withSpring,
 } from "react-native-reanimated";
-import { User, Banknote } from 'lucide-react-native';
+import { User, Banknote } from "lucide-react-native";
+import { supabase } from "../../utils/supabase";
 
 function AddNewCustomerPopup() {
     const [username, setUsername] = useState("");
     const [amountOfMoney, setAmountOfMoney] = useState("");
     const [paymentStatus, setPaymentStatus] = useState("");
     const [selectedCurrency, setSelectedCurrency] = useState("");
+    const [saving, setSaving] = useState(false);
 
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext();
-    const db = SQLite.openDatabaseSync("green-red.db");
     const navigator = useNavigation();
 
     const scale = useSharedValue(1);
@@ -52,30 +53,6 @@ function AddNewCustomerPopup() {
     const onPressOut = () => {
         scale.value = withSpring(1);
     };
-
-    useEffect(() => {
-        const initializeDatabase = async () => {
-            try {
-                await db.execAsync(`
-                    CREATE TABLE IF NOT EXISTS customers (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                        username TEXT NOT NULL, 
-                        email TEXT, 
-                        phone TEXT, 
-                        amount REAL NOT NULL, 
-                        transaction_type TEXT NOT NULL, 
-                        currency TEXT NOT NULL, 
-                        at DATETIME NOT NULL
-                    );
-                `);
-            } catch (error) {
-                showToast(error.message);
-                console.error("Error creating table: ", error);
-            }
-        };
-
-        initializeDatabase();
-    }, [db.execAsync]);
 
     const addNewCustomer = async () => {
         if (!validateUsername(username)) {
@@ -95,13 +72,14 @@ function AddNewCustomerPopup() {
             return showToast("Please select a currency");
         }
 
+        setSaving(true);
         try {
-            const result = await db.execAsync(
-                "SELECT * FROM customers WHERE username = ?",
-                [username]
-            );
+            const { data, error } = await supabase
+                .from("customers")
+                .select("*")
+                .eq("username", username);
 
-            if (result && result[0] && result[0].values.length > 0) {
+            if (data && data.length > 0) {
                 showToast("Username already exists");
             } else {
                 await insertCustomer();
@@ -136,34 +114,34 @@ function AddNewCustomerPopup() {
             return;
         }
 
-        const statement = await db.prepareAsync(`
-            INSERT INTO customers (username, email, phone, amount, transaction_type, currency, at) 
-            VALUES ($username, $email, $phone, $amount, $transactionType, $currency, $at)
-        `);
-
         try {
-            await statement.executeAsync({
-                $username: username,
-                $email: null,
-                $phone: null,
-                $amount: Number.parseFloat(amountOfMoney),
-                $transactionType: paymentStatus,
-                $currency: selectedCurrency,
-                $at: currentDateTime,
-            });
+            const { data, error } = await supabase.from("customers").insert([
+                {
+                    username: username,
+                    email: null,
+                    phone: null,
+                    amount: Number.parseFloat(amountOfMoney),
+                    transaction_type: paymentStatus,
+                    currency: selectedCurrency,
+                    at: currentDateTime,
+                },
+            ]);
 
-            showToast("Customer added successfully", "success");
+            if (error) {
+                showToast("Customer added successfully", "error");
+                console.error("Error inserting data:", error);
+            }
+
+            showToast("Customer added", "success");
             setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
-            
-            setTimeout( () => {
+            setSaving(false);
+
+            setTimeout(() => {
                 navigator.goBack();
-            }, 1000)
-            
+            }, 1000);
         } catch (error) {
             showToast("Failed to add customer: " + error.message);
             console.error("Error while adding new user", error);
-        } finally {
-            await statement.finalizeAsync();
         }
     };
 
@@ -194,8 +172,7 @@ function AddNewCustomerPopup() {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                       
-                        <User size={28} color="#64748B"/>
+                        <User size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -266,7 +243,17 @@ function AddNewCustomerPopup() {
                             onPressIn={onPressIn}
                             onPressOut={onPressOut}
                         >
-                            <Text style={styles.buttonText}>Add Customer</Text>
+                            <Text style={styles.buttonText}>
+                                Add Customer
+                                {saving && (
+                                <ActivityIndicator
+                                    size="small"
+                                    color="white"
+                                    style={{ marginLeft: 12, marginTop: 5,  }}
+                                />
+                            )}
+                            </Text>
+                            
                         </Pressable>
                     </Animated.View>
                 </Animated.View>
@@ -378,6 +365,9 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         textAlign: "center",
         letterSpacing: 0.5,
+        alignContent: "center",
+        justifyContent: "center",
+        alignItems: " center"
     },
     buttonWrapper: {
         width: "100%",

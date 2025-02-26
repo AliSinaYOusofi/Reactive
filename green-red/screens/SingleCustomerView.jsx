@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native'
-import { openDatabaseSync } from 'expo-sqlite'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
 import { useAppContext } from '../context/useAppContext'
@@ -16,6 +15,7 @@ import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
 import { AntDesign } from '@expo/vector-icons'
 import AnimatedUserListView from '../components/global/AnimatedUserListView'
 import CarouselOfTracker from '../components/carousel/Carouself'
+import { supabase } from '../utils/supabase'
 
 export default function SingleCustomerView({navigation, route}) {
     const [customers, setCustomers] = useState([])
@@ -26,8 +26,6 @@ export default function SingleCustomerView({navigation, route}) {
     const [singleCustomerExpense, setSingleCustomerExpense] = useState([])
     const [ loading, setLoading] = useState(false)
     const [error, setError] = useState("")
-
-    const db = openDatabaseSync('green-red.db')
     
     const modalScale = useSharedValue(0)
     
@@ -50,80 +48,125 @@ export default function SingleCustomerView({navigation, route}) {
 
     useEffect(() => {
         const fetchAllCustomerExpense = async () => {
-            setIsLoading(true)
-            let totalAmountsByCurrency = {}
-
+            setIsLoading(true);
+            let totalAmountsByCurrency = {};
+    
             try {
-                const initialTransactionQuery = "SELECT amount, currency, transaction_type FROM customers WHERE username = ?"
-                const initialTransaction = await db.getFirstAsync(initialTransactionQuery, [username])
-
-                if (initialTransaction) {
-                    const { amount, currency, transaction_type } = initialTransaction
+                const { data: initialTransaction, error: error1 } = await supabase
+                    .from('customers')
+                    .select('amount, currency, transaction_type')
+                    .eq('username', username)
+                    .limit(1);
+    
+                if (error1) {
+                    console.error('Error fetching initial transaction:', error1);
+                    return;
+                }
+    
+                if (initialTransaction && initialTransaction.length > 0) {
+                    const { amount, currency, transaction_type } = initialTransaction[0];
                     totalAmountsByCurrency[currency] = {
                         totalAmountBasedOnCurrencyToGive: transaction_type === 'received' ? parseFloat(amount) : 0,
                         totalAmountBasedOnCurrencyToTake: transaction_type === 'paid' ? parseFloat(amount) : 0
                     }
                 }
-
-                const distinctCurrenciesQuery = "SELECT DISTINCT currency FROM customer__records WHERE username = ?"
-                const distinctCurrencies = await db.getAllAsync(distinctCurrenciesQuery, [username])
-
-                await Promise.all(distinctCurrencies.map(async ({ currency }) => {
-                    const toGiveQuery = "SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'received' AND currency = ? AND username = ?"
-                    const toTakeQuery = "SELECT SUM(amount) as total FROM customer__records WHERE transaction_type = 'paid' AND currency = ? AND username = ?"
-
+    
+                const { data: customerRecords, error: error2 } = await supabase
+                    .from('customer__records')
+                    .select('currency')
+                    .eq('username', username);
+    
+                if (error2) {
+                    console.error('Error fetching customer records:', error2);
+                    return;
+                }
+    
+                const distinctCurrencies = [...new Set(customerRecords.map(record => record.currency))];
+    
+                await Promise.all(distinctCurrencies.map(async currency => {
                     const [toGiveResult, toTakeResult] = await Promise.all([
-                        db.getFirstAsync(toGiveQuery, [currency, username]),
-                        db.getFirstAsync(toTakeQuery, [currency, username])
-                    ])
-
+                        supabase
+                            .from('customer__records')
+                            .select('amount')
+                            .eq('transaction_type', 'received')
+                            .eq('currency', currency)
+                            .eq('username', username),
+                        supabase
+                            .from('customer__records')
+                            .select('amount')
+                            .eq('transaction_type', 'paid')
+                            .eq('currency', currency)
+                            .eq('username', username)
+                    ]);
+    
+                    if (toGiveResult.error || toTakeResult.error) {
+                        console.error('Error fetching transaction data:', toGiveResult.error || toTakeResult.error);
+                        return;
+                    }
+    
                     if (!totalAmountsByCurrency[currency]) {
                         totalAmountsByCurrency[currency] = {
                             totalAmountBasedOnCurrencyToGive: 0,
                             totalAmountBasedOnCurrencyToTake: 0
                         }
                     }
-
-                    totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive += parseFloat(toGiveResult?.total || 0)
-                    totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake += parseFloat(toTakeResult?.total || 0)
-                }))
-
+    
+                    const toGiveTotal = toGiveResult.data.reduce((sum, record) => sum + record.amount, 0);
+                    const toTakeTotal = toTakeResult.data.reduce((sum, record) => sum + record.amount, 0);
+    
+                    totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive += toGiveTotal;
+                    totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake += toTakeTotal;
+                }));
+    
                 const total_expense_data = Object.keys(totalAmountsByCurrency).map(currency => ({
                     currency,
                     totalAmountBasedOnCurrencyToGive: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToGive,
                     totalAmountBasedOnCurrencyToTake: totalAmountsByCurrency[currency].totalAmountBasedOnCurrencyToTake
-                }))
-
-                setSingleCustomerExpense(total_expense_data)
+                }));
+    
+                setSingleCustomerExpense(total_expense_data);
             } catch (error) {
-                console.error("Error fetching customer expenses:", error.message)
-                setError(error.message || "Failed to fetch customers")
+                console.error("Error fetching customer expenses:", error.message);
+                setError(error.message || "Failed to fetch customers");
             } finally {
-                setIsLoading(false)
+                setIsLoading(false);
             }
-        }
-
-        fetchAllCustomerExpense()
-    }, [username, refreshSingelViewChangeDatabase])
+        };
+    
+        fetchAllCustomerExpense();
+    }, [username, refreshSingelViewChangeDatabase]);
+    
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
             try {
-                const query = "SELECT * FROM customer__records WHERE username = ?"
-                const result = await db.getAllAsync(query, [username])
-                
-                setCustomers(result.sort((a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)))
+                const { data, error } = await supabase
+                    .from('customer__records')
+                    .select('*')
+                    .eq('username', username);
+        
+                if (error) {
+                    console.error("Error while fetching customer records:", error);
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error',
+                        text2: 'Failed to fetch customer records'
+                    });
+                    return;
+                }
+        
+                setCustomers(data.sort((a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)));
             } catch (e) {
-                console.error("Error while fetching customer records:", e.message)
+                console.error("Error while fetching customer records:", e);
                 Toast.show({
                     type: 'error',
                     text1: 'Error',
                     text2: 'Failed to fetch customer records'
-                })
+                });
             }
-        }
-
-        loadCustomerDataList()
+        };
+        
+        loadCustomerDataList();
     }, [refreshSingelViewChangeDatabase, username, refreshHomeScreenOnChangeDatabase])
     
     const handleAddNewCustomer = () => {
@@ -137,8 +180,8 @@ export default function SingleCustomerView({navigation, route}) {
 
     else if (error) {
         return (
-            <View style={style.errorContainer}>
-                <Text style={style.errorText}>Fetching users failed</Text>
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>Fetching users failed</Text>
             </View>
         );
     }
