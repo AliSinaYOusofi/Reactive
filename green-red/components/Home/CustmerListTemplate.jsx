@@ -12,7 +12,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 const { width } = Dimensions.get('window')
 
-export default function CustomerListTemplate({ index, username, totalAmount, transaction_type, currency, phone, email, isSearchComponent, searchResultLength, onDelete }) {
+export default function CustomerListTemplate({onDelete, index=1, username='', totalAmount='', transaction_type=0, currency=0 }) {
     const navigator = useNavigation();
     const [deleteModal, setDeleteModal] = useState(false);
     const { opacity: listOpacity, translateY } = useListAnimation(index);
@@ -85,7 +85,7 @@ export default function CustomerListTemplate({ index, username, totalAmount, tra
                     </Pressable>
 
                     <Pressable 
-                        onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type, email, phone})}
+                        onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type})}
                         style={[styles.iconButton, styles.edit_icon]}
                     >
                         <MaterialCommunityIcons 

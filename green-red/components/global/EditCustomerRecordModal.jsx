@@ -3,21 +3,19 @@ import { RadioButton } from 'react-native-paper';
 import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
 import Toast from 'react-native-toast-message';
-import * as SQLite from 'expo-sqlite'
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
 import { format } from 'date-fns';
 import { useAppContext } from '../../context/useAppContext';
 import  Animated, { SlideInDown, SlideOutDown }  from 'react-native-reanimated';
 import { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Banknote, X } from 'lucide-react-native';
-
+import { supabase } from '../../utils/supabase';
 export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {
 
     const [newTransactionType, setNewTransactionType] = useState(transaction_type)
     const [newCurrency, setNewCurrency] = useState(currency)
     const [newAmount, setNewAmount] = useState(String(amount))
 
-    const db = SQLite.openDatabaseSync('green-red.db')
     const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
 
     const handleAddNewRecord = async () => {
@@ -50,18 +48,28 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
 
     const updateCustomerRecrod = async () => {
         try {
-            const query = 'UPDATE customer__records SET amount = ?, transaction_type = ?, currency = ?, transaction_updated_at = ? WHERE id = ?';
             const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-            
-            await db.runAsync(query, [newAmount, newTransactionType, newCurrency, currentDateTime, record_id]);
-            
-            showToast("User record updated!", "success");
-            setUpdateRecordModal(false);
-            setRefreshSingleViewChangeDatabase(prev => !prev);
-            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
-            
+    
+            const { data, error } = await supabase
+                .from('customer__records')
+                .update({
+                    amount: newAmount,
+                    transaction_type: newTransactionType,
+                    currency: newCurrency,
+                    transaction_updated_at: currentDateTime
+                })
+                .eq('id', record_id);
+            console.log(record_id)
+            if (error) {
+                showToast("No record found to update");
+            } else {
+                showToast("User record updated!", "success");
+                setUpdateRecordModal(false);
+                setRefreshSingleViewChangeDatabase(prev => !prev);
+                setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+            }
         } catch (error) {
-            console.error("Error while updating record", error);
+            console.error("Error while updating record", error.message);
             showToast("Failed to update record");
         } finally {
             setNewAmount("");
@@ -69,8 +77,8 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
             setNewCurrency("");
         }
     };
+    
 
-    console.log(newAmount, 'new one')
     return (
         <Animated.View 
             entering={SlideInDown.duration(500)} 

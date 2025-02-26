@@ -1,122 +1,127 @@
-import React, { useEffect, useState } from 'react';
-import { View, TextInput, StyleSheet, Pressable, Modal } from 'react-native';
-import SortOptionsDropDownModal from '../global/SortOptionsDropDownModal';
-import { format, parseISO } from 'date-fns';
-import * as Print from 'expo-print'
-import * as SQLite from 'expo-sqlite'
-import * as Sharing from 'expo-sharing';
-import { formatDistanceToNowStrict } from 'date-fns';
-import Toast from 'react-native-toast-message';
-import { ArrowUpDown, FileDown, Search } from 'lucide-react-native';
-
-export default function SearchCustomers({handleSearch, setCustomers}) {
-    
-    const [currentSearchTerm, setCurrentSearchTerm] = useState('');
+import React, { useEffect, useState } from "react";
+import { View, TextInput, StyleSheet, Pressable, Modal } from "react-native";
+import SortOptionsDropDownModal from "../global/SortOptionsDropDownModal";
+import { format, parseISO } from "date-fns";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import { formatDistanceToNowStrict } from "date-fns";
+import Toast from "react-native-toast-message";
+import { ArrowUpDown, FileDown, Search } from "lucide-react-native";
+import { supabase } from "../../utils/supabase";
+export default function SearchCustomers({ handleSearch, setCustomers }) {
+    const [currentSearchTerm, setCurrentSearchTerm] = useState("");
     const [sortModalVisible, setSortModalVisible] = useState(false);
-    const [selectedSortOption, setSelectedSortOption] = useState('NEWEST')
+    const [selectedSortOption, setSelectedSortOption] = useState("NEWEST");
 
     const handleSearchCustomers = (search_this) => {
-        setCurrentSearchTerm(search_this)
-        handleSearch(search_this)
-    }
+        setCurrentSearchTerm(search_this);
+        handleSearch(search_this);
+    };
 
     const handleSortByDateOldest = () => {
         setCustomers((prevCustomers) => {
             let sortedCustomers = prevCustomers.slice().sort((a, b) => {
                 return new Date(a.at) - new Date(b.at);
-            })
+            });
             return sortedCustomers;
         });
     };
-    
+
     const handleSortByDateNewst = () => {
         setCustomers((prevCustomers) => {
             let sortedCustomers = prevCustomers.slice().sort((a, b) => {
                 return new Date(b.at) - new Date(a.at);
-            })
+            });
             return sortedCustomers;
         });
     };
 
     const handleSortByAscendingAlphabeticalOrder = () => {
-        setCustomers( (previouseCustomers) => {
+        setCustomers((previouseCustomers) => {
             return previouseCustomers.slice().sort((a, b) => {
-                return a.username.localeCompare(b.username)
-            }) 
-        })
-    }
+                return a.username.localeCompare(b.username);
+            });
+        });
+    };
 
     const handleSortByDescendingAlphabeticalOrder = () => {
-        setCustomers( (previouseCustomers) => {
+        setCustomers((previouseCustomers) => {
             return previouseCustomers.slice().sort((a, b) => {
-                return b.username.localeCompare(a.username)
-            })
-        })
-    }
+                return b.username.localeCompare(a.username);
+            });
+        });
+    };
 
-
-    const db =  SQLite.openDatabaseSync("green-red.db");
     const AllCustomersData = async () => {
-        
-    
         try {
             let allCustomersDataToConvert = [];
-            
-            const all_customers = await db.getAllAsync("SELECT * FROM customers");
+
+            const { data: all_customers, error: error1 } = await supabase
+                .from("customers")
+                .select("*");
+
+            if (error1) {
+                throw error1;
+            }
 
             await Promise.all(
-                
                 all_customers.map(async (customer) => {
-                    
-                    const other_customer_records = await new Promise(async (resolve, reject) => {
-                        
-                        let customers_records = await db.getAllAsync('SELECT * FROM customer__records WHERE username = ?;',[customer.username])
-                        resolve(customers_records)
-                    });
-                    
+                    const { data: other_customer_records, error: error2 } =
+                        await supabase
+                            .from("customer__records")
+                            .select("*")
+                            .eq("username", customer.username);
+
+                    if (error2) {
+                        console.error(
+                            "Error fetching customer records:",
+                            error2
+                        );
+                        return;
+                    }
+
                     const customers_with_relevant_records = {
                         ...customer,
-                        records: (other_customer_records),
+                        records: other_customer_records,
                     };
 
-                    allCustomersDataToConvert.push(customers_with_relevant_records);
+                    allCustomersDataToConvert.push(
+                        customers_with_relevant_records
+                    );
                 })
             );
-    
-            return allCustomersDataToConvert
+
+            return allCustomersDataToConvert;
         } catch (error) {
-            console.error("error while generating pdf", error);
+            console.error("Error while generating data", error);
         }
     };
-    
-    useEffect( () => {
-        
+
+    useEffect(() => {
         const handleSortOptionsChange = () => {
-            switch(selectedSortOption) {
-                case 'OLDEST':
-                    handleSortByDateOldest()
+            switch (selectedSortOption) {
+                case "OLDEST":
+                    handleSortByDateOldest();
                     break;
-                case 'NEWEST':
-                    handleSortByDateNewst()
+                case "NEWEST":
+                    handleSortByDateNewst();
                     break;
-                case 'ASC ALPHA':
-                    handleSortByAscendingAlphabeticalOrder()
+                case "ASC ALPHA":
+                    handleSortByAscendingAlphabeticalOrder();
                     break;
-                case 'DESC ALPHA':
-                    handleSortByDescendingAlphabeticalOrder()
+                case "DESC ALPHA":
+                    handleSortByDescendingAlphabeticalOrder();
                     break;
             }
-        }
-        handleSortOptionsChange()
-    }, [selectedSortOption])
+        };
+        handleSortOptionsChange();
+    }, [selectedSortOption]);
 
-
-    const showToast = (message, type = 'error') => {
-        
+    const showToast = (message, type = "error") => {
         Toast.show({
             type: type,
             text1: message,
-            position: 'top',
+            position: "top",
             onPress: () => Toast.hide(),
             swipeable: true,
             topOffset: 100,
@@ -125,42 +130,59 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
 
     const convertQueryResultToPdf = async () => {
         try {
-          const allCustomersDataToConvert = await AllCustomersData()
-          if (!allCustomersDataToConvert.length) {
-            return showToast("No customers found")
-          }
-      
-          const formatDateTime = (dateString) => {
-            const date = parseISO(dateString)
-            return `${format(date, "MMM d, yyyy HH:mm")} (${formatDistanceToNowStrict(date)} ago)`
-          }
-      
-          const customerDataHtml = allCustomersDataToConvert
-            .map((customer, index) => {
-              const records = customer.records || []
-      
-              const transactionRows = [customer, ...records]
-                .map(
-                  (transaction, tIndex) => `
-              <tr class="${tIndex === 0 ? "customer-row" : "record-row"} ${index % 2 === 0 ? "even" : "odd"}">
-                ${tIndex === 0 ? `<td rowspan="${records.length + 1}" class="username">${customer.username}</td>` : ""}
-                <td class="transaction-type">${transaction.transaction_type}</td>
-                <td class="amount">${transaction.amount} ${transaction.currency}</td>
-                <td class="date">${formatDateTime(transaction.at || transaction.transaction_at)}</td>
+            const allCustomersDataToConvert = await AllCustomersData();
+            if (!allCustomersDataToConvert.length) {
+                return showToast("No customers found");
+            }
+
+            const formatDateTime = (dateString) => {
+                const date = parseISO(dateString);
+                return `${format(
+                    date,
+                    "MMM d, yyyy HH:mm"
+                )} (${formatDistanceToNowStrict(date)} ago)`;
+            };
+
+            const customerDataHtml = allCustomersDataToConvert
+                .map((customer, index) => {
+                    const records = customer.records || [];
+
+                    const transactionRows = [customer, ...records]
+                        .map(
+                            (transaction, tIndex) => `
+              <tr class="${tIndex === 0 ? "customer-row" : "record-row"} ${
+                                index % 2 === 0 ? "even" : "odd"
+                            }">
+                ${
+                    tIndex === 0
+                        ? `<td rowspan="${
+                              records.length + 1
+                          }" class="username">${customer.username}</td>`
+                        : ""
+                }
+                <td class="transaction-type">${
+                    transaction.transaction_type
+                }</td>
+                <td class="amount">${transaction.amount} ${
+                                transaction.currency
+                            }</td>
+                <td class="date">${formatDateTime(
+                    transaction.at || transaction.transaction_at
+                )}</td>
               </tr>
-            `,
-                )
-                .join("")
-      
-              return `
+            `
+                        )
+                        .join("");
+
+                    return `
               <tbody class="customer-group">
                 ${transactionRows}
               </tbody>
-            `
-            })
-            .join("")
-      
-          const customerHtml = `
+            `;
+                })
+                .join("");
+
+            const customerHtml = `
             <html>
               <head>
                 <style>
@@ -307,47 +329,49 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
                 </table>
               </body>
             </html>
-          `
-      
-          const { uri } = await Print.printToFileAsync({
-            html: customerHtml,
-            base64: false,
-          })
-      
-          await Sharing.shareAsync(uri, {
-            dialogTitle: "Customer Transaction History",
-            mimeType: "application/pdf",
-            UTI: "com.adobe.pdf",
-          })
+          `;
+
+            const { uri } = await Print.printToFileAsync({
+                html: customerHtml,
+                base64: false,
+            });
+
+            await Sharing.shareAsync(uri, {
+                dialogTitle: "Customer Transaction History",
+                mimeType: "application/pdf",
+                UTI: "com.adobe.pdf",
+            });
         } catch (error) {
-          console.error("Error generating PDF:", error)
-          showToast("Failed to generate PDF")
+            console.error("Error generating PDF:", error);
+            showToast("Failed to generate PDF");
         }
-      }
-    
+    };
+
     return (
         <>
             <View style={styles.container}>
-                
                 <View style={styles.searchContainer}>
-                    
-                    <Search  size={20} color="#64748B" style={styles.icon}/>
-                    
+                    <Search size={20} color="#64748B" style={styles.icon} />
+
                     <TextInput
                         style={styles.input}
                         placeholder="Search"
                         value={currentSearchTerm}
-                        onChangeText={text => handleSearchCustomers(text)}
+                        onChangeText={(text) => handleSearchCustomers(text)}
                     />
                 </View>
 
                 <View style={styles.sort_and_pdf_container}>
                     <Pressable onPress={() => setSortModalVisible(true)}>
-                        <ArrowUpDown size={24} color="black" style={styles.icon}/>
+                        <ArrowUpDown
+                            size={24}
+                            color="black"
+                            style={styles.icon}
+                        />
                     </Pressable>
 
-                    <Pressable onPress={ () => convertQueryResultToPdf()}>
-                        <FileDown size={24} color="black" style={styles.icon}/>
+                    <Pressable onPress={() => convertQueryResultToPdf()}>
+                        <FileDown size={24} color="black" style={styles.icon} />
                     </Pressable>
                 </View>
             </View>
@@ -358,8 +382,8 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
                 transparent={true}
                 onRequestClose={() => setSortModalVisible(false)}
             >
-                <SortOptionsDropDownModal 
-                    selected={selectedSortOption} 
+                <SortOptionsDropDownModal
+                    selected={selectedSortOption}
                     setSelected={setSelectedSortOption}
                     setCloseSortMOdal={setSortModalVisible}
                 />
@@ -369,12 +393,11 @@ export default function SearchCustomers({handleSearch, setCustomers}) {
 }
 
 const styles = StyleSheet.create({
-    
     container: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
         columnGap: 10,
         backgroundColor: "#f8f9fa",
         padding: 3,
@@ -385,27 +408,27 @@ const styles = StyleSheet.create({
         marginRight: 10,
         color: "black",
         borderRadius: 50,
-        padding: 8
+        padding: 8,
     },
 
     input: {
         flex: 1,
         fontSize: 16,
-        color: 'black',
+        color: "black",
     },
 
     sort_and_pdf_container: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        columnGap: 10
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        columnGap: 10,
     },
 
     searchContainer: {
         flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         borderRadius: 10,
         padding: 5,
     },
