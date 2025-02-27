@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, Modal, ActivityIndicator, TouchableOpacity } from 'react-native'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
 import { useAppContext } from '../context/useAppContext'
 import Animated, { 
     FadeIn,
-    useAnimatedStyle,
     withSpring,
-    withSequence,
-    withTiming,
     useSharedValue
 } from 'react-native-reanimated'
 import NoCustomerRecordFound from '../components/global/NoCustomerRecordFound'
@@ -16,6 +13,7 @@ import { AntDesign } from '@expo/vector-icons'
 import AnimatedUserListView from '../components/global/AnimatedUserListView'
 import CarouselOfTracker from '../components/carousel/Carouself'
 import { supabase } from '../utils/supabase'
+import RetryComponent from '../components/RetryComponent'
 
 export default function SingleCustomerView({navigation, route}) {
     const [customers, setCustomers] = useState([])
@@ -24,27 +22,10 @@ export default function SingleCustomerView({navigation, route}) {
     const [addNewRecordModal, setAddNewRecordModal] = useState(false)
     const { refreshSingelViewChangeDatabase, refreshHomeScreenOnChangeDatabase } = useAppContext()
     const [singleCustomerExpense, setSingleCustomerExpense] = useState([])
-    const [ loading, setLoading] = useState(false)
+    const [ refresh, setRefresh] = useState(false)
     const [error, setError] = useState("")
     
     const modalScale = useSharedValue(0)
-    
-    const loadingRotation = useSharedValue(0)
-
-    useEffect(() => {
-        if (isLoading) {
-            loadingRotation.value = withSequence(
-                withTiming(360, { duration: 1000 }),
-                withTiming(0, { duration: 0 })
-            )
-        }
-    }, [isLoading])
-
-    const modalAnimatedStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: modalScale.value }]
-        }
-    })
 
     useEffect(() => {
         const fetchAllCustomerExpense = async () => {
@@ -134,7 +115,7 @@ export default function SingleCustomerView({navigation, route}) {
         };
     
         fetchAllCustomerExpense();
-    }, [username, refreshSingelViewChangeDatabase]);
+    }, [username, refreshSingelViewChangeDatabase, refresh]);
     
 
     useEffect(() => {
@@ -146,18 +127,20 @@ export default function SingleCustomerView({navigation, route}) {
                     .eq('username', username);
         
                 if (error) {
+                    setError(error.message || "Failed to fetch records")
                     console.error("Error while fetching customer records:", error);
                     Toast.show({
                         type: 'error',
                         text1: 'Error',
                         text2: 'Failed to fetch customer records'
                     });
-                    return;
                 }
-        
-                setCustomers(data.sort((a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)));
+                else {
+                    setCustomers(data.sort((a, b) => new Date(b.transaction_at) - new Date(a.transaction_at)));
+                }
             } catch (e) {
                 console.error("Error while fetching customer records:", e);
+                setError("Failed to fetch records")
                 Toast.show({
                     type: 'error',
                     text1: 'Error',
@@ -167,7 +150,7 @@ export default function SingleCustomerView({navigation, route}) {
         };
         
         loadCustomerDataList();
-    }, [refreshSingelViewChangeDatabase, username, refreshHomeScreenOnChangeDatabase])
+    }, [refreshSingelViewChangeDatabase, username, refreshHomeScreenOnChangeDatabase, refresh])
     
     const handleAddNewCustomer = () => {
         modalScale.value = withSpring(1)
@@ -181,7 +164,7 @@ export default function SingleCustomerView({navigation, route}) {
     else if (error) {
         return (
             <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>Fetching users failed</Text>
+                <RetryComponent setRefresh={setRefresh} setError={setError} errorMessage={error}/>
             </View>
         );
     }
@@ -217,7 +200,10 @@ export default function SingleCustomerView({navigation, route}) {
                     onPress={handleAddNewCustomer}
                 >
                     <AntDesign name="plus" size={24} color="white" />
-                    <Text style={{color: "white", fontWeight: "bold"}}>Add Record</Text>
+                    
+                    <Text style={{color: "white", fontWeight: "bold"}}>
+                        Add Record
+                    </Text>
                 </TouchableOpacity>
             </Animated.View>
             
@@ -272,7 +258,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'black',
+        backgroundColor: "white"
     },
     errorText: {
         color: 'red',

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Text } from 'react-native';
 import SearchCustomers from '../components/Home/SearchCustomers';
 import CustomerListTemplate from '../components/Home/CustmerListTemplate';
 import AddNewCustomer from '../components/global/AddNewCustomerButton';
@@ -11,6 +11,7 @@ import ZeroSearchResult from '../components/global/ZeroSearchResult';
 import CarouselOfTracker from '../components/carousel/Carouself';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { supabase } from '../utils/supabase';
+import RetryComponent from '../components/RetryComponent';
 
 export default function HomeScreen() {
     const [customer, setCustomers] = useState([]);
@@ -20,6 +21,7 @@ export default function HomeScreen() {
     const { refreshHomeScreenOnChangeDatabase } = useAppContext();
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
+    const [refresh, setRefresh] = useState(false)
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
@@ -82,7 +84,7 @@ export default function HomeScreen() {
             }
         };
         loadCustomerDataList();
-    }, [refreshHomeScreenOnChangeDatabase]);
+    }, [refreshHomeScreenOnChangeDatabase, refresh]);
 
     const handleSearch = (searchTerm) => {
         setParentSearchTerm(searchTerm);
@@ -156,7 +158,7 @@ export default function HomeScreen() {
             }
         };
         fetchTotalOfAmountsBasedOnCurrency();
-    }, [customer]);
+    }, [customer, refresh]);
     
     
 
@@ -167,10 +169,11 @@ export default function HomeScreen() {
     else if (error) {
         return (
             <View style={style.errorContainer}>
-                <Text style={style.errorText}>Fetching users failed</Text>
+                <RetryComponent setError={setError} setRefresh={setRefresh} errorMessage={error?.message || "Failed to fetch data"}/>
             </View>
         );
     }
+
     return (
         <Animated.View style={style.container} entering={FadeIn.duration(500)}>
             <Animated.View entering={FadeIn.duration(500).delay(900)}>
@@ -278,7 +281,7 @@ const style = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'black',
+        backgroundColor: 'white',
     },
     errorText: {
         color: 'red',

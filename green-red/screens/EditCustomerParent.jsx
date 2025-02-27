@@ -9,6 +9,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     TouchableOpacity,
+    ActivityIndicator,
 } from "react-native";
 import CurrencyDropdownListSearch from "../components/global/CurrencyDropdownList";
 import { validateUsername } from "../utils/validators/usernameValidator";
@@ -25,7 +26,7 @@ import Animated, {
     useSharedValue,
     withSpring,
 } from "react-native-reanimated";
-import { User, Banknote } from 'lucide-react-native';
+import { User, Banknote } from "lucide-react-native";
 import { supabase } from "../utils/supabase";
 
 export default function EditCustomerParent({ navigation, route }) {
@@ -44,6 +45,7 @@ export default function EditCustomerParent({ navigation, route }) {
     const [updatedAmountOfMoney, setUpdatedAmountOfMoney] = useState("");
     const [updatedPaymentStatus, setUpdatedPaymentStatus] = useState("");
     const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState("");
+    const [saving, setSaving] = useState(false)
 
     const navigator = useNavigation();
     const { setRefreshHomeScreenOnChangeDatabase } = useAppContext();
@@ -74,6 +76,7 @@ export default function EditCustomerParent({ navigation, route }) {
 
     // Validate inputs and perform update
     const handleUpdateCustomerParent = () => {
+
         if (!validateUsername(updatedUsername)) {
             return showToast("Username is invalid");
         }
@@ -110,40 +113,41 @@ export default function EditCustomerParent({ navigation, route }) {
 
     // Update the customer record in the customers table
     const updateParentCustomer = async () => {
+        setSaving(true)
         try {
             const { data, error } = await supabase
-                .from('customers')
+                .from("customers")
                 .update({
                     username: updatedUsername,
                     amount: updatedAmountOfMoney,
                     transaction_type: updatedPaymentStatus,
-                    currency: updatedSelectedCurrency
+                    currency: updatedSelectedCurrency,
                 })
-                .eq('username', prev_username);
-    
-    
+                .eq("username", prev_username);
+
             if (error) {
                 showToast("Failed to update");
             } else {
                 setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
                 showToast("Customer updated", "success");
+                setSaving(false)
             }
         } catch (error) {
             console.error("Error updating customer:", error.message);
             showToast("Failed to update customer");
         }
     };
-    
 
     const updateParentChildren = async () => {
+        setSaving(true)
         try {
             const { data, error } = await supabase
-                .from('customer__records')
+                .from("customer__records")
                 .update({
-                    username: updatedUsername
+                    username: updatedUsername,
                 })
-                .eq('username', prev_username);
-    
+                .eq("username", prev_username);
+
             if (error) {
                 showToast("No records found to update", "error");
             } else {
@@ -154,9 +158,10 @@ export default function EditCustomerParent({ navigation, route }) {
         } catch (error) {
             console.error("Error updating customer records:", error.message);
             showToast("Failed to update customer records");
+        } finally {
+            setSaving(false)
         }
     };
-    
 
     return (
         <KeyboardAvoidingView
@@ -196,10 +201,7 @@ export default function EditCustomerParent({ navigation, route }) {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <Banknote
-                            size={24}
-                            color="#64748B"
-                        />
+                        <Banknote size={24} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -254,9 +256,17 @@ export default function EditCustomerParent({ navigation, route }) {
                             onPressIn={onPressIn}
                             onPressOut={onPressOut}
                         >
-                            <Text style={styles.buttonText}>
-                                Update Customer
-                            </Text>
+                            {saving ? (
+                                <ActivityIndicator
+                                    size="small"
+                                    color="white"
+                                    style={{ marginLeft: 12, marginTop: 5 }}
+                                />
+                            ) : (
+                                <Text style={styles.buttonText}>
+                                    Update Customer
+                                </Text>
+                            )}
                         </TouchableOpacity>
                     </Animated.View>
                 </Animated.View>
@@ -292,7 +302,7 @@ const styles = StyleSheet.create({
         borderColor: "gray",
         padding: 20,
         width: "100%",
-        borderRadius: 20
+        borderRadius: 20,
     },
     iconContainer: {
         position: "absolute",
@@ -307,7 +317,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: "gray"
+        borderColor: "gray",
     },
     paymentLabel: {
         fontSize: 16,
@@ -356,7 +366,7 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
         alignContent: "center",
         justifyContent: "center",
-        alignItems: " center"
+        alignItems: " center",
     },
     buttonWrapper: {
         width: "100%",

@@ -244,17 +244,17 @@ function AddNewCustomerPopup() {
                             onPressIn={onPressIn}
                             onPressOut={onPressOut}
                         >
-                            <Text style={styles.buttonText}>
-                                Add Customer
-                                {saving && (
+                            {saving ? (
                                 <ActivityIndicator
                                     size="small"
                                     color="white"
-                                    style={{ marginLeft: 12, marginTop: 5,  }}
+                                    style={{ marginLeft: 12, marginTop: 5 }}
                                 />
+                            ) : (
+                                <Text style={styles.buttonText}>
+                                    Add Customer
+                                </Text>
                             )}
-                            </Text>
-                            
                         </TouchableOpacity>
                     </Animated.View>
                 </Animated.View>
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
         borderColor: "gray",
         padding: 20,
         width: "100%",
-        borderRadius: 20
+        borderRadius: 20,
     },
     iconContainer: {
         position: "absolute",
@@ -307,8 +307,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: "gray"
-        
+        borderColor: "gray",
     },
     paymentLabel: {
         fontSize: 16,
@@ -355,7 +354,7 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
         alignContent: "center",
         justifyContent: "center",
-        alignItems: " center"
+        alignItems: " center",
     },
     buttonWrapper: {
         width: "100%",
