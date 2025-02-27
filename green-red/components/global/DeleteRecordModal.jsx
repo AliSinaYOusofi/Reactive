@@ -1,12 +1,11 @@
 import React from "react";
-import {  StyleSheet, Text, Pressable } from "react-native";
+import {  StyleSheet, Text, Pressable, TouchableOpacity } from "react-native";
 import { cancel_button_color, delete_button_color } from "./colors";
 import Toast from "react-native-toast-message";
 import { useAppContext } from "../../context/useAppContext";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { X } from "lucide-react-native";
 import { supabase } from "../../utils/supabase";
-import { err } from "react-native-svg";
 export default function DeleteRecordModal({
     message,
     setCloseModal,
@@ -124,30 +123,30 @@ export default function DeleteRecordModal({
                     style={styles.button_container}
                     entering={FadeIn.duration(300).delay(300)}
                 >
-                    <Pressable
+                    <TouchableOpacity
                         onPress={handleDelete}
                         style={styles.delete_button}
                     >
-                        <Text style={styles.texts}> Delete </Text>
-                    </Pressable>
-                    <Pressable
+                        <Text style={styles.button_text}> Delete </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
                         onPress={handleCancel}
                         style={styles.cancel_button}
                     >
-                        <Text style={styles.texts}> Cancel </Text>
-                    </Pressable>
+                        <Text style={styles.button_text}> Cancel </Text>
+                    </TouchableOpacity>
                 </Animated.View>
 
                 <Animated.View
                     style={[styles.pressable, styles.pressable_close]}
                     entering={FadeIn.duration(300).delay(400)}
                 >
-                    <Pressable onPress={() => setCloseModal(false)}>
+                    <TouchableOpacity onPress={() => setCloseModal(false)}>
                         <X
                             size={20}
                             color="black"
                         />
-                    </Pressable>
+                    </TouchableOpacity>
                 </Animated.View>
             </Animated.View>
         </Animated.View>
@@ -162,7 +161,7 @@ const styles = StyleSheet.create({
         position: "relative",
     },
     options_container: {
-        backgroundColor: "#0f0f0f",
+        backgroundColor: "white",
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -170,6 +169,11 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         color: "white",
         position: "relative",
+        hadowColor: "black",
+        shadowOffset: { width: 3, height: -2 },
+        shadowOpacity: 1,
+        shadowRadius: 14,
+        elevation: 15,
     },
     button_container: {
         flexDirection: "row",
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
         columnGap: 10,
     },
     texts: {
-        color: "white",
+        color: "black",
     },
     delete_button: {
         backgroundColor: delete_button_color,
@@ -207,4 +211,7 @@ const styles = StyleSheet.create({
     pressable_close: {
         
     },
+    button_text: {
+        color: "white"
+    }
 });

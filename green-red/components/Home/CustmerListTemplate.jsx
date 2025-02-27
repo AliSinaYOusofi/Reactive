@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Text, Pressable, Modal, Dimensions } from 'react-native'
+import { View, StyleSheet, Text, Pressable, Modal, Dimensions, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import { format_username } from '../../utils/username_shortcut';
@@ -7,7 +7,7 @@ import { padi_color, received_color } from '../global/colors';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
-import { Trash2 } from 'lucide-react-native';
+import { TouchpadOff, Trash2 } from 'lucide-react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 const { width } = Dimensions.get('window')
@@ -42,7 +42,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
     return (
         <>
             <Animated.View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}, animatedStyle]}>
-                <Pressable 
+                <TouchableOpacity 
                     onPress={handleCustomerViewClick} 
                     style={styles.pressableContainer}
                 >
@@ -70,10 +70,10 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
                             </Text>
                         </View>
                     </View>
-                </Pressable>
+                </TouchableOpacity>
                 
                 <View style={styles.iconsContainer}>
-                    <Pressable 
+                    <TouchableOpacity 
                         onPress={() => setDeleteModal(true)} 
                         style={styles.iconButton}
                     >
@@ -82,9 +82,9 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
                             size={24} 
                             color="black" 
                         />
-                    </Pressable>
+                    </TouchableOpacity>
 
-                    <Pressable 
+                    <TouchableOpacity 
                         onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type})}
                         style={[styles.iconButton, styles.edit_icon]}
                     >
@@ -93,7 +93,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
                             size={24} 
                             color="black"
                         />
-                    </Pressable>
+                    </TouchableOpacity>
                 </View>
             </Animated.View>
 

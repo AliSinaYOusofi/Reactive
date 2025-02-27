@@ -251,10 +251,11 @@ const styles = StyleSheet.create({
     },
     dropdownButton: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: "gray",
+        padding: 20,
         borderRadius: 5,
-        padding: 10,
-        backgroundColor: 'white',
+        width: "100%",
+        borderRadius: 20
     },
     selectedItem: {
         flexDirection: 'row',

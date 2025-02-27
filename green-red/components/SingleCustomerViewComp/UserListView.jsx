@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { Pressable, View, Text, StyleSheet, Modal, Dimensions } from 'react-native'
+import { Pressable, View, Text, StyleSheet, Modal, Dimensions, TouchableOpacity } from 'react-native'
 import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import EditCustomerRecordModal from '../global/EditCustomerRecordModal';
 import { format_username } from '../../utils/username_shortcut';
 import { padi_color, received_color } from '../global/colors';
+import { Trash2 } from 'lucide-react-native';
 const { width } = Dimensions.get('window')
 
 export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone, record_id}) {
@@ -18,7 +19,7 @@ export default function UserListView({username, amount, currency, transaction_ty
         <>
 
             <View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}]}>
-                <Pressable onPress={() => setDetailsModal(true)} style={[styles.container]}>
+                <TouchableOpacity onPress={() => setDetailsModal(true)} style={[styles.container]}>
                     
                     <View style={styles.username_and_shortcut_container}>
                         <View style={styles.usernameShortCutStyle}>
@@ -43,27 +44,26 @@ export default function UserListView({username, amount, currency, transaction_ty
                         </Text>
                         
                     </View>                
-                </Pressable>
+                </TouchableOpacity>
                 
                 <View style={styles.icon_container}>
                     
-                    <Pressable onPress={() => setDeleteModal(true)}>
-                        <MaterialCommunityIcons 
+                    <TouchableOpacity style={styles.deleteicon} onPress={() => setDeleteModal(true)}>
+                        <Trash2 
                             style={styles._icon} 
-                            name="delete-alert-outline" 
                             size={24} 
                             color="black" 
                         />
-                    </Pressable>
+                    </TouchableOpacity>
 
-                    <Pressable onPress={() => setEditModal(true)}>
+                    <TouchableOpacity onPress={() => setEditModal(true)}>
                         <MaterialCommunityIcons 
                             style={styles._icon} 
                             name="circle-edit-outline" 
                             size={24} 
                             color="black"
                         />
-                    </Pressable>
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -181,4 +181,9 @@ const styles = StyleSheet.create({
         color: 'gray',
         marginTop: 4,
     },
+    deleteicon : {
+        backgroundColor: "white",
+        padding: 8,
+        borderRadius: 50,
+    }
 })

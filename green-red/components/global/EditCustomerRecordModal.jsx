@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import { RadioButton } from 'react-native-paper';
-import { View, TextInput, Text, StyleSheet, Pressable } from 'react-native';
+import { View, TextInput, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import CurrencyDropdownListSearch from './CurrencyDropdownList';
 import Toast from 'react-native-toast-message';
 import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
@@ -98,7 +98,6 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                         keyboardType='phone-pad'
                         value={newAmount}
                     />
-
                     <View style={styles.iconContainer}>
                         <Banknote size={28} color="#64748B" />
                     </View>
@@ -139,21 +138,21 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                 </Animated.View>
 
                 <Animated.View entering={FadeInDown.duration(300).delay(400)}>
-                    <Pressable
+                    <TouchableOpacity
                         style={styles.add_new_customer_btn}
                         onPress={handleAddNewRecord}
                         title='add new customer'
                     >
                         <Text style={{color: "white"}}>Update Record</Text>
-                    </Pressable>
+                    </TouchableOpacity>
                 </Animated.View>
 
-                <Pressable 
+                <TouchableOpacity 
                     onPress={() => setUpdateRecordModal(false)} 
                     style={[styles.pressable, styles.pressable_close]}
                 >
                     <X name="close-outline" size={24} color="black" />
-                </Pressable>
+                </TouchableOpacity>
             </Animated.View>
         </Animated.View>
     )
@@ -168,13 +167,12 @@ const styles = StyleSheet.create({
         
     },
     input: {
-        borderColor: 'gray',
-        padding: 10,
-        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: "gray",
+        padding: 20,
         borderRadius: 5,
-        backgroundColor: "#FDFCFA",
         width: "100%",
-        color: "black"
+        borderRadius: 20
     },
     input_container: {
         flexDirection: 'row',
@@ -196,13 +194,7 @@ const styles = StyleSheet.create({
     },
 
     payment_status: {
-        flexDirection: "row",
-        backgroundColor: "#FDFCFA",
-        borderRadius: 5,
-        justifyContent: "center",
-        alignItems: "center",
         width: "100%",
-        padding: 5
     },
 
     payment_text: {
@@ -213,39 +205,40 @@ const styles = StyleSheet.create({
     ,
     
     options_container: {
-        backgroundColor: "black",
+        backgroundColor: "white",
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        width: '100%',
-        position: "relative",
-        
+        width: "100%",
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        shadowColor: "black",
+        shadowOffset: { width: 3, height: -2 },
+        shadowOpacity: 1,
+        shadowRadius: 14,
+        elevation: 15,
     },
 
     add_new_customer_btn: {
-        backgroundColor: 'green',
+        backgroundColor: '#66E066',
         color: "white",
-        borderRadius: 8,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
         marginTop: 20,
         textAlign: 'center',
         alignSelf: 'center',
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: 9999,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
         width: "90%",
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        borderRadius: 99,
+        paddingVertical: 18,
+        paddingHorizontal: 16,
+        marginBottom: -30,
+        marginTop: 20
     },
 
     drop_down_container: {
-        marginTop: 0,
+        marginTop: 10,
     },
 
     pressable: {
@@ -262,17 +255,11 @@ const styles = StyleSheet.create({
     },
     paymentStatusContainer: {
         width: "100%",
-        backgroundColor: "#FFFFFF",
-        borderRadius: 12,
+        borderRadius: 20,
         padding: 16,
-        marginBottom: 16,
+        marginTop: 10,
         borderWidth: 1,
-        borderColor: "#E2E8F0",
-        shadowColor: "#64748B",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 3,
-        elevation: 2,
+        borderColor: 'gray'
     },
     paymentLabel: {
         fontSize: 16,
