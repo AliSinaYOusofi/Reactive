@@ -1,45 +1,60 @@
-import React, {useEffect, useState} from 'react'
-import { RadioButton } from 'react-native-paper';
-import { View, TextInput, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
-import CurrencyDropdownListSearch from './CurrencyDropdownList';
-import Toast from 'react-native-toast-message';
-import { amountOfMoneyValidator } from '../../utils/validators/amountOfMoneyValidator';
-import { format } from 'date-fns';
-import { useAppContext } from '../../context/useAppContext';
-import  Animated, { SlideInDown, SlideOutDown }  from 'react-native-reanimated';
-import { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { Banknote, X } from 'lucide-react-native';
-import { supabase } from '../../utils/supabase';
-export default function EditCustomerRecordModal({amount, currency, transaction_type, record_id, setUpdateRecordModal}) {
-
-    const [newTransactionType, setNewTransactionType] = useState(transaction_type)
-    const [newCurrency, setNewCurrency] = useState(currency)
-    const [newAmount, setNewAmount] = useState(String(amount))
-
-    const { setRefreshSingleViewChangeDatabase, setRefreshHomeScreenOnChangeDatabase } = useAppContext()
+import React, { useEffect, useState } from "react";
+import { RadioButton } from "react-native-paper";
+import {
+    View,
+    TextInput,
+    Text,
+    StyleSheet,
+    Pressable,
+    TouchableOpacity,
+    ActivityIndicator,
+} from "react-native";
+import CurrencyDropdownListSearch from "./CurrencyDropdownList";
+import Toast from "react-native-toast-message";
+import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyValidator";
+import { format } from "date-fns";
+import { useAppContext } from "../../context/useAppContext";
+import Animated, { SlideInDown, SlideOutDown } from "react-native-reanimated";
+import { FadeIn, FadeInDown } from "react-native-reanimated";
+import { Banknote, X } from "lucide-react-native";
+import { supabase } from "../../utils/supabase";
+export default function EditCustomerRecordModal({
+    amount,
+    currency,
+    transaction_type,
+    record_id,
+    setUpdateRecordModal,
+}) {
+    const [newTransactionType, setNewTransactionType] =
+        useState(transaction_type);
+    const [newCurrency, setNewCurrency] = useState(currency);
+    const [newAmount, setNewAmount] = useState(String(amount));
+    const [saving, setSaving] = useState(false);
+    const {
+        setRefreshSingleViewChangeDatabase,
+        setRefreshHomeScreenOnChangeDatabase,
+    } = useAppContext();
 
     const handleAddNewRecord = async () => {
-        
         if (!amountOfMoneyValidator(newAmount)) {
-            return showToast('Amount of money is not valid');
+            return showToast("Amount of money is not valid");
         }
-    
-        if (!newTransactionType) {
-            return showToast('Please select a payment status');
-        }
-    
-        if (!newCurrency) {
-            return showToast('Please select a currency');
-        }
-        await updateCustomerRecrod()
-    }
 
-    const showToast = (message, type = 'error') => {
-        
+        if (!newTransactionType) {
+            return showToast("Please select a payment status");
+        }
+
+        if (!newCurrency) {
+            return showToast("Please select a currency");
+        }
+        await updateCustomerRecrod();
+    };
+
+    const showToast = (message, type = "error") => {
         Toast.show({
             type: type,
             text1: message,
-            position: 'top',
+            position: "top",
             onPress: () => Toast.hide(),
             swipeable: true,
             topOffset: 100,
@@ -47,26 +62,28 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
     };
 
     const updateCustomerRecrod = async () => {
+        setSaving(true)
         try {
-            const currentDateTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-    
+            const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+
             const { data, error } = await supabase
-                .from('customer__records')
+                .from("customer__records")
                 .update({
                     amount: newAmount,
                     transaction_type: newTransactionType,
                     currency: newCurrency,
-                    transaction_updated_at: currentDateTime
+                    transaction_updated_at: currentDateTime,
                 })
-                .eq('id', record_id);
-            console.log(record_id)
+                .eq("id", record_id);
+            console.log(record_id);
             if (error) {
                 showToast("No record found to update");
             } else {
+                setSaving(false)
                 showToast("User record updated!", "success");
                 setUpdateRecordModal(false);
-                setRefreshSingleViewChangeDatabase(prev => !prev);
-                setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+                setRefreshSingleViewChangeDatabase((prev) => !prev);
+                setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
             }
         } catch (error) {
             console.error("Error while updating record", error.message);
@@ -75,27 +92,25 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
             setNewAmount("");
             setNewTransactionType("");
             setNewCurrency("");
+            
         }
     };
-    
 
     return (
-        <Animated.View 
-            entering={SlideInDown.duration(500)} 
+        <Animated.View
+            entering={SlideInDown.duration(500)}
             style={styles.modalView}
             exiting={SlideOutDown.duration(400)}
         >
-
             <Animated.View style={styles.options_container}>
-
-                <Animated.View 
-                    entering={FadeIn.duration(300).delay(300)} 
+                <Animated.View
+                    entering={FadeIn.duration(300).delay(300)}
                     style={styles.input_container}
                 >
                     <TextInput
                         style={styles.input}
                         onChangeText={(text) => setNewAmount(text)}
-                        keyboardType='phone-pad'
+                        keyboardType="phone-pad"
                         value={newAmount}
                     />
                     <View style={styles.iconContainer}>
@@ -133,38 +148,53 @@ export default function EditCustomerRecordModal({amount, currency, transaction_t
                     </RadioButton.Group>
                 </Animated.View>
 
-                <Animated.View entering={FadeIn.duration(300).delay(100)} style={styles.drop_down_container}>
-                    <CurrencyDropdownListSearch setSelected={setNewCurrency} selected={newCurrency}/>
+                <Animated.View
+                    entering={FadeIn.duration(300).delay(100)}
+                    style={styles.drop_down_container}
+                >
+                    <CurrencyDropdownListSearch
+                        setSelected={setNewCurrency}
+                        selected={newCurrency}
+                    />
                 </Animated.View>
 
                 <Animated.View entering={FadeInDown.duration(300).delay(400)}>
                     <TouchableOpacity
                         style={styles.add_new_customer_btn}
                         onPress={handleAddNewRecord}
-                        title='add new customer'
+                        title="add new customer"
                     >
-                        <Text style={{color: "white"}}>Update Record</Text>
+                        {saving ? (
+                            <ActivityIndicator
+                                size="small"
+                                color="white"
+                                style={{ marginLeft: 12, marginTop: 5 }}
+                            />
+                        ) : (
+                            <Text style={styles.buttonText}>
+                                Update Record
+                            </Text>
+                        )}
                     </TouchableOpacity>
                 </Animated.View>
 
-                <TouchableOpacity 
-                    onPress={() => setUpdateRecordModal(false)} 
+                <TouchableOpacity
+                    onPress={() => setUpdateRecordModal(false)}
                     style={[styles.pressable, styles.pressable_close]}
                 >
                     <X name="close-outline" size={24} color="black" />
                 </TouchableOpacity>
             </Animated.View>
         </Animated.View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
     modalView: {
         flex: 1,
-        justifyContent: 'flex-end',
-        alignItems: 'center',
+        justifyContent: "flex-end",
+        alignItems: "center",
         position: "relative",
-        
     },
     input: {
         borderWidth: 1,
@@ -172,20 +202,20 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 5,
         width: "100%",
-        borderRadius: 20
+        borderRadius: 20,
     },
     input_container: {
-        flexDirection: 'row',
+        flexDirection: "row",
         alignContent: "center",
         alignItems: "center",
-        position: 'relative',
-        marginTop: 20
+        position: "relative",
+        marginTop: 20,
     },
 
     icon: {
-        position: 'absolute',
+        position: "absolute",
         right: 10,
-        top: '10%',
+        top: "10%",
         color: "black",
         zIndex: 1,
         backgroundColor: "white",
@@ -200,10 +230,8 @@ const styles = StyleSheet.create({
     payment_text: {
         fontSize: 14,
         fontWeight: "bold",
-        marginLeft: 4
-    }
-    ,
-    
+        marginLeft: 4,
+    },
     options_container: {
         backgroundColor: "white",
         padding: 40,
@@ -222,19 +250,19 @@ const styles = StyleSheet.create({
     },
 
     add_new_customer_btn: {
-        backgroundColor: '#66E066',
+        backgroundColor: "#66E066",
         color: "white",
         marginTop: 20,
-        textAlign: 'center',
-        alignSelf: 'center',
-        alignItems: 'center',
-        justifyContent: 'center',
+        textAlign: "center",
+        alignSelf: "center",
+        alignItems: "center",
+        justifyContent: "center",
         width: "90%",
         borderRadius: 99,
         paddingVertical: 18,
         paddingHorizontal: 16,
         marginBottom: -30,
-        marginTop: 20
+        marginTop: 20,
     },
 
     drop_down_container: {
@@ -242,12 +270,12 @@ const styles = StyleSheet.create({
     },
 
     pressable: {
-        position: 'absolute',
+        position: "absolute",
         borderRadius: 50,
         color: "white",
         top: 10,
         right: 10,
-        position: 'absolute',
+        position: "absolute",
         zIndex: 1,
         backgroundColor: "white",
         padding: 8,
@@ -259,7 +287,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginTop: 10,
         borderWidth: 1,
-        borderColor: 'gray'
+        borderColor: "gray",
     },
     paymentLabel: {
         fontSize: 16,
@@ -286,7 +314,9 @@ const styles = StyleSheet.create({
         right: 16,
         height: "100%",
         justifyContent: "center",
-        bottom: 10
-        
+        bottom: 10,
     },
-})
+    buttonText : {
+        color: "white"
+    }
+});

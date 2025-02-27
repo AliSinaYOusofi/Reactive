@@ -8,6 +8,7 @@ import {
     Pressable,
     TouchableOpacity,
     TouchableOpacityBase,
+    ActivityIndicator,
 } from "react-native";
 import CurrencyDropdownListSearch from "./CurrencyDropdownList";
 import Toast from "react-native-toast-message";
@@ -29,7 +30,7 @@ export default function AddNewCustomeRecordModal({
     const [amount, setAmount] = useState("");
     const [transactionType, setTransactionType] = useState("");
     const [currency, setCurrency] = useState("");
-
+    const [saving, setSaving] = useState(false);
     const {
         setRefreshSingleViewChangeDatabase,
         setRefreshHomeScreenOnChangeDatabase,
@@ -68,6 +69,7 @@ export default function AddNewCustomeRecordModal({
     };
 
     const insertToCustomerChild = async () => {
+        setSaving(true);
         try {
             const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
             const dataToInsert = {
@@ -86,19 +88,20 @@ export default function AddNewCustomeRecordModal({
             if (error) {
                 console.error("Error inserting data:", error);
                 showToast("Failed to add a new record", "error");
+            } else {
+                setAddNewRecordModal(false);
+                setAmount("");
+                setTransactionType("");
+                setCurrency("");
+                setRefreshSingleViewChangeDatabase((prev) => !prev);
+                setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+                showToast("User record added", "success");
             }
-
-            showToast("User record added", "success");
         } catch (error) {
             console.error("Error while inserting new record:", error.message);
             showToast("Error while inserting new record");
         } finally {
-            setAmount("");
-            setTransactionType("");
-            setCurrency("");
-            setAddNewRecordModal(false);
-            setRefreshSingleViewChangeDatabase((prev) => !prev);
-            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            setSaving(false);
         }
     };
 
@@ -170,7 +173,18 @@ export default function AddNewCustomeRecordModal({
                         style={styles.add_new_customer_btn}
                         onPress={handleAddNewRecord}
                     >
-                        <Text style={{ color: "white" }}>Save Record</Text>
+                        <Text>
+                            {saving ? (
+                                <ActivityIndicator
+                                    size="small"
+                                    color="white"
+                                    style={{ marginLeft: 12, marginTop: 5 }}
+                                />
+                                )
+                                :
+                                <Text style={{ color: "white" }}>Save Record</Text>
+                            }
+                        </Text>
                     </TouchableOpacity>
                 </Animated.View>
 
@@ -197,7 +211,7 @@ const styles = StyleSheet.create({
         borderColor: "gray",
         padding: 20,
         width: "100%",
-        borderRadius: 20
+        borderRadius: 20,
     },
     input_container: {
         flexDirection: "row",
@@ -254,7 +268,6 @@ const styles = StyleSheet.create({
         backgroundColor: "green",
         color: "white",
         textAlign: "center",
-        alignSelf: "center",
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 9999,
@@ -266,7 +279,8 @@ const styles = StyleSheet.create({
         paddingVertical: 18,
         paddingHorizontal: 16,
         marginBottom: -30,
-        marginTop: 20
+        marginTop: 20,
+        display: "flex"
     },
 
     drop_down_container: {
@@ -289,7 +303,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginTop: 10,
         borderWidth: 1,
-        borderColor: 'gray'
+        borderColor: "gray",
     },
     paymentLabel: {
         fontSize: 16,
@@ -316,6 +330,6 @@ const styles = StyleSheet.create({
         right: 16,
         height: "100%",
         justifyContent: "center",
-        top:"1"
-    }
+        top: "1",
+    },
 });

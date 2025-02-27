@@ -1,5 +1,5 @@
-import React from "react";
-import {  StyleSheet, Text, Pressable, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, Text, Pressable, TouchableOpacity, ActivityIndicator } from "react-native";
 import { cancel_button_color, delete_button_color } from "./colors";
 import Toast from "react-native-toast-message";
 import { useAppContext } from "../../context/useAppContext";
@@ -12,19 +12,22 @@ export default function DeleteRecordModal({
     username,
     record_id,
 }) {
-    
     const {
         setRefreshHomeScreenOnChangeDatabase,
         setRefreshSingleViewChangeDatabase,
     } = useAppContext();
 
+    const [saving, setSaving] = useState(false)
+
     const handleDelete = async () => {
         if (record_id) {
-            console.log("deleting by record_id", record_id);
+            setSaving(true)
             await deleteByRecoredId();
+            setSaving(false)
         } else {
-            console.log("deleting by username", username);
+            setSaving(true)
             await deleteByUsername();
+            setSaving(false)
         }
         setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
         setRefreshSingleViewChangeDatabase((prev) => !prev);
@@ -48,18 +51,18 @@ export default function DeleteRecordModal({
     const deleteByRecoredId = async () => {
         try {
             const { data, error } = await supabase
-                .from('customer__records')
+                .from("customer__records")
                 .delete()
-                .eq('id', record_id);
-    
+                .eq("id", record_id);
+
             if (error) {
                 throw error;
             }
-    
+
             if (error) {
-                showToast("Failed to delete ", "error")
+                showToast("Failed to delete ", "error");
             } else {
-                showToast("Record deleted", "success")
+                showToast("Record deleted", "success");
             }
         } catch (error) {
             console.error("Failed to delete record", error.message);
@@ -68,33 +71,32 @@ export default function DeleteRecordModal({
             setCloseModal(false);
         }
     };
-    
 
     const deleteByUsername = async () => {
         try {
             // Delete from customers table
             const { error: error1 } = await supabase
-                .from('customers')
+                .from("customers")
                 .delete()
-                .eq('username', username);
-    
+                .eq("username", username);
+
             if (error1) {
                 throw error1;
             }
-    
+
             // Delete from customer__records table
             const { error: error2 } = await supabase
-                .from('customer__records')
+                .from("customer__records")
                 .delete()
-                .eq('username', username);
-    
+                .eq("username", username);
+
             if (error2) {
                 throw error2;
             }
-    
+
             setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
             setRefreshSingleViewChangeDatabase((prev) => !prev);
-    
+
             setCloseModal(false);
             showToast("User and all associated records deleted.", "success");
         } catch (error) {
@@ -102,15 +104,16 @@ export default function DeleteRecordModal({
             showToast("Failed to delete user");
         }
     };
-    
 
     return (
-        <Animated.View entering={FadeIn.duration(300).delay(100)} exiting={FadeOut.duration(300).delay(100)} style={styles.modalContainer}>
-            
+        <Animated.View
+            entering={FadeIn.duration(300).delay(100)}
+            exiting={FadeOut.duration(300).delay(100)}
+            style={styles.modalContainer}
+        >
             <Animated.View
                 style={styles.options_container}
                 entering={FadeIn.duration(300).delay(100)}
-                
             >
                 <Animated.Text
                     style={styles.texts}
@@ -127,7 +130,15 @@ export default function DeleteRecordModal({
                         onPress={handleDelete}
                         style={styles.delete_button}
                     >
-                        <Text style={styles.button_text}> Delete </Text>
+                        {saving ? (
+                            <ActivityIndicator
+                                size="small"
+                                color="white"
+                                style={{ marginLeft: 12, marginTop: 5, alighItems: "center", justifyContent: "center" }}
+                            />
+                        ) : (
+                            <Text style={styles.button_text}>Delete</Text>
+                        )}
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={handleCancel}
@@ -142,10 +153,7 @@ export default function DeleteRecordModal({
                     entering={FadeIn.duration(300).delay(400)}
                 >
                     <TouchableOpacity onPress={() => setCloseModal(false)}>
-                        <X
-                            size={20}
-                            color="black"
-                        />
+                        <X size={20} color="black" />
                     </TouchableOpacity>
                 </Animated.View>
             </Animated.View>
@@ -208,10 +216,8 @@ const styles = StyleSheet.create({
         top: 10,
         right: 10,
     },
-    pressable_close: {
-        
-    },
+    pressable_close: {},
     button_text: {
-        color: "white"
-    }
+        color: "white",
+    },
 });
