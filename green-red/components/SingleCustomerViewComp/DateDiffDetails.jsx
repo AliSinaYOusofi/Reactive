@@ -8,7 +8,7 @@ export default function DateDiffDetails({date}) {
         <>
             <Text style={style.color}>
                 {
-                    date?.split(" ")[0]
+                    date?.split("T")[0]
                 }
             </Text>
 
@@ -31,7 +31,7 @@ const style = StyleSheet.create( {
     text_margin: {
         color: 'gray',
         padding: 5,
-        fontSize: 16,
+        fontSize: 12,
     },
 
     container: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { ArrowDown, X } from 'lucide-react-native';
 
@@ -37,9 +37,9 @@ export default function SortOptionsDropDownModal({ setSelected, selected, setClo
                         Icon={() => <ArrowDown size={24} color="white" />}
                     />
                 </View>
-                <Pressable onPress={() => setCloseSortMOdal(false)} style={styles.pressable_close}>
+                <TouchableOpacity onPress={() => setCloseSortMOdal(false)} style={styles.pressable_close}>
                     <X size={24} color="black" />
-                </Pressable>
+                </TouchableOpacity>
             </View>
         </View>
     );

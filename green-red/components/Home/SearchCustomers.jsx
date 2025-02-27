@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, StyleSheet, Pressable, Modal } from "react-native";
+import { View, TextInput, StyleSheet, Pressable, Modal, TouchableOpacity } from "react-native";
 import SortOptionsDropDownModal from "../global/SortOptionsDropDownModal";
 import { format, parseISO } from "date-fns";
 import * as Print from "expo-print";
@@ -362,17 +362,17 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                 </View>
 
                 <View style={styles.sort_and_pdf_container}>
-                    <Pressable onPress={() => setSortModalVisible(true)}>
+                    <TouchableOpacity onPress={() => setSortModalVisible(true)}>
                         <ArrowUpDown
                             size={24}
                             color="black"
                             style={styles.icon}
                         />
-                    </Pressable>
+                    </TouchableOpacity>
 
-                    <Pressable onPress={() => convertQueryResultToPdf()}>
+                    <TouchableOpacity onPress={() => convertQueryResultToPdf()}>
                         <FileDown size={24} color="black" style={styles.icon} />
-                    </Pressable>
+                    </TouchableOpacity>
                 </View>
             </View>
 

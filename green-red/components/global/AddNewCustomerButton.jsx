@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Linking, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Linking, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { UserRoundPlus } from 'lucide-react-native';
 
@@ -20,34 +20,28 @@ export default function ActionButtons() {
 
     return (
         <View style={styles.container}>
-            
-            <Pressable style={styles.button} onPress={handleAddCustomer}>
+            <TouchableOpacity style={styles.button} onPress={handleAddCustomer}>
                 <UserRoundPlus size={24} color="white" />
                 <Text style={styles.text}>Add User</Text>
-            </Pressable>
-            
-            
-            
+            </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        
-        backgroundColor: 'white',
         width: '100%',
-        
         columnGap: 8,
-        alignItems: 'center'
+        alignItems: 'center',
+
     },
 
     button: {
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: "#14171A",
-        borderRadius: 9999,
-        paddingVertical: 12,
+        borderRadius: 99,
+        paddingVertical: 18,
         paddingHorizontal: 16,
         width: "90%",
         elevation: 2,
@@ -67,7 +61,13 @@ const styles = StyleSheet.create({
     },
 
     text: {
-        color: "white",
+        color: "#FFFFFF",
         fontSize: 16,
+        fontWeight: "600",
+        textAlign: "center",
+        letterSpacing: 0.5,
+        alignContent: "center",
+        justifyContent: "center",
+        alignItems: " center"
     }
 });

@@ -8,6 +8,7 @@ import {
     Image,
     KeyboardAvoidingView,
     Platform,
+    TouchableOpacity,
 } from "react-native";
 import CurrencyDropdownListSearch from "../components/global/CurrencyDropdownList";
 import { validateUsername } from "../utils/validators/usernameValidator";
@@ -247,7 +248,7 @@ export default function EditCustomerParent({ navigation, route }) {
                     style={styles.buttonWrapper}
                 >
                     <Animated.View style={buttonStyle}>
-                        <Pressable
+                        <TouchableOpacity
                             style={styles.addButton}
                             onPress={handleUpdateCustomerParent}
                             onPressIn={onPressIn}
@@ -256,7 +257,7 @@ export default function EditCustomerParent({ navigation, route }) {
                             <Text style={styles.buttonText}>
                                 Update Customer
                             </Text>
-                        </Pressable>
+                        </TouchableOpacity>
                     </Animated.View>
                 </Animated.View>
             </Animated.View>
@@ -287,21 +288,11 @@ const styles = StyleSheet.create({
         position: "relative",
     },
     input: {
-        width: "100%",
-        height: 56,
-        paddingHorizontal: 16,
-        paddingRight: 48,
-        fontSize: 16,
-        color: "#1E293B",
-        backgroundColor: "#FFFFFF",
         borderWidth: 1,
-        borderColor: "#E2E8F0",
-        borderRadius: 12,
-        shadowColor: "#64748B",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 3,
-        elevation: 2,
+        borderColor: "gray",
+        padding: 20,
+        width: "100%",
+        borderRadius: 20
     },
     iconContainer: {
         position: "absolute",
@@ -311,17 +302,12 @@ const styles = StyleSheet.create({
     },
     paymentStatusContainer: {
         width: "100%",
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "white",
         borderRadius: 12,
         padding: 16,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: "#E2E8F0",
-        shadowColor: "#64748B",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 3,
-        elevation: 2,
+        borderColor: "gray"
     },
     paymentLabel: {
         fontSize: 16,
@@ -350,7 +336,7 @@ const styles = StyleSheet.create({
     addButton: {
         width: "100%",
         minWidth: 280,
-        backgroundColor: "black",
+        backgroundColor: "#66E066",
         paddingVertical: 16,
         borderRadius: 12,
         shadowColor: "#3B82F6",
@@ -358,6 +344,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 4,
+        borderRadius: 99,
+        paddingVertical: 18,
+        paddingHorizontal: 16,
     },
     buttonText: {
         color: "#FFFFFF",
@@ -365,6 +354,9 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         textAlign: "center",
         letterSpacing: 0.5,
+        alignContent: "center",
+        justifyContent: "center",
+        alignItems: " center"
     },
     buttonWrapper: {
         width: "100%",

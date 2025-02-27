@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, StyleSheet, Pressable } from 'react-native';
+import { Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import { formatDistanceToNowStrict } from 'date-fns';
 import DateDiffDetails from './DateDiffDetails';
 import * as Clipboard from 'expo-clipboard';
@@ -56,11 +56,11 @@ On: ${transaction_date} ${transaction_date ? formatDistanceToNowStrict(new Date(
                     </Text>
                 </Animated.View>
                 
-                <Pressable onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
+                <TouchableOpacity onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
                     <X  size={24} color="black" />
-                </Pressable>
+                </TouchableOpacity>
                 
-                <Pressable onPress={copy_to_clipboard} style={[styles.pressable, styles.pressable_clipboard]}>
+                <TouchableOpacity onPress={copy_to_clipboard} style={[styles.pressable, styles.pressable_clipboard]}>
                     {
                         copied
                         ?
@@ -69,7 +69,7 @@ On: ${transaction_date} ${transaction_date ? formatDistanceToNowStrict(new Date(
                         <ClipboardCopy size={24} color="black"/>
                     }
                     
-                </Pressable>
+                </TouchableOpacity>
             </Animated.View>
         </Animated.View>
     );
@@ -82,12 +82,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     all_text_container: {
-        backgroundColor: "black",
-        padding: 20,
+        alignItems: 'stretch',
+        backgroundColor: "white",
+        padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        width: '100%',
-        alignItems: 'stretch',
+        width: "100%",
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        shadowColor: "black",
+        shadowOffset: { width: 3, height: -2 },
+        shadowOpacity: 1,
+        shadowRadius: 14,
+        elevation: 15,
     },
     transaction_type_: {
         fontSize: 28,
@@ -105,12 +114,12 @@ const styles = StyleSheet.create({
     amount: {
         fontSize: 32,
         fontWeight: "bold",
-        color: "white",
+        color: "black",
         marginRight: 5,
     },
     currency: {
         fontSize: 24,
-        color: "white",
+        color: "gray",
     },
     row: {
         flexDirection: 'row',
@@ -128,7 +137,7 @@ const styles = StyleSheet.create({
     },
     value: {
         fontSize: 18,
-        color: "white",
+        color: "black",
         fontWeight: "500",
         flex: 2,
         textAlign: 'right',
@@ -150,6 +159,6 @@ const styles = StyleSheet.create({
     },
     date_diff: {
         color: "gray",
-        fontSize: 15
+        fontSize: 10
     }
 });

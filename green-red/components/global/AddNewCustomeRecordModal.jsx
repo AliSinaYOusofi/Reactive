@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
-import { View, TextInput, Text, StyleSheet, Pressable } from "react-native";
+import {
+    View,
+    TextInput,
+    Text,
+    StyleSheet,
+    Pressable,
+    TouchableOpacity,
+    TouchableOpacityBase,
+} from "react-native";
 import CurrencyDropdownListSearch from "./CurrencyDropdownList";
 import Toast from "react-native-toast-message";
 import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyValidator";
@@ -81,7 +89,6 @@ export default function AddNewCustomeRecordModal({
             }
 
             showToast("User record added", "success");
-            
         } catch (error) {
             console.error("Error while inserting new record:", error.message);
             showToast("Error while inserting new record");
@@ -113,7 +120,9 @@ export default function AddNewCustomeRecordModal({
                         keyboardType="phone-pad"
                     />
 
-                    <Banknote size={24} color="black" />
+                    <View style={styles.iconContainer}>
+                        <Banknote size={28} color="#64748B" />
+                    </View>
                 </Animated.View>
 
                 <Animated.View
@@ -157,21 +166,20 @@ export default function AddNewCustomeRecordModal({
                 </Animated.View>
 
                 <Animated.View entering={FadeInDown.duration(300).delay(400)}>
-                    <Pressable
+                    <TouchableOpacity
                         style={styles.add_new_customer_btn}
                         onPress={handleAddNewRecord}
-                        title="add new customer"
                     >
                         <Text style={{ color: "white" }}>Save Record</Text>
-                    </Pressable>
+                    </TouchableOpacity>
                 </Animated.View>
 
-                <Pressable
+                <TouchableOpacity
                     onPress={() => setAddNewRecordModal(false)}
                     style={[styles.pressable, styles.pressable_close]}
                 >
                     <X size={20} color="black" />
-                </Pressable>
+                </TouchableOpacity>
             </View>
         </Animated.View>
     );
@@ -185,12 +193,11 @@ const styles = StyleSheet.create({
         position: "relative",
     },
     input: {
+        borderWidth: 1,
         borderColor: "gray",
-        padding: 10,
-        marginBottom: 20,
-        borderRadius: 5,
-        backgroundColor: "#FDFCFA",
+        padding: 20,
         width: "100%",
+        borderRadius: 20
     },
     input_container: {
         flexDirection: "row",
@@ -227,21 +234,25 @@ const styles = StyleSheet.create({
         marginLeft: 4,
     },
     options_container: {
-        backgroundColor: "black",
+        backgroundColor: "white",
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         width: "100%",
-        position: "relative",
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        shadowColor: "black",
+        shadowOffset: { width: 3, height: -2 },
+        shadowOpacity: 1,
+        shadowRadius: 14,
+        elevation: 15,
     },
 
     add_new_customer_btn: {
         backgroundColor: "green",
         color: "white",
-        borderRadius: 8,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        marginTop: 20,
         textAlign: "center",
         alignSelf: "center",
         alignItems: "center",
@@ -250,15 +261,16 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 16,
         width: "90%",
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
         shadowRadius: 4,
+        borderRadius: 99,
+        paddingVertical: 18,
+        paddingHorizontal: 16,
+        marginBottom: -30,
+        marginTop: 20
     },
 
     drop_down_container: {
-        marginTop: 20,
+        marginTop: 10,
     },
 
     pressable: {
@@ -273,17 +285,11 @@ const styles = StyleSheet.create({
     },
     paymentStatusContainer: {
         width: "100%",
-        backgroundColor: "#FFFFFF",
-        borderRadius: 12,
+        borderRadius: 20,
         padding: 16,
-        marginBottom: 16,
+        marginTop: 10,
         borderWidth: 1,
-        borderColor: "#E2E8F0",
-        shadowColor: "#64748B",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 3,
-        elevation: 2,
+        borderColor: 'gray'
     },
     paymentLabel: {
         fontSize: 16,
@@ -305,4 +311,11 @@ const styles = StyleSheet.create({
         color: "#475569",
         marginLeft: 8,
     },
+    iconContainer: {
+        position: "absolute",
+        right: 16,
+        height: "100%",
+        justifyContent: "center",
+        top:"1"
+    }
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal, ActivityIndicator, TouchableOpacity } from 'react-native'
 import Toast from 'react-native-toast-message'
 import AddNewCustomeRecordModal from '../components/global/AddNewCustomeRecordModal'
 import { useAppContext } from '../context/useAppContext'
@@ -212,13 +212,13 @@ export default function SingleCustomerView({navigation, route}) {
             </View>
 
             <Animated.View>
-                <Pressable
+                <TouchableOpacity
                     style={styles.add_new_customer_btn}
                     onPress={handleAddNewCustomer}
                 >
                     <AntDesign name="plus" size={24} color="white" />
                     <Text style={{color: "white", fontWeight: "bold"}}>Add Record</Text>
-                </Pressable>
+                </TouchableOpacity>
             </Animated.View>
             
             <Modal
@@ -230,7 +230,7 @@ export default function SingleCustomerView({navigation, route}) {
                     setAddNewRecordModal(false)
                 }}
             >
-                <Animated.View style={[{flex: 1}, modalAnimatedStyle]}>
+                <Animated.View style={[{flex: 1}]}>
                     <AddNewCustomeRecordModal
                         username={username}
                         setAddNewRecordModal={setAddNewRecordModal}
@@ -245,31 +245,28 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: 'white',
         height: "100%",
-        paddingBottom: 40
     },
     
     add_new_customer_btn: {
         backgroundColor: '#181c20',
         color: "white",
-        borderRadius: 8,
         height: 'auto',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        backgroundColor: "#14171A",
+        borderRadius: 99,
+        paddingVertical: 18,
+        paddingHorizontal: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        width: "70%",
         alignSelf: "center",
         position: "absolute",
-        bottom: 10,
         backgroundColor: "#14171A",
         borderRadius: 9999,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
         width: "90%",
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 10
+        gap: 10,
+        bottom: 1
     },
     errorContainer: {
         flex: 1,
