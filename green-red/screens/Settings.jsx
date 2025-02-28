@@ -22,10 +22,11 @@ const SettingsScreen = () => {
                     text: "Logout",
                     onPress: async () => {
                         try {
-                            const { error } = await supabase.auth.signOut();
+                            const { error, data } = await supabase.auth.signOut();
                             if (error) throw error;
                             
                             setUserId(null)
+                            console.log("user logged out", data)
                             navigation.reset({
                                 index: 0,
                                 routes: [{ name: 'login' }],
@@ -60,17 +61,6 @@ const SettingsScreen = () => {
                 onPress={() => alert("Profile settings")}
             />
 
-            <SettingOption
-                icon={<Bell color="#FF9500" size={24} />}
-                text="Notifications"
-                onPress={() => alert("Notification settings")}
-            />
-
-            <SettingOption
-                icon={<Lock color="#FF3B30" size={24} />}
-                text="Privacy"
-                onPress={() => alert("Privacy settings")}
-            />
 
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                 <LogOut color="#fff" size={24} />
@@ -83,7 +73,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#F2F2F7",
+        backgroundColor: "white",
         padding: 20,
     },
     header: {

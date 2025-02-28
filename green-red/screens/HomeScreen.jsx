@@ -185,10 +185,6 @@ export default function HomeScreen({navigator}) {
                 <CarouselOfTracker totalExpenseOfCustomer={totalExpenseOfCustomer}/>
             </Animated.View>
 
-
-            <Pressable onPress={() => navigation.navigate("login")}>
-                <Text> Login </Text>
-            </Pressable>
             <Animated.View style={{marginTop: 50}} entering={FadeInDown.delay(200)}>
                 {customer.length ? (
                     <SearchCustomers 
