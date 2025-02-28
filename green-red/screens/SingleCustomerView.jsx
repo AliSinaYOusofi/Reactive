@@ -20,7 +20,7 @@ export default function SingleCustomerView({navigation, route}) {
     const [isLoading, setIsLoading] = useState(true)
     const username = route.params.username
     const [addNewRecordModal, setAddNewRecordModal] = useState(false)
-    const { refreshSingelViewChangeDatabase, refreshHomeScreenOnChangeDatabase } = useAppContext()
+    const { refreshSingelViewChangeDatabase, refreshHomeScreenOnChangeDatabase, userId } = useAppContext()
     const [singleCustomerExpense, setSingleCustomerExpense] = useState([])
     const [ refresh, setRefresh] = useState(false)
     const [error, setError] = useState("")
