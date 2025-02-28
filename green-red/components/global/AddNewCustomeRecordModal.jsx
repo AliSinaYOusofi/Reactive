@@ -34,6 +34,7 @@ export default function AddNewCustomeRecordModal({
     const {
         setRefreshSingleViewChangeDatabase,
         setRefreshHomeScreenOnChangeDatabase,
+        userId
     } = useAppContext();
 
     const handleAddNewRecord = async () => {
@@ -79,6 +80,7 @@ export default function AddNewCustomeRecordModal({
                 currency: currency,
                 transaction_at: currentDateTime,
                 transaction_updated_at: currentDateTime,
+                user_id: userId
             };
 
             const { data, error } = await supabase

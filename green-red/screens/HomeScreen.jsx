@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, Text, Pressable } from 'react-native';
 import SearchCustomers from '../components/Home/SearchCustomers';
 import CustomerListTemplate from '../components/Home/CustmerListTemplate';
 import AddNewCustomer from '../components/global/AddNewCustomerButton';
@@ -12,8 +12,9 @@ import CarouselOfTracker from '../components/carousel/Carouself';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { supabase } from '../utils/supabase';
 import RetryComponent from '../components/RetryComponent';
+import { useNavigation } from '@react-navigation/native';
 
-export default function HomeScreen() {
+export default function HomeScreen({navigator}) {
     const [customer, setCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("");
@@ -22,6 +23,8 @@ export default function HomeScreen() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
     const [refresh, setRefresh] = useState(false)
+    const navigation = useNavigation();
+    const { userId } = useAppContext();
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
@@ -29,8 +32,9 @@ export default function HomeScreen() {
             try {
                 const { data: customers, error } = await supabase
                     .from('customers')
-                    .select('*');
-                
+                    .select('*')
+                    .eq('user_id', (userId));
+
                 if (error) {
                     console.error('Error fetching customers:', error);
                     setError(error.message || "Error Fetching customers table");
@@ -99,7 +103,8 @@ export default function HomeScreen() {
                 // Fetch all customer records to get unique currencies
                 const { data: customerRecords, error: error1 } = await supabase
                     .from('customer__records')
-                    .select('currency');
+                    .select('currency')
+                    .eq("user_id", userId)
     
                 if (error1) {
                     console.error('Error fetching customer records:', error1);
@@ -180,6 +185,10 @@ export default function HomeScreen() {
                 <CarouselOfTracker totalExpenseOfCustomer={totalExpenseOfCustomer}/>
             </Animated.View>
 
+
+            <Pressable onPress={() => navigation.navigate("login")}>
+                <Text> Login </Text>
+            </Pressable>
             <Animated.View style={{marginTop: 50}} entering={FadeInDown.delay(200)}>
                 {customer.length ? (
                     <SearchCustomers 

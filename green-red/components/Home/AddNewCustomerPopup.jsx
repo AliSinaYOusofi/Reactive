@@ -37,7 +37,7 @@ function AddNewCustomerPopup() {
     const [selectedCurrency, setSelectedCurrency] = useState("");
     const [saving, setSaving] = useState(false);
 
-    const { setRefreshHomeScreenOnChangeDatabase } = useAppContext();
+    const { setRefreshHomeScreenOnChangeDatabase, userId } = useAppContext();
     const navigator = useNavigation();
 
     const scale = useSharedValue(1);
@@ -125,6 +125,7 @@ function AddNewCustomerPopup() {
                     transaction_type: paymentStatus,
                     currency: selectedCurrency,
                     at: currentDateTime,
+                    user_id: userId,
                 },
             ]);
 
