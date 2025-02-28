@@ -75,11 +75,11 @@ const SignupScreen = () => {
                 }
 
                 setUserId(user.id);
-
+                console.log(email, password, ' singing in ')
                 const { error: signInError } =
                     await supabase.auth.signInWithPassword({
-                        email,
-                        password,
+                        email: email.trim(),
+                        password: password.trim(),
                     });
 
                 if (signInError) {
@@ -88,7 +88,7 @@ const SignupScreen = () => {
                 }
 
                 alert("Account created successfully! Redirecting...");
-                navigation.navigate("homescreen");
+                navigation.navigate("login");
             }
         } catch (error) {
             console.error("Signup process error:", error);

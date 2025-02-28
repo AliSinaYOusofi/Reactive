@@ -11,7 +11,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { supabase } from "../utils/supabase";
-import { err } from "react-native-svg";
+
 import { useAppContext } from "../context/useAppContext";
 const LoginScreen = () => {
     const navigation = useNavigation();
@@ -31,17 +31,19 @@ const LoginScreen = () => {
         }
 
         setIsLoggingIn(true);
-        console.log(email, password, "data");
+        
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
+                email: email.trim(),
+                password: password.trim(),
             });
 
-            console.log(data, 'data here');
             if (error) {
+                console.log(error, 'error here');
                 return console.error(error.message);
             }
+            
+            setUserId(data.user.id);
 
             navigation.reset({
                 index: 0,
