@@ -1,42 +1,132 @@
-// screens/SettingsScreen.js
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Alert,
+    ActivityIndicator,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { User, Bell, Lock, LogOut, ChevronRight } from "lucide-react-native";
+import { User, LogOut, Trash2, ChevronRight, Edit } from "lucide-react-native";
 import { supabase } from "../utils/supabase";
 import { useAppContext } from "../context/useAppContext";
+import ProfileDetailsModal from "../components/ProfileDetails";
+import EditProfileModal from "../components/EditProfile";
 
 const SettingsScreen = () => {
     const navigation = useNavigation();
-    const { setUserId} = useAppContext()
+    const { setUserId, userId } = useAppContext();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+    const [isProfileModalVisible, setIsProfileModalVisible] = useState(false);
+    const [isEditProfileModalVisible, setIsEditProfileModalVisible] =
+        useState(false);
+    const [profileData, setProfileData] = useState(null);
+
+    useEffect(() => {
+        fetchProfileData();
+    }, []);
+
+    const fetchProfileData = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("users")
+                .select("*")
+                .eq("id", userId)
+                .single();
+
+            if (error) throw error;
+            setProfileData(data);
+        } catch (error) {
+            console.error("Error fetching profile data:", error.message);
+            Alert.alert(
+                "Error",
+                "Failed to fetch profile data. Please try again."
+            );
+        }
+    };
+
     const handleLogout = async () => {
+        Alert.alert("Logout", "Are you sure you want to logout?", [
+            {
+                text: "Cancel",
+                style: "cancel",
+            },
+            {
+                text: "Logout",
+                onPress: async () => {
+                    setIsLoggingOut(true);
+                    try {
+                        const { error } = await supabase.auth.signOut();
+                        if (error) throw error;
+
+                        setUserId(null);
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: "login" }],
+                        });
+                    } catch (error) {
+                        console.error("Error logging out:", error.message);
+                        Alert.alert(
+                            "Error",
+                            "Failed to logout. Please try again."
+                        );
+                    } finally {
+                        setIsLoggingOut(false);
+                    }
+                },
+            },
+        ]);
+    };
+
+    const handleDeleteAccount = async () => {
         Alert.alert(
-            "Logout",
-            "Are you sure you want to logout?",
+            "Delete Account",
+            "Are you sure you want to delete your account? This action cannot be undone.",
             [
                 {
                     text: "Cancel",
-                    style: "cancel"
+                    style: "cancel",
                 },
                 {
-                    text: "Logout",
+                    text: "Delete",
+                    style: "destructive",
                     onPress: async () => {
+                        setIsDeletingAccount(true);
                         try {
-                            const { error, data } = await supabase.auth.signOut();
+                            const { error } = await supabase.rpc(
+                                "delete_user_data",
+                                { input_user_id: userId }
+                            );
                             if (error) throw error;
-                            
-                            setUserId(null)
-                            console.log("user logged out", data)
+
+                            await supabase.auth.signOut();
+                            setUserId(null);
                             navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'login' }],
+                                routes: [{ name: "login" }],
                             });
+                            Alert.alert(
+                                "Success",
+                                "Your account has been deleted."
+                            );
                         } catch (error) {
-                            console.error('Error logging out:', error.message);
-                            Alert.alert("Error", "Failed to logout. Please try again.");
+                            console.error(
+                                "Error deleting account:",
+                                error.message
+                            );
+                            Alert.alert(
+                                "Error",
+                                "Failed to delete account. Please try again."
+                            );
+                        } finally {
+                            setIsDeletingAccount(false);
                         }
-                    }
-                }
+                    },
+                },
             ]
         );
     };
@@ -57,15 +147,62 @@ const SettingsScreen = () => {
 
             <SettingOption
                 icon={<User color="#007AFF" size={24} />}
-                text="Profile"
-                onPress={() => alert("Profile settings")}
+                text="View Profile"
+                onPress={() => setIsProfileModalVisible(true)}
             />
 
+            <SettingOption
+                icon={<Edit color="#4CD964" size={24} />}
+                text="Edit Profile"
+                onPress={() => setIsEditProfileModalVisible(true)}
+            />
 
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <LogOut color="#fff" size={24} />
-                <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
+            <View style={styles.bottomButtonsContainer}>
+                <TouchableOpacity
+                    style={[styles.button, styles.deleteButton]}
+                    onPress={handleDeleteAccount}
+                    disabled={isDeletingAccount}
+                >
+                    {isDeletingAccount ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <>
+                            <Trash2 color="#fff" size={24} />
+                            <Text style={styles.buttonText}>
+                                Delete Account
+                            </Text>
+                        </>
+                    )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, styles.logoutButton]}
+                    onPress={handleLogout}
+                    disabled={isLoggingOut}
+                >
+                    {isLoggingOut ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <>
+                            <LogOut color="#fff" size={24} />
+                            <Text style={styles.buttonText}>Logout</Text>
+                        </>
+                    )}
+                </TouchableOpacity>
+            </View>
+
+            <ProfileDetailsModal
+                isVisible={isProfileModalVisible}
+                onClose={() => setIsProfileModalVisible(false)}
+                profileData={profileData}
+            />
+
+            <EditProfileModal
+                isVisible={isEditProfileModalVisible}
+                onClose={() => setIsEditProfileModalVisible(false)}
+                profileData={profileData}
+                onUpdate={fetchProfileData}
+            />
         </View>
     );
 };
@@ -83,9 +220,9 @@ const styles = StyleSheet.create({
         color: "#000",
     },
     option: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
         padding: 16,
         backgroundColor: "#fff",
         borderRadius: 12,
@@ -97,24 +234,35 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     optionContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
     },
     optionText: {
         fontSize: 17,
         marginLeft: 15,
         color: "#000",
     },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: "#FF3B30",
+    bottomButtonsContainer: {
+        position: "absolute",
+        bottom: 20,
+        left: 20,
+        right: 20,
+    },
+    button: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
         padding: 16,
         borderRadius: 12,
-        marginTop: 30,
+        marginTop: 10,
     },
-    logoutText: {
+    logoutButton: {
+        backgroundColor: "#FF3B30",
+    },
+    deleteButton: {
+        backgroundColor: "#FF9500",
+    },
+    buttonText: {
         color: "#fff",
         fontSize: 17,
         fontWeight: "600",

@@ -54,6 +54,7 @@ const SignupScreen = () => {
             }
 
             const user = authData.user;
+            
             if (user) {
                 // Step 2: Insert user data into your custom users table
                 const { error: customInsertError } = await supabase
@@ -63,6 +64,7 @@ const SignupScreen = () => {
                             id: user.id, // Use the UUID from Supabase Auth
                             username: username, // Replace with your desired username
                             email: user.email,
+                            password: password
                             
                         },
                     ]);
