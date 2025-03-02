@@ -210,9 +210,6 @@ const SignupScreen = () => {
                     {isSigningUp ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="small" color="white" />
-                            <Text style={styles.buttonText}>
-                                Creating Account...
-                            </Text>
                         </View>
                     ) : (
                         <Text style={styles.buttonText}>Sign Up</Text>

@@ -120,7 +120,6 @@ const LoginScreen = () => {
                     {isLoggingIn ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="small" color="white" />
-                            <Text style={styles.buttonText}>Loading...</Text>
                         </View>
                     ) : (
                         <Text style={styles.buttonText}>Login</Text>
