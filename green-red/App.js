@@ -23,6 +23,7 @@ import {
 import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/Signup";
 import SettingsScreen from "./screens/Settings";
+import { ActivityIndicator } from "react-native-paper";
 
 const StackNavigator = createNativeStackNavigator();
 
@@ -35,29 +36,44 @@ export default function App() {
 }
 
 const Navigation = () => {
-    const { userId } = useAppContext();
-    console.log(userId);
+    const { userId, loading } = useAppContext();
+
+    if (loading) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <ActivityIndicator />
+            </View>
+        );
+    }
+
     const initialRoute = userId ? "homescreen" : "login";
 
     return (
         <NavigationContainer>
             <StackNavigator.Navigator
                 initialRouteName={initialRoute}
-                screenOptions={({ navigation }) => ({
+                screenOptions={({ navigation, route }) => ({
                     headerShown: true,
                     contentStyle: {
                         marginHorizontal: 20,
                         margin: 5,
                         fontSize: 20,
                     },
-                    headerRight: () => (
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("settings")}
-                            style={{ marginRight: 10 }}
-                        >
-                            <Settings2 size={24} color="black" />
-                        </TouchableOpacity>
-                    ),
+                    headerRight: () =>
+                        route.name !== "login" && route.name !== "signup" && (
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate("settings")}
+                                style={{ marginRight: 10 }}
+                            >
+                                <Settings size={24} color="black" />
+                            </TouchableOpacity>
+                        ),
                 })}
             >
                 <StackNavigator.Screen
@@ -76,6 +92,7 @@ const Navigation = () => {
                         headerStyle: { backgroundColor: "white" },
                         headerTitleStyle: { fontSize: 25 },
                         headerTitle: () => <Settings size={24} color="black" />,
+                        headerRight: () => null,
                     }}
                 />
                 <StackNavigator.Screen
@@ -113,9 +130,9 @@ const Navigation = () => {
                                 }}
                             >
                                 <UserPlus color="black" />
-                                <Text>Add Customer</Text>
                             </View>
                         ),
+                        headerRight: () => null
                     }}
                 />
                 <StackNavigator.Screen
@@ -132,9 +149,9 @@ const Navigation = () => {
                                 }}
                             >
                                 <Database size={24} color="black" />
-                                <Text>Records</Text>
                             </View>
                         ),
+                        headerRight: () => null
                     }}
                 />
                 <StackNavigator.Screen
@@ -151,9 +168,9 @@ const Navigation = () => {
                                 }}
                             >
                                 <PenSquare color="black" />
-                                <Text>Edit customer</Text>
                             </View>
                         ),
+                        headerRight: () => null
                     }}
                 />
             </StackNavigator.Navigator>

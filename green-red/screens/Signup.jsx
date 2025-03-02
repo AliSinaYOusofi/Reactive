@@ -244,11 +244,7 @@ const styles = StyleSheet.create({
         padding: 24,
         backgroundColor: "white",
         borderRadius: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 5,
+        
     },
     title: {
         fontSize: 28,
@@ -264,7 +260,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#EDF2F7",
         borderRadius: 12,
         backgroundColor: "#f9f9f9",
         paddingHorizontal: 12,
