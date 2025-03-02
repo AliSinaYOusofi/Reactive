@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, StyleSheet, Pressable, Modal, TouchableOpacity } from "react-native";
+import {
+    View,
+    TextInput,
+    StyleSheet,
+    Pressable,
+    Modal,
+    TouchableOpacity,
+} from "react-native";
 import SortOptionsDropDownModal from "../global/SortOptionsDropDownModal";
 import { format, parseISO } from "date-fns";
 import * as Print from "expo-print";
@@ -385,7 +392,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                 <SortOptionsDropDownModal
                     selected={selectedSortOption}
                     setSelected={setSelectedSortOption}
-                    setCloseSortMOdal={setSortModalVisible}
+                    setCloseSortModal={setSortModalVisible}
                 />
             </Modal>
         </>

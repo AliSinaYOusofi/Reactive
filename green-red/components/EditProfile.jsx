@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#EDF2F7",
         borderRadius: 8,
         padding: 10,
         fontSize: 16,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#EDF2F7",
         borderRadius: 8,
     },
     passwordInput: {

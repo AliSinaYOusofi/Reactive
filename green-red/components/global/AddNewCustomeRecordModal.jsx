@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderColor: "gray",
+        borderColor: "#EDF2F7",
         padding: 20,
         width: "100%",
         borderRadius: 20,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginTop: 10,
         borderWidth: 1,
-        borderColor: "gray",
+        borderColor: "#EDF2F7",
     },
     paymentLabel: {
         fontSize: 16,

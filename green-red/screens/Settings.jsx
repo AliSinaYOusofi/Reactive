@@ -15,6 +15,7 @@ import { supabase } from "../utils/supabase";
 import { useAppContext } from "../context/useAppContext";
 import ProfileDetailsModal from "../components/ProfileDetails";
 import EditProfileModal from "../components/EditProfile";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SettingsScreen = () => {
     const navigation = useNavigation();
@@ -62,7 +63,11 @@ const SettingsScreen = () => {
                     try {
                         const { error } = await supabase.auth.signOut();
                         if (error) throw error;
-
+                        try {
+                            await AsyncStorage.removeItem("userId");
+                        } catch (error) {
+                            console.error("Failed to remove userId");
+                        }
                         setUserId(null);
                         navigation.reset({
                             index: 0,
@@ -103,6 +108,7 @@ const SettingsScreen = () => {
                             );
                             if (error) throw error;
 
+                            await AsyncStorage.removeItem("userId");
                             await supabase.auth.signOut();
                             setUserId(null);
                             navigation.reset({
@@ -146,13 +152,13 @@ const SettingsScreen = () => {
             <Text style={styles.header}>Settings</Text>
 
             <SettingOption
-                icon={<User color="#007AFF" size={24} />}
+                icon={<User color="#555" size={24} />}
                 text="View Profile"
                 onPress={() => setIsProfileModalVisible(true)}
             />
 
             <SettingOption
-                icon={<Edit color="#4CD964" size={24} />}
+                icon={<Edit color="#555" size={24} />}
                 text="Edit Profile"
                 onPress={() => setIsEditProfileModalVisible(true)}
             />
@@ -210,14 +216,14 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "white",
         padding: 20,
+        backgroundColor: "white"
     },
     header: {
-        fontSize: 34,
+        fontSize: 28,
         fontWeight: "bold",
         marginBottom: 30,
-        color: "#000",
+        color: "#333",
     },
     option: {
         flexDirection: "row",
@@ -238,9 +244,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     optionText: {
-        fontSize: 17,
+        fontSize: 16,
         marginLeft: 15,
-        color: "#000",
+        color: "#333",
     },
     bottomButtonsContainer: {
         position: "absolute",
@@ -257,14 +263,14 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     logoutButton: {
-        backgroundColor: "#FF3B30",
+        backgroundColor: "#d32f2f",
     },
     deleteButton: {
-        backgroundColor: "#FF9500",
+        backgroundColor: "#f57c00",
     },
     buttonText: {
         color: "#fff",
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: "600",
         marginLeft: 10,
     },

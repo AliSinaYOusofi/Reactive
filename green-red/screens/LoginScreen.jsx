@@ -11,7 +11,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { supabase } from "../utils/supabase";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from "../context/useAppContext";
 const LoginScreen = () => {
     const navigation = useNavigation();
@@ -44,7 +44,7 @@ const LoginScreen = () => {
             }
             
             setUserId(data.user.id);
-
+            await AsyncStorage.setItem("userId", data.user.id);
             navigation.reset({
                 index: 0,
                 routes: [{ name: "homescreen" }],
@@ -152,11 +152,7 @@ const styles = StyleSheet.create({
         padding: 24,
         backgroundColor: "white",
         borderRadius: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 5,
+        
     },
     title: {
         fontSize: 28,
@@ -172,7 +168,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#EDF2F7",
         borderRadius: 12,
         backgroundColor: "#f9f9f9",
         paddingHorizontal: 12,

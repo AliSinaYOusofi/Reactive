@@ -1,20 +1,34 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "../utils/supabase"; // Adjust path based on your project
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
     const [userId, setUserId] = useState(null);
-    const [refreshHomeScreenOnChangeDatabase, setRefreshHomeScreenOnChangeDatabase] = useState(false);
-    const [refreshSingleViewChangeDatabase, setRefreshSingleViewChangeDatabase] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [
+        refreshHomeScreenOnChangeDatabase,
+        setRefreshHomeScreenOnChangeDatabase,
+    ] = useState(false);
+    const [
+        refreshSingleViewChangeDatabase,
+        setRefreshSingleViewChangeDatabase,
+    ] = useState(false);
 
     useEffect(() => {
         const getUser = async () => {
-            const { data: userData, error } = await supabase.auth.getUser();
-            if (userData?.user?.id) {
-                setUserId(userData.user.id);
-            } else {
-                console.error("Error fetching user ID:", error);
+            try {
+                const value = await AsyncStorage.getItem("userId");
+                if (value) {
+                    console.log(value, '***********')
+                    setUserId(value);
+                }
+            } catch (error) {
+                console.error("Error getting userId from async storage:", error)
+                setUserId(null)
+            } finally {
+                setLoading(false)
             }
         };
 
@@ -24,9 +38,13 @@ export const AppContextProvider = ({ children }) => {
     return (
         <AppContext.Provider
             value={{
-                userId, setUserId,
-                refreshHomeScreenOnChangeDatabase, setRefreshHomeScreenOnChangeDatabase,
-                refreshSingleViewChangeDatabase, setRefreshSingleViewChangeDatabase,
+                userId,
+                setUserId,
+                refreshHomeScreenOnChangeDatabase,
+                setRefreshHomeScreenOnChangeDatabase,
+                refreshSingleViewChangeDatabase,
+                setRefreshSingleViewChangeDatabase,
+                loading
             }}
         >
             {children}
