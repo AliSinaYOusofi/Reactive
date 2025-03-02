@@ -291,7 +291,6 @@ const styles = StyleSheet.create({
     container: {
         width: '100%',
         marginVertical: 8,
-        backgroundColor:'white'
     },
     dropdownButton: {
         borderWidth: 1,

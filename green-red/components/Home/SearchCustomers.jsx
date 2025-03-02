@@ -6,6 +6,7 @@ import {
     Pressable,
     Modal,
     TouchableOpacity,
+    ActivityIndicator,
 } from "react-native";
 import SortOptionsDropDownModal from "../global/SortOptionsDropDownModal";
 import { format, parseISO } from "date-fns";
@@ -15,11 +16,12 @@ import { formatDistanceToNowStrict } from "date-fns";
 import Toast from "react-native-toast-message";
 import { ArrowUpDown, FileDown, Search } from "lucide-react-native";
 import { supabase } from "../../utils/supabase";
+import { AntDesign } from "@expo/vector-icons";
 export default function SearchCustomers({ handleSearch, setCustomers }) {
     const [currentSearchTerm, setCurrentSearchTerm] = useState("");
     const [sortModalVisible, setSortModalVisible] = useState(false);
     const [selectedSortOption, setSelectedSortOption] = useState("NEWEST");
-
+    const [convertinToPdf, setConvertingToPdf] = useState(false);
     const handleSearchCustomers = (search_this) => {
         setCurrentSearchTerm(search_this);
         handleSearch(search_this);
@@ -136,6 +138,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
     };
 
     const convertQueryResultToPdf = async () => {
+        setConvertingToPdf(true);
         try {
             const allCustomersDataToConvert = await AllCustomersData();
             if (!allCustomersDataToConvert.length) {
@@ -351,6 +354,8 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
         } catch (error) {
             console.error("Error generating PDF:", error);
             showToast("Failed to generate PDF");
+        } finally {
+            setConvertingToPdf(false);
         }
     };
 
@@ -370,15 +375,25 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
 
                 <View style={styles.sort_and_pdf_container}>
                     <TouchableOpacity onPress={() => setSortModalVisible(true)}>
-                        <ArrowUpDown
+                        <AntDesign
+                            name="filter"
                             size={24}
-                            color="black"
+                            color="white"
                             style={styles.icon}
                         />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => convertQueryResultToPdf()}>
-                        <FileDown size={24} color="black" style={styles.icon} />
+                        {convertinToPdf ? (
+                            <ActivityIndicator size={24} color={"black"} />
+                        ) : (
+                            <AntDesign
+                                name="download"
+                                size={24}
+                                color="white"
+                                style={styles.icon}
+                            />
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>
