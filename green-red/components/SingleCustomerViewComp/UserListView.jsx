@@ -23,7 +23,7 @@ export default function UserListView({username, amount, currency, transaction_ty
                     
                     <View style={styles.username_and_shortcut_container}>
                         <View style={styles.usernameShortCutStyle}>
-                            <Text >{format_username(username)}</Text>
+                            <Text >{(username)}</Text>
                         </View>
                         
                     </View>

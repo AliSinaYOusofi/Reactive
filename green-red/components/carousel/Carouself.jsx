@@ -7,9 +7,7 @@ const style = StyleSheet.create({
     container: {
         backgroundColor: 'white',
         width: "100%",
-        marginTop: 10,
         overflow: 'visible',
-        height: 'auto'
     },
     slide: {
         justifyContent: 'center',
@@ -17,7 +15,7 @@ const style = StyleSheet.create({
         backgroundColor: 'white',
     },
     carouselContainer: {
-        height: 150,
+        height: 80,
     },
 });
 
@@ -31,7 +29,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                     <Carousel
                         loop
                         width={width}
-                        height={200} 
+                        height={300} 
                         data={totalExpenseOfCustomer}
                         scrollAnimationDuration={3000}
                         autoPlay={totalExpenseOfCustomer.length > 1}
