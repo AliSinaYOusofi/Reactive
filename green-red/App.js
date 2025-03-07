@@ -19,6 +19,7 @@ import {
     Signature,
     UserPlus,
     Settings,
+    LogInIcon,
 } from "lucide-react-native";
 import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/Signup";
@@ -111,7 +112,7 @@ const Navigation = () => {
                         headerStyle: { backgroundColor: "white" },
                         headerTitleStyle: { fontSize: 25 },
                         headerTitle: () => (
-                            <Signature size={24} color="black" />
+                            <LogInIcon size={24} color="black" />
                         ),
                     }}
                 />

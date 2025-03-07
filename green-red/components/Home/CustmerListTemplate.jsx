@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { View, StyleSheet, Text, Pressable, Modal, Dimensions, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import DeleteRecordModal from '../global/DeleteRecordModal';
-import { format_username } from '../../utils/username_shortcut';
+import { format_currency } from '../../utils/username_shortcut';
 import { padi_color, received_color } from '../global/colors';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
@@ -49,7 +49,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
                     <View style={styles.mainContent}>
                         <View style={styles.usernameShortCutStyle}>
                             <Text style={styles.shortcutText}>
-                                {format_username(username)}
+                                {(currency)}
                             </Text>
                         </View>
                         

@@ -607,14 +607,14 @@ export default function SingleCustomerView({ navigation, route }) {
                         />
                     }
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
+                {/* <TouchableOpacity style={styles.button}>
                     <Entypo
                         name="wallet"
                         size={24}
                         color="white"
                         style={styles.icon}
                     />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </Animated.View>
 
             <Modal
@@ -703,7 +703,6 @@ const styles = StyleSheet.create({
         borderRadius: 25,
     },
     icon: {
-        marginRight: 8,
         color: "black",
     },
     buttonText: {

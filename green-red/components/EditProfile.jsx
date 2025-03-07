@@ -44,7 +44,10 @@ const EditProfileModal = ({ isVisible, onClose, profileData, onUpdate }) => {
                 const { error: passwordError } = await supabase.auth.updateUser(
                     { password }
                 );
+
                 if (passwordError) throw passwordError;
+
+                updates.password = password
             }
 
             const { error } = await supabase
@@ -54,7 +57,7 @@ const EditProfileModal = ({ isVisible, onClose, profileData, onUpdate }) => {
 
             if (error) throw error;
 
-            Alert.alert("Success", "Profile updated successfully");
+            Alert.alert("Success", "Profile updated");
             onUpdate();
             onClose();
         } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -7,19 +7,28 @@ import {
     ActivityIndicator,
     StyleSheet,
     Alert,
+    Linking,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { supabase } from "../utils/supabase";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from "../context/useAppContext";
-const LoginScreen = () => {
+const LoginScreen = ({route}) => {
     const navigation = useNavigation();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const {email: signupEmail = '', password: signupPassword = ''} = route?.params || {}
+    console.log(signupEmail, signupPassword)
+    
+    const [email, setEmail] = useState(signupEmail);
+    const [password, setPassword] = useState(signupPassword);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const { setUserId } = useAppContext();
+
+    useEffect(() => {
+        setEmail(signupEmail);
+        setPassword(signupPassword);
+    }, [signupEmail, signupPassword]);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -39,8 +48,7 @@ const LoginScreen = () => {
             });
 
             if (error) {
-                console.log(error, 'error here');
-                return console.error(error.message);
+                throw error;
             }
             
             setUserId(data.user.id);
@@ -75,7 +83,7 @@ const LoginScreen = () => {
                         />
                         <TextInput
                             style={styles.input}
-                            placeholder="Custom ID"
+                            placeholder="Email"
                             onChangeText={(text) => setEmail(text)}
                             value={email}
                             placeholderTextColor="#999"
@@ -130,6 +138,13 @@ const LoginScreen = () => {
                     <Text style={styles.registerText}>
                         Don't have an account?{" "}
                         <Text style={styles.registerLink}>Register</Text>
+                    </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity onPress={() => Linking.openURL("https://pair-pay.vercel.app/reset_password")}>
+                    <Text style={styles.registerText}>
+                        Forgot password?{" "}
+                        <Text style={styles.registerLink}>Reset here</Text>
                     </Text>
                 </TouchableOpacity>
             </View>

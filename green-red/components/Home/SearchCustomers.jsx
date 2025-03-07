@@ -424,10 +424,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f9fa",
         padding: 3,
         borderRadius: 10,
+        marginTop: 100
     },
 
     icon: {
-        marginRight: 10,
+        marginRight: 5,
         color: "black",
         borderRadius: 50,
         padding: 8,
@@ -444,7 +445,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        columnGap: 10,
+        columnGap: 0,
     },
 
     searchContainer: {

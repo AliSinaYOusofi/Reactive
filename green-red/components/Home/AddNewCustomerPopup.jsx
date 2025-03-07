@@ -333,6 +333,7 @@ const styles = StyleSheet.create({
     dropDownContainer: {
         width: "100%",
         marginBottom: 24,
+        
     },
     addButton: {
         width: "100%",
