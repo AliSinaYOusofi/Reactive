@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         flex: 1,
-        marginTop: 5
+        marginTop: 10
     },
     label: {
         fontSize: 14,

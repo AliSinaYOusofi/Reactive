@@ -62,8 +62,8 @@ const Navigation = () => {
                 screenOptions={({ navigation, route }) => ({
                     headerShown: true,
                     contentStyle: {
-                        marginHorizontal: 20,
-                        margin: 5,
+                        marginHorizontal: 10,
+                        marginBottom: 4,
                         fontSize: 20,
                     },
                     headerRight: () =>

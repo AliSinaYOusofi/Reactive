@@ -33,7 +33,7 @@ export default function SingleCustomerView({ navigation, route }) {
     const [isLoading, setIsLoading] = useState(true);
     const [sortModal, setSortModal] = useState(false);
     const [selectedSortOption, setSelectedSortOption] = useState(null); // Track the selected sort option
-    const [convertinToPdf, setConvertingToPdf] = useState(false)
+    const [convertinToPdf, setConvertingToPdf] = useState(false);
 
     const username = route.params.username;
     const [addNewRecordModal, setAddNewRecordModal] = useState(false);
@@ -240,7 +240,7 @@ export default function SingleCustomerView({ navigation, route }) {
             const { data: all_customers, error: error1 } = await supabase
                 .from("customers")
                 .select("*")
-                .eq("user_id", userId);
+                .eq("username", username);
 
             if (error1) {
                 throw error1;
@@ -252,7 +252,7 @@ export default function SingleCustomerView({ navigation, route }) {
                         await supabase
                             .from("customer__records")
                             .select("*")
-                            .eq("user_id", userId);
+                            .eq("username", username);
 
                     if (error2) {
                         console.error(
@@ -280,7 +280,7 @@ export default function SingleCustomerView({ navigation, route }) {
     };
 
     const convertQueryResultToPdf = async () => {
-        setConvertingToPdf(true)
+        setConvertingToPdf(true);
         try {
             const allCustomersDataToConvert = await AllCustomersData();
             if (!allCustomersDataToConvert.length) {
@@ -502,7 +502,7 @@ export default function SingleCustomerView({ navigation, route }) {
             console.error("Error generating PDF:", error);
             showToast("Failed to generate PDF");
         } finally {
-            setConvertingToPdf(false)
+            setConvertingToPdf(false);
         }
     };
     const handleAddNewCustomer = () => {
@@ -537,10 +537,8 @@ export default function SingleCustomerView({ navigation, route }) {
 
     return (
         <>
-            <View style={styles.buttonContainer}></View>
-
             <Animated.View
-                style={{ backgroundColor: "white" }}
+                style={{ backgroundColor: "white", height: 195 }}
                 entering={FadeIn.duration(500)}
             >
                 <CarouselOfTracker
@@ -556,6 +554,9 @@ export default function SingleCustomerView({ navigation, route }) {
                     marginTop: 50,
                 }}
             >
+                <View style={styles.usernameContainer}>
+                    <Text style={styles.username}>Transactions with {username} ({customers.length})</Text>
+                </View>
                 <ScrollView style={styles.container}>
                     {customers.length > 0 ? (
                         customers.map((customer, index) => (
@@ -589,23 +590,20 @@ export default function SingleCustomerView({ navigation, route }) {
                         style={styles.icon}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={convertQueryResultToPdf}>
-                    
-                    {
-                        convertinToPdf
-                        ?
-                        <ActivityIndicator
-                            size={24}
-                            color={"black"}
-                        />
-                        :
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={convertQueryResultToPdf}
+                >
+                    {convertinToPdf ? (
+                        <ActivityIndicator size={24} color={"black"} />
+                    ) : (
                         <AntDesign
                             name="download"
                             size={24}
                             color="white"
                             style={styles.icon}
                         />
-                    }
+                    )}
                 </TouchableOpacity>
                 {/* <TouchableOpacity style={styles.button}>
                     <Entypo
@@ -670,9 +668,9 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        columnGap: 8, // Increased gap for better spacing
+        justifyContent: "between",
+        alignItems: "stretch",
+        columnGap: 18, // Increased gap for better spacing
         backgroundColor: "#181c20",
         color: "white",
         height: "auto",
@@ -686,7 +684,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         backgroundColor: "#14171A",
         borderRadius: 9999,
-        width: "90%",
+        width: "70%",
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
@@ -709,5 +707,16 @@ const styles = StyleSheet.create({
         color: "black",
         fontWeight: "bold",
         fontSize: 16,
+    },
+    usernameContainer: {
+        padding: 10,
+        justifyContent: "center",
+        alignItems: "start",
+        marginTop: 10
+    },
+    username: {
+        color: "black",
+        fontSize: 23,
+        fontWeight: "bold",
     },
 });

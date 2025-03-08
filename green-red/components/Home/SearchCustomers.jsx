@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f9fa",
         padding: 3,
         borderRadius: 10,
-        marginTop: 100
+        marginTop: 120
     },
 
     icon: {
