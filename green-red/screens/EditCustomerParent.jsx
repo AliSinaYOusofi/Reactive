@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     addButton: {
         width: "100%",
         minWidth: 280,
-        backgroundColor: "#66E066",
+        backgroundColor: "green",
         paddingVertical: 16,
         borderRadius: 12,
         shadowColor: "#3B82F6",

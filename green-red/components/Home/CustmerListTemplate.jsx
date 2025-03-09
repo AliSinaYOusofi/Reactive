@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
         padding: 12,
         marginVertical: 5,
         borderRadius: 10,
-        overflow: 'hidden',
-        width: width - 32,
+        overflow: 'scroll',
+        width: width - 30,
     },
     pressableContainer: {
         flex: 1,

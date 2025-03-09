@@ -27,9 +27,7 @@ const SettingsScreen = () => {
         useState(false);
     const [profileData, setProfileData] = useState(null);
 
-    useEffect(() => {
-        fetchProfileData();
-    }, []);
+    
 
     const fetchProfileData = async () => {
         try {
@@ -137,6 +135,10 @@ const SettingsScreen = () => {
         );
     };
 
+    useEffect(() => {
+        fetchProfileData();
+    }, []);
+    
     const SettingOption = ({ icon, text, onPress }) => (
         <TouchableOpacity style={styles.option} onPress={onPress}>
             <View style={styles.optionContent}>

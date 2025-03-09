@@ -8,6 +8,8 @@ const style = StyleSheet.create({
         backgroundColor: 'white',
         width: "100%",
         overflow: 'visible',
+        marginTop: 10,
+        height: 'auto'
     },
     slide: {
         justifyContent: 'center',
