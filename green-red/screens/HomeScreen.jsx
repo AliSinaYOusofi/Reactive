@@ -54,12 +54,12 @@ export default function HomeScreen({navigator}) {
                                 .from('customers')
                                 .select('amount')
                                 .eq('transaction_type', 'received')
-                                .eq('username', customer.username),
+                                .eq('user_id', userId),
                             supabase
                                 .from('customers')
                                 .select('amount')
                                 .eq('transaction_type', 'paid')
-                                .eq('username', customer.username)
+                                .eq('user_id', userId),
                         ]);
     
                         if (receivedResult.error || paidResult.error) {
@@ -120,12 +120,14 @@ export default function HomeScreen({navigator}) {
                             .from('customer__records')
                             .select('amount')
                             .eq('transaction_type', 'received')
-                            .eq('currency', currency),
+                            .eq('currency', currency)
+                            .eq("user_id", userId),
                         supabase
                             .from('customer__records')
                             .select('amount')
                             .eq('transaction_type', 'paid')
                             .eq('currency', currency)
+                            .eq("user_id", userId),
                     ]);
     
                     if (toGiveResult.error || toTakeResult.error) {

@@ -17,6 +17,8 @@ import Toast from "react-native-toast-message";
 import { ArrowUpDown, FileDown, Search } from "lucide-react-native";
 import { supabase } from "../../utils/supabase";
 import { AntDesign } from "@expo/vector-icons";
+import { useAppContext } from "../../context/useAppContext";
+
 export default function SearchCustomers({ handleSearch, setCustomers }) {
     const [currentSearchTerm, setCurrentSearchTerm] = useState("");
     const [sortModalVisible, setSortModalVisible] = useState(false);
@@ -26,6 +28,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
         setCurrentSearchTerm(search_this);
         handleSearch(search_this);
     };
+    const {userId } = useAppContext()
 
     const handleSortByDateOldest = () => {
         setCustomers((prevCustomers) => {
@@ -67,7 +70,8 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
 
             const { data: all_customers, error: error1 } = await supabase
                 .from("customers")
-                .select("*");
+                .select("*")
+                .eq("user_id", userId);
 
             if (error1) {
                 throw error1;
@@ -79,7 +83,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                         await supabase
                             .from("customer__records")
                             .select("*")
-                            .eq("username", customer.username);
+                            .eq("user_id", userId);
 
                     if (error2) {
                         console.error(

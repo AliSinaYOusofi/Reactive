@@ -25,7 +25,7 @@ const SignupScreen = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { setUserId } = useAppContext();
-    const [confirmationModal, setConfirmationModal] = useState(true)
+    const [confirmationModal, setConfirmationModal] = useState(false)
 
     const handleSignup = async () => {
         // Basic validation
@@ -290,8 +290,8 @@ const SignupScreen = () => {
             >
                 
                 <ConfirmationEmail
-                    email={email || "my email@gmail.com"}
-                    password={password || "pass12"}
+                    email={email}
+                    password={password}
                     setConfirmationModal={setConfirmationModal}
                 />
                 

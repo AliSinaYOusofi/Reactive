@@ -59,6 +59,7 @@ export default function SingleCustomerView({ navigation, route }) {
                         .from("customers")
                         .select("amount, currency, transaction_type")
                         .eq("username", username)
+                        .eq("user_id", userId)
                         .limit(1);
 
                 if (error1) {
@@ -108,13 +109,15 @@ export default function SingleCustomerView({ navigation, route }) {
                                 .select("amount")
                                 .eq("transaction_type", "received")
                                 .eq("currency", currency)
-                                .eq("username", username),
+                                .eq("username", username)
+                                .eq("user_id", userId),
                             supabase
                                 .from("customer__records")
                                 .select("amount")
                                 .eq("transaction_type", "paid")
                                 .eq("currency", currency)
-                                .eq("username", username),
+                                .eq("username", username)
+                                .eq("user_id", userId)
                         ]);
 
                         if (toGiveResult.error || toTakeResult.error) {
@@ -182,7 +185,7 @@ export default function SingleCustomerView({ navigation, route }) {
                 const { data, error } = await supabase
                     .from("customer__records")
                     .select("*")
-                    .eq("username", username);
+                    .eq("user_id", userId)
 
                 if (error) {
                     setError(error.message || "Failed to fetch records");
@@ -240,7 +243,7 @@ export default function SingleCustomerView({ navigation, route }) {
             const { data: all_customers, error: error1 } = await supabase
                 .from("customers")
                 .select("*")
-                .eq("username", username);
+                .eq("user_id", userId);
 
             if (error1) {
                 throw error1;

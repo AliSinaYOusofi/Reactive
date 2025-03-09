@@ -77,8 +77,9 @@ function AddNewCustomerPopup() {
         try {
             const { data, error } = await supabase
                 .from("customers")
-                .select("*")
-                .eq("username", username);
+                .select("username")
+                .eq("username", username)
+                .eq("user_id", userId);
 
             if (data && data.length > 0) {
                 showToast("Username already exists");
@@ -88,6 +89,8 @@ function AddNewCustomerPopup() {
         } catch (error) {
             console.error("Error while checking username", error.message);
             showToast("Failed to add new customer");
+        } finally {
+            setSaving(false);
         }
     };
 
