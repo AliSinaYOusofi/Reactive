@@ -67,7 +67,7 @@ export default function EditCustomerRecordModal({
             const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 
             const { data, error } = await supabase
-                .from("customer__records")
+                .from("customer_transactions")
                 .update({
                     amount: newAmount,
                     transaction_type: newTransactionType,
@@ -75,7 +75,6 @@ export default function EditCustomerRecordModal({
                     transaction_updated_at: currentDateTime,
                 })
                 .eq("id", record_id);
-            console.log(record_id);
             if (error) {
                 showToast("No record found to update");
             } else {
@@ -250,7 +249,7 @@ const styles = StyleSheet.create({
     },
 
     add_new_customer_btn: {
-        backgroundColor: "#66E066",
+        backgroundColor: "green",
         color: "white",
         marginTop: 20,
         textAlign: "center",

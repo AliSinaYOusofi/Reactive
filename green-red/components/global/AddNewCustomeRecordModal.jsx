@@ -26,6 +26,7 @@ import { supabase } from "../../utils/supabase";
 export default function AddNewCustomeRecordModal({
     username,
     setAddNewRecordModal,
+    customer_id
 }) {
     const [amount, setAmount] = useState("");
     const [transactionType, setTransactionType] = useState("");
@@ -74,36 +75,35 @@ export default function AddNewCustomeRecordModal({
         try {
             const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
             const dataToInsert = {
-                username: username,
                 amount: amount,
                 transaction_type: transactionType,
                 currency: currency,
                 transaction_at: currentDateTime,
                 transaction_updated_at: currentDateTime,
-                user_id: userId
+                user_id: userId,
+                customer_id: customer_id
             };
 
             const { data, error } = await supabase
-                .from("customer__records")
+                .from("customer_transactions")
                 .insert([dataToInsert]);
 
             if (error) {
                 console.error("Error inserting data:", error);
                 showToast("Failed to add a new record", "error");
-            } else {
-                setAddNewRecordModal(false);
-                setAmount("");
-                setTransactionType("");
-                setCurrency("");
-                setRefreshSingleViewChangeDatabase((prev) => !prev);
-                setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
-                showToast("User record added", "success");
-            }
+                return
+            } 
+                
+            showToast("User record added", "success");
+                
+            
         } catch (error) {
             console.error("Error while inserting new record:", error.message);
             showToast("Error while inserting new record");
         } finally {
             setSaving(false);
+            setRefreshSingleViewChangeDatabase((prev) => !prev);
+            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
         }
     };
 
@@ -180,7 +180,7 @@ export default function AddNewCustomeRecordModal({
                                 <ActivityIndicator
                                     size="small"
                                     color="white"
-                                    style={{ marginLeft: 12, marginTop: 5 }}
+                                    style={{  marginTop: 5 }}
                                 />
                                 )
                                 :
@@ -276,13 +276,12 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 16,
         width: "90%",
-        shadowRadius: 4,
-        borderRadius: 99,
         paddingVertical: 18,
         paddingHorizontal: 16,
         marginBottom: -30,
         marginTop: 20,
-        display: "flex"
+        display: "flex",
+        marginHorizontal: 'auto'
     },
 
     drop_down_container: {

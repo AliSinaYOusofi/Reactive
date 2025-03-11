@@ -36,6 +36,8 @@ export default function SingleCustomerView({ navigation, route }) {
     const [convertinToPdf, setConvertingToPdf] = useState(false);
 
     const username = route.params.username;
+    const customer_id = route.params.customer_id;
+    
     const [addNewRecordModal, setAddNewRecordModal] = useState(false);
     const {
         refreshSingelViewChangeDatabase,
@@ -54,50 +56,44 @@ export default function SingleCustomerView({ navigation, route }) {
             let totalAmountsByCurrency = {};
 
             try {
-                const { data: initialTransaction, error: error1 } =
+                const { data: customerData, error: customerError } =
                     await supabase
                         .from("customers")
-                        .select("amount, currency, transaction_type")
+                        .select("id")
                         .eq("username", username)
                         .eq("user_id", userId)
                         .limit(1);
 
+                if (customerError) {
+                    console.error("Error fetching customer:", customerError);
+                    return;
+                }
+
+                if (!customerData || customerData.length === 0) {
+                    console.log("No customer found for username", username);
+                    return;
+                }
+
+                const customerId = customerData[0].id;
+
+                const { data: transactionRecords, error: error1 } =
+                    await supabase
+                        .from("customer_transactions")
+                        .select("currency")
+                        .eq("user_id", userId)
+                        .eq("customer_id", customerId);
+
                 if (error1) {
                     console.error(
-                        "Error fetching initial transaction:",
+                        "Error fetching transaction records:",
                         error1
                     );
                     return;
                 }
 
-                if (initialTransaction && initialTransaction.length > 0) {
-                    const { amount, currency, transaction_type } =
-                        initialTransaction[0];
-                    totalAmountsByCurrency[currency] = {
-                        totalAmountBasedOnCurrencyToGive:
-                            transaction_type === "received"
-                                ? parseFloat(amount)
-                                : 0,
-                        totalAmountBasedOnCurrencyToTake:
-                            transaction_type === "paid"
-                                ? parseFloat(amount)
-                                : 0,
-                    };
-                }
-
-                const { data: customerRecords, error: error2 } = await supabase
-                    .from("customer__records")
-                    .select("currency")
-                    .eq("username", username);
-
-                if (error2) {
-                    console.error("Error fetching customer records:", error2);
-                    return;
-                }
-
                 const distinctCurrencies = [
                     ...new Set(
-                        customerRecords.map((record) => record.currency)
+                        transactionRecords.map((record) => record.currency)
                     ),
                 ];
 
@@ -105,19 +101,19 @@ export default function SingleCustomerView({ navigation, route }) {
                     distinctCurrencies.map(async (currency) => {
                         const [toGiveResult, toTakeResult] = await Promise.all([
                             supabase
-                                .from("customer__records")
+                                .from("customer_transactions")
                                 .select("amount")
                                 .eq("transaction_type", "received")
                                 .eq("currency", currency)
-                                .eq("username", username)
-                                .eq("user_id", userId),
+                                .eq("user_id", userId)
+                                .eq("customer_id", customerId),
                             supabase
-                                .from("customer__records")
+                                .from("customer_transactions")
                                 .select("amount")
                                 .eq("transaction_type", "paid")
                                 .eq("currency", currency)
-                                .eq("username", username)
                                 .eq("user_id", userId)
+                                .eq("customer_id", customerId),
                         ]);
 
                         if (toGiveResult.error || toTakeResult.error) {
@@ -164,6 +160,7 @@ export default function SingleCustomerView({ navigation, route }) {
                         totalAmountsByCurrency[currency]
                             .totalAmountBasedOnCurrencyToTake,
                 }));
+
                 setSingleCustomerExpense(total_expense_data);
             } catch (error) {
                 console.error(
@@ -177,15 +174,34 @@ export default function SingleCustomerView({ navigation, route }) {
         };
 
         fetchAllCustomerExpense();
-    }, [username, refreshSingelViewChangeDatabase, refresh]);
+    }, [refreshSingelViewChangeDatabase, refresh, refreshHomeScreenOnChangeDatabase]);
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
+            const { data: customerData, error: customerError } = await supabase
+                .from("customers")
+                .select("id")
+                .eq("username", username)
+                .eq("user_id", userId)
+                .limit(1);
+
+            if (customerError) {
+                console.error("Error fetching customer:", customerError);
+                return;
+            }
+
+            if (!customerData || customerData.length === 0) {
+                console.log("No customer found for username", username);
+                return;
+            }
+
+            const customerId = customerData[0].id;
             try {
                 const { data, error } = await supabase
-                    .from("customer__records")
+                    .from("customer_transactions")
                     .select("*")
                     .eq("user_id", userId)
+                    .eq("customer_id", customerId);
 
                 if (error) {
                     setError(error.message || "Failed to fetch records");
@@ -230,66 +246,62 @@ export default function SingleCustomerView({ navigation, route }) {
         loadCustomerDataList();
     }, [
         refreshSingelViewChangeDatabase,
-        username,
         refreshHomeScreenOnChangeDatabase,
         refresh,
-        selectedSortOption,
     ]);
 
-    const AllCustomersData = async () => {
+    const fetchSingleCustomerData = async () => {
         try {
-            let allCustomersDataToConvert = [];
-
-            const { data: all_customers, error: error1 } = await supabase
+            const { data: customerData, error: error1 } = await supabase
                 .from("customers")
                 .select("*")
-                .eq("user_id", userId);
+                .eq("username", username)
+                .eq("user_id", userId)
+                .limit(1);
 
             if (error1) {
-                throw error1;
+                console.error("Error fetching customer:", error1);
+                return null;
             }
 
-            await Promise.all(
-                all_customers.map(async (customer) => {
-                    const { data: other_customer_records, error: error2 } =
-                        await supabase
-                            .from("customer__records")
-                            .select("*")
-                            .eq("username", username);
+            if (!customerData || customerData.length === 0) {
+                console.warn("No customer found for the given username.");
+                return null;
+            }
 
-                    if (error2) {
-                        console.error(
-                            "Error fetching customer records:",
-                            error2
-                        );
-                        return;
-                    }
+            const customer = customerData[0];
 
-                    const customers_with_relevant_records = {
-                        ...customer,
-                        records: other_customer_records,
-                    };
+            // 2. Fetch the corresponding transaction records for this customer.
+            const { data: transactions, error: error2 } = await supabase
+                .from("customer_transactions")
+                .select("*")
+                .eq("customer_id", customer.id)
+                .eq("user_id", userId);
 
-                    allCustomersDataToConvert.push(
-                        customers_with_relevant_records
-                    );
-                })
-            );
+            if (error2) {
+                console.error("Error fetching customer transactions:", error2);
+                return null;
+            }
 
-            return allCustomersDataToConvert;
+            return {
+                ...customer,
+                records: transactions || [],
+            };
         } catch (error) {
-            console.error("Error while generating data", error);
+            console.error("Error while fetching single customer data", error);
+            return null;
         }
     };
 
     const convertQueryResultToPdf = async () => {
         setConvertingToPdf(true);
         try {
-            const allCustomersDataToConvert = await AllCustomersData();
-            if (!allCustomersDataToConvert.length) {
-                return showToast("No customers found");
+            const customerData = await fetchSingleCustomerData();
+            if (!customerData) {
+                return showToast("No customer found");
             }
 
+            // Helper function to format dates.
             const formatDateTime = (dateString) => {
                 const date = parseISO(dateString);
                 return `${format(
@@ -298,199 +310,194 @@ export default function SingleCustomerView({ navigation, route }) {
                 )} (${formatDistanceToNowStrict(date)} ago)`;
             };
 
-            const customerDataHtml = allCustomersDataToConvert
-                .map((customer, index) => {
-                    const records = customer.records || [];
+            // Build table rows for the transactions.
+            // For the first row, we include the customer's username in a cell spanning all rows.
+            let transactionRows = "";
+            if (customerData.records.length > 0) {
+                transactionRows = customerData.records
+                    .map(
+                        (record, tIndex) => `
+                <tr class="${tIndex === 0 ? "customer-row" : "record-row"} ${
+                            tIndex % 2 === 0 ? "even" : "odd"
+                        }">
+                  ${
+                      tIndex === 0
+                          ? `<td rowspan="${customerData.records.length}" class="username">${customerData.username}</td>`
+                          : ""
+                  }
+                  <td class="transaction-type">${record.transaction_type}</td>
+                  <td class="amount">${record.amount} ${record.currency}</td>
+                  <td class="date">${formatDateTime(record.transaction_at)}</td>
+                </tr>
+              `
+                    )
+                    .join("");
+            } else {
+                // If there are no transactions, show a single row.
+                transactionRows = `
+              <tr class="customer-row">
+                <td class="username">${customerData.username}</td>
+                <td colspan="3">No transactions</td>
+              </tr>
+            `;
+            }
 
-                    const transactionRows = [customer, ...records]
-                        .map(
-                            (transaction, tIndex) => `
-                  <tr class="${tIndex === 0 ? "customer-row" : "record-row"} ${
-                                index % 2 === 0 ? "even" : "odd"
-                            }">
-                    ${
-                        tIndex === 0
-                            ? `<td rowspan="${
-                                  records.length + 1
-                              }" class="username">${customer.username}</td>`
-                            : ""
+            // Build the complete HTML for the PDF.
+            const customerHtml = `
+            <html>
+              <head>
+                <style>
+                  :root {
+                    --primary-color: #4f46e5;
+                    --secondary-color: #6366f1;
+                    --text-color: #1e293b;
+                    --border-color: #e2e8f0;
+                  }
+          
+                  body {
+                    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                    margin: 2rem;
+                    color: var(--text-color);
+                    line-height: 1.6;
+                  }
+          
+                  .report-header {
+                    text-align: center;
+                    margin-bottom: 2rem;
+                    padding-bottom: 1.5rem;
+                    border-bottom: 2px solid var(--border-color);
+                  }
+          
+                  h1 {
+                    color: var(--primary-color);
+                    margin: 0 0 0.5rem 0;
+                    font-size: 2.2rem;
+                    font-weight: 600;
+                  }
+          
+                  .report-subtitle {
+                    color: #64748b;
+                    font-size: 0.9rem;
+                  }
+          
+                  table {
+                    width: 100%;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                    background: white;
+                    border-radius: 0.75rem;
+                    overflow: hidden;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                  }
+          
+                  thead {
+                    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+                    color: white;
+                    font-size: 0.95rem;
+                  }
+          
+                  th {
+                    padding: 1.1rem 1.5rem;
+                    text-align: left;
+                    font-weight: 500;
+                    letter-spacing: 0.5px;
+                  }
+          
+                  td {
+                    padding: 1rem 1.5rem;
+                    border-bottom: 1px solid var(--border-color);
+                  }
+          
+                  .customer-group {
+                    border-bottom: 2px solid var(--primary-color);
+                  }
+          
+                  .customer-row {
+                    background-color: #f8fafc;
+                  }
+          
+                  .record-row {
+                    background-color: white;
+                  }
+          
+                  .username {
+                    font-weight: 600;
+                    color: var(--primary-color);
+                  }
+          
+                  .transaction-type {
+                    font-style: italic;
+                  }
+          
+                  .amount {
+                    font-family: 'Courier New', monospace;
+                    font-weight: 600;
+                    color: #16a34a;
+                  }
+          
+                  .date {
+                    white-space: nowrap;
+                    font-size: 0.9rem;
+                    color: #64748b;
+                  }
+          
+                  @media print {
+                    body {
+                      margin: 1cm;
+                      font-size: 12pt;
                     }
-                    <td class="transaction-type">${
-                        transaction.transaction_type
-                    }</td>
-                    <td class="amount">${transaction.amount} ${
-                                transaction.currency
-                            }</td>
-                    <td class="date">${formatDateTime(
-                        transaction.at || transaction.transaction_at
-                    )}</td>
-                  </tr>
-                `
-                        )
-                        .join("");
-
-                    return `
+          
+                    table {
+                      box-shadow: none;
+                    }
+          
+                    .report-header {
+                      padding-bottom: 0.5rem;
+                      margin-bottom: 1rem;
+                    }
+          
+                    h1 {
+                      font-size: 18pt;
+                    }
+          
+                    th {
+                      padding: 0.75rem;
+                    }
+          
+                    td {
+                      padding: 0.5rem;
+                    }
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="report-header">
+                  <h1>Customer Transaction Report</h1>
+                  <h1 class="customer_name">Customer Name: ${
+                      customerData.username
+                  }</h1>
+                  <div class="report-subtitle">
+                    Generated on ${format(new Date(), "MMM d, yyyy HH:mm")}
+                  </div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Transaction Type</th>
+                      <th>Amount</th>
+                      <th>Date & Time</th>
+                    </tr>
+                  </thead>
                   <tbody class="customer-group">
                     ${transactionRows}
                   </tbody>
-                `;
-                })
-                .join("");
+                </table>
+              </body>
+            </html>
+          `;
 
-            const customerHtml = `
-                <html>
-                  <head>
-                    <style>
-                      :root {
-                        --primary-color: #4f46e5;
-                        --secondary-color: #6366f1;
-                        --text-color: #1e293b;
-                        --border-color: #e2e8f0;
-                      }
-          
-                      body {
-                        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-                        margin: 2rem;
-                        color: var(--text-color);
-                        line-height: 1.6;
-                      }
-          
-                      .report-header {
-                        text-align: center;
-                        margin-bottom: 2rem;
-                        padding-bottom: 1.5rem;
-                        border-bottom: 2px solid var(--border-color);
-                      }
-          
-                      h1 {
-                        color: var(--primary-color);
-                        margin: 0 0 0.5rem 0;
-                        font-size: 2.2rem;
-                        font-weight: 600;
-                      }
-          
-                      .report-subtitle {
-                        color: #64748b;
-                        font-size: 0.9rem;
-                      }
-          
-                      table {
-                        width: 100%;
-                        border-collapse: separate;
-                        border-spacing: 0;
-                        background: white;
-                        border-radius: 0.75rem;
-                        overflow: hidden;
-                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-                      }
-          
-                      thead {
-                        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-                        color: white;
-                        font-size: 0.95rem;
-                      }
-          
-                      th {
-                        padding: 1.1rem 1.5rem;
-                        text-align: left;
-                        font-weight: 500;
-                        letter-spacing: 0.5px;
-                      }
-          
-                      td {
-                        padding: 1rem 1.5rem;
-                        border-bottom: 1px solid var(--border-color);
-                      }
-          
-                      .customer-group {
-                        border-bottom: 2px solid var(--primary-color);
-                      }
-          
-                      .customer-row {
-                        background-color: #f8fafc;
-                      }
-          
-                      .record-row {
-                        background-color: white;
-                      }
-          
-                      .username {
-                        font-weight: 600;
-                        color: var(--primary-color);
-                      }
-          
-                      .transaction-type {
-                        font-style: italic;
-                      }
-          
-                      .amount {
-                        font-family: 'Courier New', monospace;
-                        font-weight: 600;
-                        color: #16a34a;
-                      }
-          
-                      .date {
-                        white-space: nowrap;
-                        font-size: 0.9rem;
-                        color: #64748b;
-                      }
-          
-                      @media print {
-                        body {
-                          margin: 1cm;
-                          font-size: 12pt;
-                        }
-          
-                        table {
-                          box-shadow: none;
-                        }
-          
-                        .report-header {
-                          padding-bottom: 0.5rem;
-                          margin-bottom: 1rem;
-                        }
-          
-                        h1 {
-                          font-size: 18pt;
-                        }
-          
-                        th {
-                          padding: 0.75rem;
-                        }
-          
-                        td {
-                          padding: 0.5rem;
-                        }
-                      }
-                    .customer_name {
-                        color: green,
-                        font-size: 18px;
-                    }
-                    </style>
-                  </head>
-                  <body>
-                    <div class="report-header">
-                      <h1>Customer Transaction Report</h1>
-                      <h1 class="customer_name"> Customer Name: ${username} </h1>
-                      <div class="report-subtitle">
-                        Generated on ${format(new Date(), "MMM d, yyyy HH:mm")}
-                      </div>
-                    </div>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Username</th>
-                          <th>Transaction Type</th>
-                          <th>Amount</th>
-                          <th>Date & Time</th>
-                        </tr>
-                      </thead>
-                      ${customerDataHtml}
-                    </table>
-                  </body>
-                </html>
-              `;
-
+            // Generate the PDF and share it.
             const { uri } = await Print.printToFileAsync({
                 html: customerHtml,
                 base64: false,
@@ -508,6 +515,7 @@ export default function SingleCustomerView({ navigation, route }) {
             setConvertingToPdf(false);
         }
     };
+
     const handleAddNewCustomer = () => {
         modalScale.value = withSpring(1);
         setAddNewRecordModal(true);
@@ -540,14 +548,16 @@ export default function SingleCustomerView({ navigation, route }) {
 
     return (
         <>
-            <Animated.View
-                style={{ backgroundColor: "white", height: 195 }}
-                entering={FadeIn.duration(500)}
-            >
-                <CarouselOfTracker
-                    totalExpenseOfCustomer={singleCustomerExpense}
-                />
-            </Animated.View>
+            {customers.length !== 0 && (
+                <Animated.View
+                    style={{ backgroundColor: "white", height: 195 }}
+                    entering={FadeIn.duration(500)}
+                >
+                    <CarouselOfTracker
+                        totalExpenseOfCustomer={singleCustomerExpense}
+                    />
+                </Animated.View>
+            )}
 
             <View
                 style={{
@@ -558,7 +568,9 @@ export default function SingleCustomerView({ navigation, route }) {
                 }}
             >
                 <View style={styles.usernameContainer}>
-                    <Text style={styles.username}>Transactions with {username} ({customers.length})</Text>
+                    <Text style={styles.username}>
+                        Transactions with {username} ({customers.length})
+                    </Text>
                 </View>
                 <ScrollView style={styles.container}>
                     {customers.length > 0 ? (
@@ -567,6 +579,7 @@ export default function SingleCustomerView({ navigation, route }) {
                                 key={customer.id}
                                 customer={customer}
                                 index={index}
+                                username={username}
                             />
                         ))
                     ) : (
@@ -580,7 +593,7 @@ export default function SingleCustomerView({ navigation, route }) {
                     style={styles.button}
                     onPress={handleAddNewCustomer}
                 >
-                    <AntDesign name="plus" size={24} color="black" />
+                    <AntDesign name="plus" size={20} color="black" />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.button}
@@ -588,7 +601,7 @@ export default function SingleCustomerView({ navigation, route }) {
                 >
                     <AntDesign
                         name="filter"
-                        size={24}
+                        size={20}
                         color="white"
                         style={styles.icon}
                     />
@@ -598,11 +611,11 @@ export default function SingleCustomerView({ navigation, route }) {
                     onPress={convertQueryResultToPdf}
                 >
                     {convertinToPdf ? (
-                        <ActivityIndicator size={24} color={"black"} />
+                        <ActivityIndicator size={20} color={"black"} />
                     ) : (
                         <AntDesign
                             name="download"
-                            size={24}
+                            size={20}
                             color="white"
                             style={styles.icon}
                         />
@@ -630,6 +643,7 @@ export default function SingleCustomerView({ navigation, route }) {
                 <Animated.View style={[{ flex: 1 }]}>
                     <AddNewCustomeRecordModal
                         username={username}
+                        customer_id={customer_id}
                         setAddNewRecordModal={setAddNewRecordModal}
                     />
                 </Animated.View>
@@ -673,14 +687,13 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "between",
         alignItems: "stretch",
-        columnGap: 18, // Increased gap for better spacing
         backgroundColor: "#181c20",
         color: "white",
         height: "auto",
         backgroundColor: "#14171A",
         borderRadius: 99,
-        paddingVertical: 18,
-        paddingHorizontal: 16,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
         justifyContent: "center",
         alignItems: "center",
         alignSelf: "center",
@@ -693,6 +706,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         gap: 10,
         bottom: 1,
+        
     },
     button: {
         flexDirection: "row",
@@ -715,7 +729,7 @@ const styles = StyleSheet.create({
         padding: 10,
         justifyContent: "center",
         alignItems: "start",
-        marginTop: 10
+        marginTop: 10,
     },
     username: {
         color: "black",

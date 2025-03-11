@@ -34,6 +34,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         height={300} 
                         data={totalExpenseOfCustomer}
                         scrollAnimationDuration={3000}
+                        
                         autoPlay={totalExpenseOfCustomer.length > 1}
                         renderItem={({ item }) => (
                             <View style={style.slide}>

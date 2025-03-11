@@ -26,31 +26,21 @@ import Animated, {
     useSharedValue,
     withSpring,
 } from "react-native-reanimated";
-import { User, Banknote } from "lucide-react-native";
+import { User, Banknote, Phone, Mail } from "lucide-react-native";
 import { supabase } from "../utils/supabase";
 
 export default function EditCustomerParent({ navigation, route }) {
-    const {
-        username: prev_username,
-        totalAmount: prev_amount_of_money,
-        transaction_type: prev_payment_status,
-        currency: prev_selected_currency,
-    } = route.params;
+    const { username: prev_username } = route.params;
 
-    // Convert amount to a string for the TextInput
-    const initialAmount = String(prev_amount_of_money);
-
-    // Local state for updated fields
     const [updatedUsername, setUpdatedUsername] = useState("");
-    const [updatedAmountOfMoney, setUpdatedAmountOfMoney] = useState("");
-    const [updatedPaymentStatus, setUpdatedPaymentStatus] = useState("");
-    const [updatedSelectedCurrency, setUpdatedSelectedCurrency] = useState("");
-    const [saving, setSaving] = useState(false)
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [email, setEmail] = useState("");
+
+    const [saving, setSaving] = useState(false);
 
     const navigator = useNavigation();
-    const { setRefreshHomeScreenOnChangeDatabase } = useAppContext();
+    const { setRefreshHomeScreenOnChangeDatabase, userId } = useAppContext();
 
-    // Reanimated shared value for button scale
     const scale = useSharedValue(1);
     const buttonStyle = useAnimatedStyle(() => {
         return {
@@ -66,38 +56,38 @@ export default function EditCustomerParent({ navigation, route }) {
         scale.value = withSpring(1);
     };
 
-    // Preload previous values into state on mount
     useEffect(() => {
         setUpdatedUsername(prev_username);
-        setUpdatedAmountOfMoney(initialAmount);
-        setUpdatedPaymentStatus(prev_payment_status);
-        setUpdatedSelectedCurrency(prev_selected_currency);
     }, []);
 
-    // Validate inputs and perform update
-    const handleUpdateCustomerParent = () => {
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
 
+    const isValidPhoneNumber = (phone) => {
+        const phoneRegex = /^[0-9]{7,15}$/;
+        return phoneRegex.test(phone);
+    };
+
+    const handleUpdateCustomerParent = () => {
         if (!validateUsername(updatedUsername)) {
             return showToast("Username is invalid");
         }
 
+        if (email && email.length > 0 && !isValidEmail(email)) {
+            return showToast("Email is invalid");
+        }
+
         if (
-            updatedAmountOfMoney.length &&
-            !amountOfMoneyValidator(updatedAmountOfMoney)
+            phoneNumber &&
+            phoneNumber.length > 0 &&
+            !isValidPhoneNumber(phoneNumber)
         ) {
-            return showToast("Amount of money is invalid");
-        }
-
-        if (!updatedPaymentStatus) {
-            return showToast("Please select a payment status");
-        }
-
-        if (!updatedSelectedCurrency) {
-            return showToast("Please select a currency");
+            return showToast("Phone number is invalid");
         }
 
         updateParentCustomer();
-        updateParentChildren();
     };
 
     const showToast = (message, type = "error") => {
@@ -111,55 +101,29 @@ export default function EditCustomerParent({ navigation, route }) {
         });
     };
 
-    // Update the customer record in the customers table
     const updateParentCustomer = async () => {
-        setSaving(true)
+        setSaving(true);
         try {
             const { data, error } = await supabase
                 .from("customers")
                 .update({
                     username: updatedUsername,
-                    amount: updatedAmountOfMoney,
-                    transaction_type: updatedPaymentStatus,
-                    currency: updatedSelectedCurrency,
+                    email: email,
+                    phone: phoneNumber,
                 })
-                .eq("username", prev_username);
+                .eq("user_id", userId)
+                .eq('username', prev_username)
 
             if (error) {
                 showToast("Failed to update");
             } else {
                 setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
                 showToast("Customer updated", "success");
-                setSaving(false)
+                setSaving(false);
             }
         } catch (error) {
             console.error("Error updating customer:", error.message);
             showToast("Failed to update customer");
-        }
-    };
-
-    const updateParentChildren = async () => {
-        setSaving(true)
-        try {
-            const { data, error } = await supabase
-                .from("customer__records")
-                .update({
-                    username: updatedUsername,
-                })
-                .eq("username", prev_username);
-
-            if (error) {
-                showToast("No records found to update", "error");
-            } else {
-                showToast("Updated customer", "success");
-                setTimeout(() => navigator.navigate("homescreen"), 2000);
-                setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
-            }
-        } catch (error) {
-            console.error("Error updating customer records:", error.message);
-            showToast("Failed to update customer records");
-        } finally {
-            setSaving(false)
         }
     };
 
@@ -194,55 +158,31 @@ export default function EditCustomerParent({ navigation, route }) {
                 >
                     <TextInput
                         style={styles.input}
-                        value={updatedAmountOfMoney}
-                        onChangeText={setUpdatedAmountOfMoney}
-                        placeholder="Amount"
+                        value={phoneNumber}
+                        onChangeText={setPhoneNumber}
+                        placeholder="Phone"
                         keyboardType="decimal-pad"
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <Banknote size={24} color="#64748B" />
+                        <Phone size={24} color="#64748B" />
                     </View>
                 </Animated.View>
 
                 <Animated.View
-                    entering={FadeInDown.duration(300).delay(600)}
-                    style={styles.paymentStatusContainer}
+                    entering={FadeInDown.duration(300).delay(500)}
+                    style={styles.inputContainer}
                 >
-                    <Text style={styles.paymentLabel}>Payment Status</Text>
-                    <RadioButton.Group
-                        onValueChange={setUpdatedPaymentStatus}
-                        value={updatedPaymentStatus}
-                    >
-                        <View style={styles.radioGroup}>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="received"
-                                    color="#10B981"
-                                    uncheckedColor="#CBD5E1"
-                                />
-                                <Text style={styles.radioLabel}>Received</Text>
-                            </View>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="paid"
-                                    color="#EF4444"
-                                    uncheckedColor="#CBD5E1"
-                                />
-                                <Text style={styles.radioLabel}>Paid</Text>
-                            </View>
-                        </View>
-                    </RadioButton.Group>
-                </Animated.View>
-
-                <Animated.View
-                    entering={FadeInDown.duration(300).delay(700)}
-                    style={styles.dropDownContainer}
-                >
-                    <CurrencyDropdownListSearch
-                        setSelected={setUpdatedSelectedCurrency}
-                        selected={updatedSelectedCurrency}
+                    <TextInput
+                        style={styles.input}
+                        value={phoneNumber}
+                        onChangeText={setPhoneNumber}
+                        placeholder="email"
+                        placeholderTextColor="#94A3B8"
                     />
+                    <View style={styles.iconContainer}>
+                        <Mail size={24} color="#64748B" />
+                    </View>
                 </Animated.View>
 
                 <Animated.View
