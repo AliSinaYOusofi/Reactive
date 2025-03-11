@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 import { View, StyleSheet, Text, Pressable, Modal, Dimensions, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native';
 import DeleteRecordModal from '../global/DeleteRecordModal';
-import { format_currency } from '../../utils/username_shortcut';
-import { padi_color, received_color } from '../global/colors';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
@@ -12,12 +10,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 const { width } = Dimensions.get('window')
 
-export default function CustomerListTemplate({onDelete, index=1, username='', totalAmount='', transaction_type=0, currency=0 }) {
+export default function CustomerListTemplate({onDelete, index=1, username='', customer_id=0 }) {
     const navigator = useNavigation();
     const [deleteModal, setDeleteModal] = useState(false);
     const { opacity: listOpacity, translateY } = useListAnimation(index);
     const { opacity: deleteOpacity, translateX, height, animateDelete } = useDeleteAnimation();
-
+    
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: deleteOpacity.value * listOpacity.value,
         transform: [
@@ -28,7 +26,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
     }));
 
     const handleCustomerViewClick = () => {
-        navigator.navigate("CustomerData", {username})    
+        navigator.navigate("CustomerData", {username, customer_id})    
     }
 
     const handleDelete = async () => {
@@ -41,7 +39,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
 
     return (
         <>
-            <Animated.View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}, animatedStyle]}>
+            <Animated.View style={[styles.container]}>
                 <TouchableOpacity 
                     onPress={handleCustomerViewClick} 
                     style={styles.pressableContainer}
@@ -49,7 +47,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
                     <View style={styles.mainContent}>
                         <View style={styles.usernameShortCutStyle}>
                             <Text style={styles.shortcutText}>
-                                {(currency)}
+                                {(index)}
                             </Text>
                         </View>
                         
@@ -59,15 +57,9 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
                                 ellipsizeMode="tail" 
                                 style={styles.usernameText}
                             >
-                                {username}
+                                {username.toUpperCase()}
                             </Text>
-                            <Text 
-                                numberOfLines={1} 
-                                ellipsizeMode="tail" 
-                                style={styles.amountText}
-                            >
-                                {totalAmount} {currency}
-                            </Text>
+                            
                         </View>
                     </View>
                 </TouchableOpacity>
@@ -85,7 +77,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
                     </TouchableOpacity>
 
                     <TouchableOpacity 
-                        onPress={() => navigator.navigate("EditCustomer", {username, totalAmount, currency, transaction_type})}
+                        onPress={() => navigator.navigate("EditCustomer", {username})}
                         style={[styles.iconButton, styles.edit_icon]}
                     >
                         <MaterialCommunityIcons 
@@ -105,6 +97,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', to
             >
                 <DeleteRecordModal 
                     username={username}
+                    customer_id={customer_id}
                     setCloseModal={setDeleteModal}
                     message={`All data related to ${username} will be deleted !`}
                     onConfirmDelete={handleDelete}
@@ -124,6 +117,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         overflow: 'scroll',
         width: width - 30,
+        backgroundColor: '#f5f5f5'
     },
     pressableContainer: {
         flex: 1,
@@ -134,14 +128,19 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     usernameShortCutStyle: {
-        backgroundColor: "white",
         borderRadius: 50,
-        padding: 10,
         marginRight: 12,
+        backgroundColor: "white",
+        color: 'white',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 5
     },
     shortcutText: {
         fontSize: 14,
         fontWeight: '500',
+        color: 'black'
     },
     textContainer: {
         flex: 1,
@@ -164,10 +163,11 @@ const styles = StyleSheet.create({
     },
     iconButton: {
         backgroundColor: "white",
-        padding: 8,
+        padding: 4,
         borderRadius: 50,
     },
     edit_icon: {
-        marginRight: 10
+        marginRight: 10,
+        color: 'gray'
     }
 });

@@ -1,33 +1,39 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, Pressable, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+    StyleSheet,
+    Text,
+    Pressable,
+    TouchableOpacity,
+    ActivityIndicator,
+} from "react-native";
 import { cancel_button_color, delete_button_color } from "./colors";
 import Toast from "react-native-toast-message";
 import { useAppContext } from "../../context/useAppContext";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { X } from "lucide-react-native";
+import { TrainTrack, X } from "lucide-react-native";
 import { supabase } from "../../utils/supabase";
 export default function DeleteRecordModal({
     message,
     setCloseModal,
-    username,
     record_id,
+    customer_id,
 }) {
     const {
         setRefreshHomeScreenOnChangeDatabase,
         setRefreshSingleViewChangeDatabase,
     } = useAppContext();
 
-    const [saving, setSaving] = useState(false)
+    const [saving, setSaving] = useState(false);
 
     const handleDelete = async () => {
         if (record_id) {
-            setSaving(true)
+            setSaving(true);
             await deleteByRecoredId();
-            setSaving(false)
-        } else {
-            setSaving(true)
-            await deleteByUsername();
-            setSaving(false)
+            setSaving(false);
+        } else if (customer_id) {
+            setSaving(true);
+            await deleteParent();
+            setSaving(false);
         }
         setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
         setRefreshSingleViewChangeDatabase((prev) => !prev);
@@ -51,7 +57,7 @@ export default function DeleteRecordModal({
     const deleteByRecoredId = async () => {
         try {
             const { data, error } = await supabase
-                .from("customer__records")
+                .from("customer_transactions")
                 .delete()
                 .eq("id", record_id);
 
@@ -72,36 +78,24 @@ export default function DeleteRecordModal({
         }
     };
 
-    const deleteByUsername = async () => {
+    const deleteParent = async (customerId) => {
         try {
-            // Delete from customers table
-            const { error: error1 } = await supabase
+            const { data, error } = await supabase
                 .from("customers")
                 .delete()
-                .eq("username", username);
+                .eq("id", customer_id);
 
-            if (error1) {
-                throw error1;
+            if (error) {
+                console.error("Error deleting customer:", error);
+                showToast("Failed to delete customer", "error");
+                return;
             }
 
-            // Delete from customer__records table
-            const { error: error2 } = await supabase
-                .from("customer__records")
-                .delete()
-                .eq("username", username);
+            showToast("Customer deleted successfully", "success");
 
-            if (error2) {
-                throw error2;
-            }
-
-            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
-            setRefreshSingleViewChangeDatabase((prev) => !prev);
-
-            setCloseModal(false);
-            showToast("User and all associated records deleted.", "success");
         } catch (error) {
-            console.error("Failed to delete user", error.message);
-            showToast("Failed to delete user");
+            console.error("Unexpected error while deleting customer:", error);
+            showToast("An error occurred while deleting customer", "error");
         }
     };
 
@@ -134,7 +128,12 @@ export default function DeleteRecordModal({
                             <ActivityIndicator
                                 size="small"
                                 color="white"
-                                style={{ marginLeft: 12, marginTop: 5, alighItems: "center", justifyContent: "center" }}
+                                style={{
+                                    marginLeft: 12,
+                                    marginTop: 5,
+                                    alighItems: "center",
+                                    justifyContent: "center",
+                                }}
                             />
                         ) : (
                             <Text style={styles.button_text}>Delete</Text>

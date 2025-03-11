@@ -4,12 +4,11 @@ import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DeleteRecordModal from '../global/DeleteRecordModal';
 import EditCustomerRecordModal from '../global/EditCustomerRecordModal';
-import { format_username } from '../../utils/username_shortcut';
 import { padi_color, received_color } from '../global/colors';
 import { Trash2 } from 'lucide-react-native';
 const { width } = Dimensions.get('window')
 
-export default function UserListView({username, amount, currency, transaction_type, transaction_date, email, phone, record_id}) {
+export default function UserListView({username, amount, currency, transaction_type, transaction_date, record_id}) {
 
     const [detailsModal, setDetailsModal] = useState(false)
     const [ deleteModal, setDeleteModal] = useState(false)
@@ -23,24 +22,17 @@ export default function UserListView({username, amount, currency, transaction_ty
                     
                     <View style={styles.username_and_shortcut_container}>
                         <View style={styles.usernameShortCutStyle}>
-                            <Text >{(username)}</Text>
+                            <Text >{(currency)}</Text>
                         </View>
                         
                     </View>
 
                     <View style={styles.textContainer}>
                         
-                        <Text 
-                            style={styles.usernameText}
-                            numberOfLines={1} 
-                            ellipsizeMode="tail"> 
-                            {username} 
-                        </Text>
-                        
                         <Text style={styles.amountText}
                             numberOfLines={1} 
                             ellipsizeMode="tail">  
-                            {amount} {currency} 
+                            <Text style={styles.amount}>{amount}</Text> {currency} 
                         </Text>
                         
                     </View>                
@@ -185,5 +177,10 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         padding: 8,
         borderRadius: 50,
+    },
+    amount: {
+        color: 'black',
+        fontWeight: '600',
+        fontSize: 18
     }
 })

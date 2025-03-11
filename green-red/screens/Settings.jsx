@@ -235,11 +235,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         borderRadius: 12,
         marginBottom: 10,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
+        borderColor: "#E5E7EB",
+        borderWidth: 1
     },
     optionContent: {
         flexDirection: "row",
@@ -265,10 +262,10 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     logoutButton: {
-        backgroundColor: "#d32f2f",
+        backgroundColor: "#007FFF",
     },
     deleteButton: {
-        backgroundColor: "#f57c00",
+        backgroundColor: "#FF5A5F",
     },
     buttonText: {
         color: "#fff",

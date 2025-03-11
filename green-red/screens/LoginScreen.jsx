@@ -17,7 +17,6 @@ import { useAppContext } from "../context/useAppContext";
 const LoginScreen = ({route}) => {
     const navigation = useNavigation();
     const {email: signupEmail = '', password: signupPassword = ''} = route?.params || {}
-    console.log(signupEmail, signupPassword)
     
     const [email, setEmail] = useState(signupEmail);
     const [password, setPassword] = useState(signupPassword);

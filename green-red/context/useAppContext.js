@@ -21,7 +21,6 @@ export const AppContextProvider = ({ children }) => {
             try {
                 const value = await AsyncStorage.getItem("userId");
                 if (value) {
-                    console.log(value, '***********')
                     setUserId(value);
                 }
             } catch (error) {

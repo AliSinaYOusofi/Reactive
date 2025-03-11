@@ -14,7 +14,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { formatDistanceToNowStrict } from "date-fns";
 import Toast from "react-native-toast-message";
-import { ArrowUpDown, FileDown, Search } from "lucide-react-native";
+import { Search } from "lucide-react-native";
 import { supabase } from "../../utils/supabase";
 import { AntDesign } from "@expo/vector-icons";
 import { useAppContext } from "../../context/useAppContext";
@@ -28,12 +28,12 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
         setCurrentSearchTerm(search_this);
         handleSearch(search_this);
     };
-    const {userId } = useAppContext()
+    const { userId } = useAppContext();
 
     const handleSortByDateOldest = () => {
         setCustomers((prevCustomers) => {
             let sortedCustomers = prevCustomers.slice().sort((a, b) => {
-                return new Date(a.at) - new Date(b.at);
+                return new Date(a.created_at) - new Date(b.created_at);
             });
             return sortedCustomers;
         });
@@ -42,7 +42,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
     const handleSortByDateNewst = () => {
         setCustomers((prevCustomers) => {
             let sortedCustomers = prevCustomers.slice().sort((a, b) => {
-                return new Date(b.at) - new Date(a.at);
+                return new Date(b.created_at) - new Date(a.created_at);
             });
             return sortedCustomers;
         });
@@ -66,44 +66,40 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
 
     const AllCustomersData = async () => {
         try {
-            let allCustomersDataToConvert = [];
-
-            const { data: all_customers, error: error1 } = await supabase
+            const { data: customers, error } = await supabase
                 .from("customers")
-                .select("*")
-                .eq("user_id", userId);
+                .select("*");
 
-            if (error1) {
-                throw error1;
+            if (error) {
+                console.error("Error fetching customers:", error);
+                return;
             }
 
-            await Promise.all(
-                all_customers.map(async (customer) => {
-                    const { data: other_customer_records, error: error2 } =
-                        await supabase
-                            .from("customer__records")
-                            .select("*")
-                            .eq("user_id", userId);
+            let allCustomersDataToConvert = [];
 
-                    if (error2) {
+            await Promise.all(
+                customers.map(async (customer) => {
+                    const { data: transactions, error: transError } =
+                        await supabase
+                            .from("customer_transactions")
+                            .select("*")
+                            .eq("customer_id", customer.id);
+
+                    if (transError) {
                         console.error(
-                            "Error fetching customer records:",
-                            error2
+                            "Error fetching transactions for customer",
+                            customer.id,
+                            transError
                         );
                         return;
                     }
 
-                    const customers_with_relevant_records = {
+                    allCustomersDataToConvert.push({
                         ...customer,
-                        records: other_customer_records,
-                    };
-
-                    allCustomersDataToConvert.push(
-                        customers_with_relevant_records
-                    );
+                        records: transactions,
+                    });
                 })
             );
-
             return allCustomersDataToConvert;
         } catch (error) {
             console.error("Error while generating data", error);
@@ -144,11 +140,16 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
     const convertQueryResultToPdf = async () => {
         setConvertingToPdf(true);
         try {
-            const allCustomersDataToConvert = await AllCustomersData();
-            if (!allCustomersDataToConvert.length) {
+            const allCustomersDataToConvert = await AllCustomersData()
+
+            if (
+                !allCustomersDataToConvert ||
+                !allCustomersDataToConvert.length
+            ) {
                 return showToast("No customers found");
             }
 
+            // Function to format dates using parseISO and format functions.
             const formatDateTime = (dateString) => {
                 const date = parseISO(dateString);
                 return `${format(
@@ -157,45 +158,53 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                 )} (${formatDistanceToNowStrict(date)} ago)`;
             };
 
+            // Build the HTML for each customer's group of transactions.
             const customerDataHtml = allCustomersDataToConvert
                 .map((customer, index) => {
                     const records = customer.records || [];
+                    let transactionRows = "";
 
-                    const transactionRows = [customer, ...records]
-                        .map(
-                            (transaction, tIndex) => `
-              <tr class="${tIndex === 0 ? "customer-row" : "record-row"} ${
-                                index % 2 === 0 ? "even" : "odd"
-                            }">
-                ${
-                    tIndex === 0
-                        ? `<td rowspan="${
-                              records.length + 1
-                          }" class="username">${customer.username}</td>`
-                        : ""
-                }
-                <td class="transaction-type">${
-                    transaction.transaction_type
-                }</td>
-                <td class="amount">${transaction.amount} ${
-                                transaction.currency
-                            }</td>
-                <td class="date">${formatDateTime(
-                    transaction.at || transaction.transaction_at
-                )}</td>
-              </tr>
-            `
-                        )
-                        .join("");
+                    if (records.length > 0) {
+                        // Render each transaction row.
+                        transactionRows = records
+                            .map(
+                                (record, tIndex) => `
+                  <tr class="${tIndex === 0 ? "customer-row" : "record-row"} ${
+                                    index % 2 === 0 ? "even" : "odd"
+                                }">
+                    ${
+                        tIndex === 0
+                            ? `<td rowspan="${records.length}" class="username">${customer.username}</td>`
+                            : ""
+                    }
+                    <td class="transaction-type">${record.transaction_type}</td>
+                    <td class="amount">${record.amount} ${record.currency}</td>
+                    <td class="date">${formatDateTime(
+                        record.transaction_at
+                    )}</td>
+                  </tr>
+                `
+                            )
+                            .join("");
+                    } else {
+                        // If there are no transactions, show a single row with a "No transactions" message.
+                        transactionRows = `
+                  <tr class="customer-row ${index % 2 === 0 ? "even" : "odd"}">
+                    <td class="username">${customer.username}</td>
+                    <td colspan="3">No transactions</td>
+                  </tr>
+                `;
+                    }
 
                     return `
-              <tbody class="customer-group">
-                ${transactionRows}
-              </tbody>
-            `;
+                <tbody class="customer-group">
+                  ${transactionRows}
+                </tbody>
+              `;
                 })
                 .join("");
 
+            // Generate the full HTML for the PDF.
             const customerHtml = `
             <html>
               <head>
@@ -206,33 +215,33 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                     --text-color: #1e293b;
                     --border-color: #e2e8f0;
                   }
-      
+          
                   body {
                     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
                     margin: 2rem;
                     color: var(--text-color);
                     line-height: 1.6;
                   }
-      
+          
                   .report-header {
                     text-align: center;
                     margin-bottom: 2rem;
                     padding-bottom: 1.5rem;
                     border-bottom: 2px solid var(--border-color);
                   }
-      
+          
                   h1 {
                     color: var(--primary-color);
                     margin: 0 0 0.5rem 0;
                     font-size: 2.2rem;
                     font-weight: 600;
                   }
-      
+          
                   .report-subtitle {
                     color: #64748b;
                     font-size: 0.9rem;
                   }
-      
+          
                   table {
                     width: 100%;
                     border-collapse: separate;
@@ -242,81 +251,81 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                     overflow: hidden;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
                   }
-      
+          
                   thead {
                     background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
                     color: white;
                     font-size: 0.95rem;
                   }
-      
+          
                   th {
                     padding: 1.1rem 1.5rem;
                     text-align: left;
                     font-weight: 500;
                     letter-spacing: 0.5px;
                   }
-      
+          
                   td {
                     padding: 1rem 1.5rem;
                     border-bottom: 1px solid var(--border-color);
                   }
-      
+          
                   .customer-group {
                     border-bottom: 2px solid var(--primary-color);
                   }
-      
+          
                   .customer-row {
                     background-color: #f8fafc;
                   }
-      
+          
                   .record-row {
                     background-color: white;
                   }
-      
+          
                   .username {
                     font-weight: 600;
                     color: var(--primary-color);
                   }
-      
+          
                   .transaction-type {
                     font-style: italic;
                   }
-      
+          
                   .amount {
                     font-family: 'Courier New', monospace;
                     font-weight: 600;
                     color: #16a34a;
                   }
-      
+          
                   .date {
                     white-space: nowrap;
                     font-size: 0.9rem;
                     color: #64748b;
                   }
-      
+          
                   @media print {
                     body {
                       margin: 1cm;
                       font-size: 12pt;
                     }
-      
+          
                     table {
                       box-shadow: none;
                     }
-      
+          
                     .report-header {
                       padding-bottom: 0.5rem;
                       margin-bottom: 1rem;
                     }
-      
+          
                     h1 {
                       font-size: 18pt;
                     }
-      
+          
                     th {
                       padding: 0.75rem;
                     }
-      
+          
                     td {
                       padding: 0.5rem;
                     }
@@ -345,6 +354,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
             </html>
           `;
 
+            // Print the HTML to a file and share it.
             const { uri } = await Print.printToFileAsync({
                 html: customerHtml,
                 base64: false,
@@ -428,7 +438,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f9fa",
         padding: 3,
         borderRadius: 10,
-        marginTop: 120
+        marginTop: 120,
     },
 
     icon: {

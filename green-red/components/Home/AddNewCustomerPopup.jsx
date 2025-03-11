@@ -119,22 +119,44 @@ function AddNewCustomerPopup() {
         }
 
         try {
-            const { data, error } = await supabase.from("customers").insert([
-                {
-                    username: username,
-                    email: null,
-                    phone: null,
-                    amount: Number.parseFloat(amountOfMoney),
-                    transaction_type: paymentStatus,
-                    currency: selectedCurrency,
-                    at: currentDateTime,
-                    user_id: userId,
-                },
-            ]);
+
+            const { data: customerData, error: customerError } = await supabase
+                .from("customers")
+                .insert([
+                    {
+                        username: username,
+                        created_at: currentDateTime,
+                        user_id: userId,
+                    },
+                ])
+                .select();
+
+            if (customerError) {
+                showToast("Failed to add customer", "error");
+                console.error("Error inserting customer:", customerError);
+                return;
+            }
+
+            const newCustomerId = customerData[0].id;
+
+            const { data, error } = await supabase
+                .from("customer_transactions")
+                .insert([
+                    {
+                        customer_id: newCustomerId,
+                        amount: Number.parseFloat(amountOfMoney),
+                        transaction_type: paymentStatus,
+                        currency: selectedCurrency,
+                        transaction_at: currentDateTime,
+                        transaction_updated_at: currentDateTime,
+                        user_id: userId,
+                    },
+                ]);
 
             if (error) {
-                showToast("Customer added successfully", "error");
-                console.error("Error inserting data:", error);
+                showToast("Failed to add transaction record", "error");
+                console.error("Error inserting transaction record:", error);
+                return;
             }
 
             showToast("Customer added", "success");
@@ -145,8 +167,8 @@ function AddNewCustomerPopup() {
                 navigator.goBack();
             }, 1000);
         } catch (error) {
-            showToast("Failed to add customer: " + error.message);
-            console.error("Error while adding new user", error);
+            showToast("Failed to add customer: " + error.message, "error");
+            console.error("Error while adding new customer", error);
         }
     };
 
@@ -336,7 +358,6 @@ const styles = StyleSheet.create({
     dropDownContainer: {
         width: "100%",
         marginBottom: 24,
-        
     },
     addButton: {
         width: "100%",
