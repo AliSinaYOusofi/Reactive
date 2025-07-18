@@ -25,20 +25,15 @@ const styles = StyleSheet.create({
         height: 250,
     },
     playPauseButton: {
-        backgroundColor: "black",
-        padding: 8,
-        borderRadius: 50,
-        marginRight: 10,
-        opacity: 0.9,
-        // Enhanced styling
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+
+        borderRadius: 18,
+        backgroundColor: '#F8F8F8',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        padding: 6,
+        
     },
     pageIndicator: {
         backgroundColor: "rgba(0,0,0,0.7)", // Enhanced opacity
@@ -52,23 +47,32 @@ const styles = StyleSheet.create({
         fontWeight: "600", // Enhanced font weight
     },
     nextButton: {
-        backgroundColor: "rgba(0,0,0,0.7)", // Enhanced color
-        padding: 6, // Slightly more padding
+        backgroundColor: '#F8F8F8',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        padding: 6,
         borderRadius: 50,
     },
     prevButton: {
-        backgroundColor: "rgba(0,0,0,0.7)", // Enhanced color
-        padding: 6, // Slightly more padding
+        backgroundColor: '#F8F8F8',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        padding: 6,
         borderRadius: 50,
     },
 
     hideunhideButton: {
-        backgroundColor: "black",
-        padding: 8,
+        backgroundColor: '#F8F8F8',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        padding: 6,
         borderRadius: 50,
-        marginRight: 10,
-        opacity: 0.9,
-        // Enhanced styling
         alignSelf: "center",
     },
 
@@ -178,7 +182,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         style={[styles.prevButton, hideCarousel && { display: "none" }]}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                        <ArrowLeft color="white" size={20} />
+                        <ArrowLeft color="#333333" size={20} />
                     </TouchableOpacity>
                 )}
 
@@ -199,9 +203,9 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                         {isPaused ? (
-                            <Play color="white" size={20} />
+                            <Play color="#333333" size={20} />
                         ) : (
-                            <Pause color="white" size={20} />
+                            <Pause color="#333333" size={20} />
                         )}
                     </TouchableOpacity>
                 )}
@@ -213,7 +217,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         style={[styles.nextButton, hideCarousel && { display: "none" }]}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                        <ArrowRight color="white" size={20} />
+                        <ArrowRight color="#333333" size={20} />
                     </TouchableOpacity>
                 )}
 
@@ -224,9 +228,9 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                     {hideCarousel ? (
-                        <EyeClosed color="white" size={20} />
+                        <EyeClosed color="#333333" size={20} />
                     ) : (
-                        <Eye color="white" size={20} />
+                        <Eye color="#333333" size={20} />
                     )}
                 </TouchableOpacity>
             </View>
