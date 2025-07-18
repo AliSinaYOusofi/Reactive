@@ -174,7 +174,7 @@ export default function ActionButtons() {
                         styles.addUserButton,
                         addUserStyle,
                     ]}
-                    activeOpacity={0.9}
+                    
                 >
                     <View style={styles.iconContainer}>
                         <UserRoundPlus
@@ -198,7 +198,7 @@ export default function ActionButtons() {
                         styles.analyticsButton,
                         analyticsStyle,
                     ]}
-                    activeOpacity={0.9}
+                    
                 >
                     <View
                         style={[

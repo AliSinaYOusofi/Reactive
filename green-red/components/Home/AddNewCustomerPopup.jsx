@@ -360,8 +360,8 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     addButton: {
-        width: "100%",
-        minWidth: 280,
+        width: "50%",
+        minWidth: 180,
         backgroundColor: "black",
         borderRadius: 99,
         paddingVertical: 10,

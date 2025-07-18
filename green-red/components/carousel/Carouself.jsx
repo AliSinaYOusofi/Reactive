@@ -96,7 +96,6 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
 
     // Handle carousel snap - this is the main fix for count display
     const handleSnapToItem = useCallback((index) => {
-        console.log("Snapped to index:", index);
         setCurrentIndex(index);
     }, []);
 

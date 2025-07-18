@@ -142,7 +142,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
     const convertQueryResultToPdf = async () => {
         setConvertingToPdf(true);
         try {
-            const allCustomersDataToConvert = await AllCustomersData()
+            const allCustomersDataToConvert = await AllCustomersData();
 
             if (
                 !allCustomersDataToConvert ||
@@ -393,7 +393,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                     <TouchableOpacity onPress={() => setSortModalVisible(true)}>
                         <AntDesign
                             name="filter"
-                            size={24}
+                            size={20}
                             color="white"
                             style={styles.icon}
                         />
@@ -405,7 +405,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                         ) : (
                             <AntDesign
                                 name="download"
-                                size={24}
+                                size={20}
                                 color="white"
                                 style={styles.icon}
                             />
@@ -447,7 +447,9 @@ const styles = StyleSheet.create({
         marginRight: 5,
         color: "black",
         borderRadius: 50,
-        padding: 8,
+        padding: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
     input: {

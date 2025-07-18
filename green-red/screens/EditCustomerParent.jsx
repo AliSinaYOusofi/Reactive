@@ -28,6 +28,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { User, Banknote, Phone, Mail } from "lucide-react-native";
 import { supabase } from "../utils/supabase";
+import { padi_color, received_color } from "../components/global/colors";
 
 export default function EditCustomerParent({ navigation, route }) {
     const { username: prev_username } = route.params;
@@ -284,19 +285,12 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     addButton: {
-        width: "100%",
-        minWidth: 280,
-        backgroundColor: "green",
-        paddingVertical: 16,
-        borderRadius: 12,
-        shadowColor: "#3B82F6",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 4,
+        width: "50%",
+        minWidth: 180,
+        backgroundColor: received_color,
         borderRadius: 99,
-        paddingVertical: 18,
-        paddingHorizontal: 16,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
     },
     buttonText: {
         color: "#FFFFFF",

@@ -106,7 +106,7 @@ export default function TotalExpenses({
 
 const styles = StyleSheet.create({
     container: {
-        borderRadius: 16,
+        borderRadius: 10,
         padding: 20,
         width: "90%",
         alignSelf: "center",
