@@ -4,15 +4,35 @@ import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import Flag from "react-native-flags";
 import { options } from "../../utils/currencies_arr";
 
+// Short format for large numbers (e.g., 2.5K, 1.2M, etc.)
+const formatAmount = (amount) => {
+    if (amount === 0) return "0";
+    const absAmount = Math.abs(amount);
+    if (absAmount >= 1_000_000_000) return (absAmount / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + "B";
+    if (absAmount >= 1_000_000) return (absAmount / 1_000_000).toFixed(1).replace(/\.0$/, '') + "M";
+    if (absAmount >= 1_000) return (absAmount / 1_000).toFixed(1).replace(/\.0$/, '') + "K";
+    return absAmount % 1 === 0 ? absAmount.toString() : absAmount.toFixed(2);
+};
+
+// Full number with comma separators (e.g., 25,400.50)
+const formatFullAmount = (amount) =>
+    new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    }).format(amount);
+
 export default function TotalExpenses({
     totalAmountToGive,
     totalAmountToTake,
     currency,
 }) {
     const netAmount = totalAmountToTake - totalAmountToGive;
-    const balanceSign = netAmount > 0 ? "+" : "-";
     const balanceColor = netAmount > 0 ? "#38A169" : "#E53E3E";
     const paid_or_receive = netAmount > 0 ? "Must Receive" : "Must Pay";
+
+    const currencyInfo = options.find((option) => option.value === currency);
+    const currencySymbol = currencyInfo?.symbol || currency;
+    const countryCode = currencyInfo?.countryCode || "EU";
 
     return (
         <View style={styles.container}>
@@ -23,8 +43,18 @@ export default function TotalExpenses({
                 <View style={styles.textContainer}>
                     <Text style={styles.label}>You Paid</Text>
                     <Text style={[styles.amount, styles.paidAmount]}>
-                        {totalAmountToTake} {currency}
+                        {formatAmount(totalAmountToTake)} 
+                        &nbsp;
+                        
+                        {totalAmountToTake >= 1000 && (
+                            <Text style={styles.fullAmount}>
+                                ({formatFullAmount(totalAmountToTake)})
+                            </Text>
+                        )}
+                        &nbsp;
+                        {currencySymbol}
                     </Text>
+                    
                 </View>
             </View>
 
@@ -35,24 +65,40 @@ export default function TotalExpenses({
                 <View style={styles.textContainer}>
                     <Text style={styles.label}>You Received</Text>
                     <Text style={[styles.amount, styles.receivedAmount]}>
-                        {totalAmountToGive} {currency}
+                        {formatAmount(totalAmountToGive)} 
+                         &nbsp;
+                        {totalAmountToGive >= 1000 && (
+                            <Text style={styles.fullAmount}>
+                                ({formatFullAmount(totalAmountToGive)} {currency})
+                            </Text>
+                        )}
+                        &nbsp;
+                        {currencySymbol}
                     </Text>
+                    
                 </View>
             </View>
 
             <View style={styles.separator} />
             <View style={styles.balanceContainer}>
                 <View style={styles.flagWrapper}>
-                    <Flag
-                        code={options.find((option) => option.value === currency)?.countryCode || "EU"}
-                        size={32}
-                    />
+                    <Flag code={countryCode} size={32} />
                 </View>
+
                 <Text style={styles.balanceLabel}>{paid_or_receive}:</Text>
+                
+                <View style={styles.netAmountColumn}>
+                
                 <Text style={[styles.netAmount, { color: balanceColor }]}>
-                    {balanceSign}
-                    {Math.abs(netAmount)} {currency}
+                    {formatAmount(Math.abs(netAmount))} {currencySymbol}
                 </Text>
+                
+                {Math.abs(netAmount) >= 1000 && (
+                    <Text style={[styles.fullAmount, { color: balanceColor }]}>
+                    {formatFullAmount(Math.abs(netAmount))} {currency}
+                    </Text>
+                )}
+                </View>
             </View>
         </View>
     );
@@ -70,9 +116,7 @@ const styles = StyleSheet.create({
     item: {
         flexDirection: "row",
         alignItems: "center",
-        
     },
-    
     iconContainer: {
         padding: 10,
         borderRadius: 12,
@@ -86,7 +130,7 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         flex: 1,
-        marginTop: 10
+        marginTop: 10,
     },
     label: {
         fontSize: 14,
@@ -95,7 +139,7 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     amount: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: "600",
     },
     paidAmount: {
@@ -103,6 +147,13 @@ const styles = StyleSheet.create({
     },
     receivedAmount: {
         color: "#62B485",
+    },
+    fullAmount: {
+        fontSize: 11,
+        color: "#A0AEC0",
+        fontWeight: "400",
+        marginTop: 2,
+        fontStyle: "italic",
     },
     separator: {
         height: 1,
@@ -126,8 +177,9 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     netAmount: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: "700",
-        
+        flexDirection: 'column',   // stack vertically
+        alignItems: 'flex-start',  // align left, if you like
     },
 });

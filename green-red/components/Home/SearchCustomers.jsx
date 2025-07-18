@@ -68,7 +68,9 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
         try {
             const { data: customers, error } = await supabase
                 .from("customers")
-                .select("*");
+                .select("*")
+                .eq("user_id", userId)
+                .order("created_at", { ascending: false });
 
             if (error) {
                 console.error("Error fetching customers:", error);
@@ -438,7 +440,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f9fa",
         padding: 3,
         borderRadius: 10,
-        marginTop: 120,
+        marginTop: 10,
     },
 
     icon: {
