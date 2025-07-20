@@ -161,8 +161,8 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                     renderItem={renderItem}
                     mode="parallax"
                     modeConfig={{
-                        parallaxScrollingScale: 1,
-                        parallaxScrollingOffset: 20,
+                        parallaxScrollingScale: 1.0,
+                        parallaxScrollingOffset: 20.0,
                     }}
                     windowSize={3}
                     enabled={totalCount > 1}

@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
         borderLeftWidth: 2,
         borderBottomWidth: 2,
         borderColor: "#EDF2F7",
-        transform: [{ rotate: '-45deg' }],
+        transform: [{ rotate: '-45.0deg' }],
     },
     noResultsContainer: {
         flex: 1,

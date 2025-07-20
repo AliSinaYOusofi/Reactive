@@ -31,7 +31,7 @@ export default function ActionButtons() {
         const delay = 0 * 50;
 
         const opacity = withTiming(
-            interpolate(expandAnimation.value, [0, 1], [0, 1]),
+            interpolate(expandAnimation.value, [0.0, 1.0], [0.0, 1.0]),
             {
                 duration: 300 + delay,
                 easing: Easing.out(Easing.quad),
@@ -39,7 +39,7 @@ export default function ActionButtons() {
         );
 
         const translateY = withTiming(
-            interpolate(expandAnimation.value, [0, 1], [20, -offset]),
+            interpolate(expandAnimation.value, [0.0, 1.0], [20.0, -offset]),
             {
                 duration: 400 + delay,
                 easing: Easing.out(Easing.back(1.2)),
@@ -47,7 +47,7 @@ export default function ActionButtons() {
         );
 
         const scale = withTiming(
-            interpolate(expandAnimation.value, [0, 1], [0.3, 1]),
+            interpolate(expandAnimation.value, [0.0, 1.0], [0.3, 1.0]),
             {
                 duration: 350 + delay,
                 easing: Easing.out(Easing.back(1.1)),
@@ -66,7 +66,7 @@ export default function ActionButtons() {
         const delay = 1 * 50;
 
         const opacity = withTiming(
-            interpolate(expandAnimation.value, [0, 1], [0, 1]),
+            interpolate(expandAnimation.value, [0.0, 1.1], [0.0, 1.1]),
             {
                 duration: 300 + delay,
                 easing: Easing.out(Easing.quad),
@@ -74,7 +74,7 @@ export default function ActionButtons() {
         );
 
         const translateY = withTiming(
-            interpolate(expandAnimation.value, [0, 1], [20, -offset]),
+            interpolate(expandAnimation.value, [0.0, 1.0], [20,0, -offset]),
             {
                 duration: 400 + delay,
                 easing: Easing.out(Easing.back(1.2)),
@@ -82,7 +82,7 @@ export default function ActionButtons() {
         );
 
         const scale = withTiming(
-            interpolate(expandAnimation.value, [0, 1], [0.3, 1]),
+            interpolate(expandAnimation.value, [0.0, 1.0], [0.3, 1.0]),
             {
                 duration: 350 + delay,
                 easing: Easing.out(Easing.back(1.1)),
@@ -101,8 +101,8 @@ export default function ActionButtons() {
             {
                 rotate: `${interpolate(
                     expandAnimation.value,
-                    [0, 1],
-                    [0, 45]
+                    [0.0, 1.1],
+                    [0.0, 45.0]
                 )}deg`,
             },
             { scale: buttonScale.value },
@@ -112,7 +112,7 @@ export default function ActionButtons() {
     // Backdrop animation
     const backdropStyle = useAnimatedStyle(() => ({
         opacity: withTiming(
-            interpolate(expandAnimation.value, [0, 1], [0, 0.3]),
+            interpolate(expandAnimation.value, [0.0, 1], [0.0, 0.3]),
             { duration: 300 }
         ),
     }));
@@ -124,8 +124,8 @@ export default function ActionButtons() {
             { damping: 20, stiffness: 300 },
             () => {
                 buttonScale.value = withSpring(1, {
-                    damping: 15,
-                    stiffness: 200,
+                    damping: 15.0,
+                    stiffness: 200.0,
                 });
             }
         );
@@ -133,7 +133,7 @@ export default function ActionButtons() {
         const toValue = isExpanded ? 0 : 1;
         expandAnimation.value = withTiming(toValue, {
             duration: 400,
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+            easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
         });
         setIsExpanded(!isExpanded);
     };
