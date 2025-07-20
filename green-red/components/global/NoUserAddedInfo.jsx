@@ -18,7 +18,7 @@ export default function NoUserAddedInfo() {
         offset.value = withRepeat(
             withTiming(-offset.value, { duration: 410}), -1, true
         )
-    })
+    }, [])
 
     return (
         <View style={styles.container}>
