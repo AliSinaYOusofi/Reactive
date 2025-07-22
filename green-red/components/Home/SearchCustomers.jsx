@@ -450,6 +450,7 @@ const styles = StyleSheet.create({
         padding: 6,
         justifyContent: 'center',
         alignItems: 'center',
+        marginLeft: 10,
     },
 
     input: {
@@ -471,6 +472,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         borderRadius: 10,
-        padding: 5,
+        padding: 0,
     },
 });
