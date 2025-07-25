@@ -1,109 +1,222 @@
-import React, { useState } from 'react';
-import { 
-  Dimensions, 
-  StyleSheet, 
-  View, 
-  TouchableOpacity 
-} from 'react-native';
-import Carousel from 'react-native-reanimated-carousel';
-import TotalExpenses from '../Home/TotalExpenses';
-import { Play, Pause } from 'lucide-react-native';
+import React, { useState } from "react";
+import {
+    StyleSheet,
+    Text,
+    Pressable,
+    TouchableOpacity,
+    ActivityIndicator,
+} from "react-native";
+import { cancel_button_color, delete_button_color } from "./colors";
+import Toast from "react-native-toast-message";
+import { useAppContext } from "../../context/useAppContext";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { TrainTrack, X } from "lucide-react-native";
+import { supabase } from "../../utils/supabase";
+export default function DeleteRecordModal({
+    message,
+    setCloseModal,
+    record_id,
+    customer_id,
+}) {
+    const {
+        setRefreshHomeScreenOnChangeDatabase,
+        setRefreshSingleViewChangeDatabase,
+    } = useAppContext();
 
-const { width: SCREEN_W } = Dimensions.get('window');
+    const [saving, setSaving] = useState(false);
 
-export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
-  const [isPaused, setIsPaused] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+    const handleDelete = async () => {
+        if (record_id) {
+            setSaving(true);
+            await deleteByRecoredId();
+            setSaving(false);
+        } else if (customer_id) {
+            setSaving(true);
+            await deleteParent();
+            setSaving(false);
+        }
+        setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+        setRefreshSingleViewChangeDatabase((prev) => !prev);
+    };
 
-  if (!totalExpenseOfCustomer.length) return null;
+    const handleCancel = () => {
+        setCloseModal(false);
+    };
 
-  return (
-    <View style={styles.container}>
-      {/* Play/Pause button */}
-      {totalExpenseOfCustomer.length > 1 && (
-        <TouchableOpacity
-          style={styles.playPauseButton}
-          onPress={() => setIsPaused(p => !p)}
+    const showToast = (message, type = "error") => {
+        Toast.show({
+            type: type,
+            text1: message,
+            position: "top",
+            onPress: () => Toast.hide(),
+            swipeable: true,
+            topOffset: 100,
+        });
+    };
+
+    const deleteByRecoredId = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("customer_transactions")
+                .delete()
+                .eq("id", record_id);
+
+            if (error) {
+                throw error;
+            }
+
+            if (error) {
+                showToast("Failed to delete ", "error");
+            } else {
+                showToast("Record deleted", "success");
+            }
+        } catch (error) {
+            console.error("Failed to delete record", error.message);
+            showToast("Failed to delete record");
+        } finally {
+            setCloseModal(false);
+        }
+    };
+
+    const deleteParent = async (customerId) => {
+        try {
+            const { data, error } = await supabase
+                .from("customers")
+                .delete()
+                .eq("id", customer_id);
+
+            if (error) {
+                console.error("Error deleting customer:", error);
+                showToast("Failed to delete customer", "error");
+                return;
+            }
+
+            showToast("Customer deleted successfully", "success");
+
+        } catch (error) {
+            console.error("Unexpected error while deleting customer:", error);
+            showToast("An error occurred while deleting customer", "error");
+        }
+    };
+
+    return (
+        <Animated.View
+            entering={FadeIn.duration(300).delay(100)}
+            exiting={FadeOut.duration(300).delay(100)}
+            style={styles.modalContainer}
         >
-          {isPaused ? <Play size={24} /> : <Pause size={24} />}
-        </TouchableOpacity>
-      )}
+            <Animated.View
+                style={styles.options_container}
+                entering={FadeIn.duration(300).delay(100)}
+            >
+                <Animated.Text
+                    style={styles.texts}
+                    entering={FadeIn.duration(300).delay(200)}
+                >
+                    {message}
+                </Animated.Text>
 
-      {/* Carousel */}
-      <View style={styles.carouselContainer}>
-        <Carousel
-          loop={totalExpenseOfCustomer.length > 1}
-          width={SCREEN_W}
-          height={120}
-          data={totalExpenseOfCustomer}
-          autoPlay={totalExpenseOfCustomer.length > 1 && !isPaused}
-          scrollAnimationDuration={800}
-          onSnapToItem={setCurrentIndex}
-          renderItem={({ item }) => (
-            <View style={styles.slide}>
-              <TotalExpenses
-                totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
-                totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
-                currency={item.currency}
-              />
-            </View>
-          )}
-        />
-      </View>
+                <Animated.View
+                    style={styles.button_container}
+                    entering={FadeIn.duration(300).delay(300)}
+                >
+                    <TouchableOpacity
+                        onPress={handleDelete}
+                        style={styles.delete_button}
+                    >
+                        {saving ? (
+                            <ActivityIndicator
+                                size="small"
+                                color="white"
+                                style={{
+                                    marginLeft: 12,
+                                    marginTop: 5,
+                                    alighItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            />
+                        ) : (
+                            <Text style={styles.button_text}>Delete</Text>
+                        )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={handleCancel}
+                        style={styles.cancel_button}
+                    >
+                        <Text style={styles.button_text}> Cancel </Text>
+                    </TouchableOpacity>
+                </Animated.View>
 
-      {/* Pagination dots */}
-      {totalExpenseOfCustomer.length > 1 && (
-        <View style={styles.dotsContainer}>
-          {totalExpenseOfCustomer.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                i === currentIndex && styles.dotActive
-              ]}
-            />
-          ))}
-        </View>
-      )}
-    </View>
-  );
+                <Animated.View
+                    style={[styles.pressable, styles.pressable_close]}
+                    entering={FadeIn.duration(300).delay(400)}
+                >
+                    <TouchableOpacity onPress={() => setCloseModal(false)}>
+                        <X size={20} color="black" />
+                    </TouchableOpacity>
+                </Animated.View>
+            </Animated.View>
+        </Animated.View>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    width: '100%',
-    overflow: 'visible',
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  playPauseButton: {
-    position: 'absolute',
-    top: 8,
-    right: 16,
-    zIndex: 10,
-  },
-  carouselContainer: {
-    height: 120,
-  },
-  slide: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: SCREEN_W,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    marginTop: 8,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#CCC',
-    marginHorizontal: 4,
-  },
-  dotActive: {
-    backgroundColor: '#333',
-    width: 12,
-  },
+    modalContainer: {
+        flex: 1,
+        justifyContent: "flex-end",
+        alignItems: "center",
+        position: "relative",
+    },
+    options_container: {
+        backgroundColor: "white",
+        padding: 40,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        width: "100%",
+        alignItems: "flex-start",
+        color: "white",
+        position: "relative",
+        hadowColor: "black",
+        shadowOffset: { width: 3, height: -2 },
+        shadowOpacity: 1,
+        shadowRadius: 14,
+        elevation: 15,
+    },
+    button_container: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 20,
+        columnGap: 10,
+    },
+    texts: {
+        color: "black",
+    },
+    delete_button: {
+        backgroundColor: delete_button_color,
+        borderRadius: 50,
+        paddingHorizontal: 30,
+        paddingVertical: 10,
+    },
+    cancel_button: {
+        backgroundColor: cancel_button_color,
+        borderRadius: 50,
+        paddingHorizontal: 30,
+        paddingVertical: 10,
+    },
+    pressable: {
+        position: "absolute",
+        zIndex: 1,
+        backgroundColor: "white",
+        padding: 5,
+        borderRadius: 50,
+        color: "black",
+        top: 10,
+        right: 10,
+    },
+    pressable_close: {},
+    button_text: {
+        color: "white",
+    },
 });
