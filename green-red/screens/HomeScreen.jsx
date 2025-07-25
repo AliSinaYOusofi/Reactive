@@ -38,7 +38,6 @@ configureReanimatedLogger({
 
 export default function HomeScreen({ navigator }) {
     const [customers, setCustomers] = useState([]);
-    const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("");
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([]);
     const { refreshHomeScreenOnChangeDatabase, userId } = useAppContext();

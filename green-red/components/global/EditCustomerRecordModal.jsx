@@ -16,7 +16,7 @@ import { format } from "date-fns";
 import { useAppContext } from "../../context/useAppContext";
 import Animated, { SlideInDown, SlideOutDown } from "react-native-reanimated";
 import { FadeIn, FadeInDown } from "react-native-reanimated";
-import { Banknote, X } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { supabase } from "../../utils/supabase";
 export default function EditCustomerRecordModal({
     amount,
@@ -113,7 +113,7 @@ export default function EditCustomerRecordModal({
                         value={newAmount}
                     />
                     <View style={styles.iconContainer}>
-                        <Banknote size={28} color="#64748B" />
+                        <Feather name="dollar-sign" size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -181,7 +181,7 @@ export default function EditCustomerRecordModal({
                     onPress={() => setUpdateRecordModal(false)}
                     style={[styles.pressable, styles.pressable_close]}
                 >
-                    <X name="close-outline" size={24} color="black" />
+                    <Feather name="x" size={24} color="black" />
                 </TouchableOpacity>
             </Animated.View>
         </Animated.View>

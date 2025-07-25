@@ -11,7 +11,7 @@ import Animated, {
     SlideOutDown, 
     FadeInLeft
 } from 'react-native-reanimated';
-import { ClipboardCheck, ClipboardCopy, X } from 'lucide-react-native';
+import { Feather } from '@expo/vector-icons';
 
 export default function ShowTransactionDetailsModal({ username, amount, currency, transaction_type, transaction_date, closeModal }) {
     const [copied, setCopied] = useState(false);
@@ -57,16 +57,16 @@ On: ${transaction_date} ${transaction_date ? formatDistanceToNowStrict(new Date(
                 </Animated.View>
                 
                 <TouchableOpacity onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
-                    <X  size={24} color="black" />
+                    <Feather name="x" size={24} color="black" />
                 </TouchableOpacity>
                 
                 <TouchableOpacity onPress={copy_to_clipboard} style={[styles.pressable, styles.pressable_clipboard]}>
                     {
                         copied
                         ?
-                        <ClipboardCheck size={24} color="black"/>
+                        <Feather name="check-square" size={24} color="black"/>
                         :
-                        <ClipboardCopy size={24} color="black"/>
+                        <Feather name="copy" size={24} color="black"/>
                     }
                     
                 </TouchableOpacity>

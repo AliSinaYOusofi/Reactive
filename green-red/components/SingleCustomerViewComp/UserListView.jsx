@@ -13,7 +13,7 @@ import EditCustomerRecordModal from "../global/EditCustomerRecordModal";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import useListAnimation from "../animations/useListAnimation";
 import useDeleteAnimation from "../animations/useDeleteAnimation";
-import { Trash2, Edit3 } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { padi_color, received_color } from "../global/colors";
 
@@ -61,7 +61,7 @@ export default function UserListView({
 
     return (
         <>
-            <Animated.View style={[styles.container, animatedStyle]}>
+            <View style={[styles.container, animatedStyle]}>
                 {/* MAIN CONTENT */}
                 <TouchableOpacity
                     onPress={() => setDetailsModal(true)}
@@ -102,21 +102,21 @@ export default function UserListView({
                 {/* ACTIONS */}
                 <View style={styles.actions}>
                     <TouchableOpacity
-                        onPress={() => setEditModal(true)}
+                        onPress={(e) => {e.stopPropagation(); setEditModal(true)}}
                         style={styles.iconBtn}
                         activeOpacity={0.7}
                     >
-                        <Edit3 size={18} color="#333333" />
+                        <Feather name="edit-3" size={18} color="#333333" />
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setDeleteModal(true)}
                         style={styles.iconBtn}
                         activeOpacity={0.7}
                     >
-                        <Trash2 size={18} color="#333" />
+                        <Feather name="trash-2" size={18} color="#333" />
                     </TouchableOpacity>
                 </View>
-            </Animated.View>
+            </View>
 
             {/* DETAILS MODAL */}
             <Modal

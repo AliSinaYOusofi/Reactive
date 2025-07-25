@@ -547,7 +547,7 @@ export default function SingleCustomerView({ navigation, route }) {
     }
 
     return (
-        <>
+        <View style={styles.container}>
             {customers.length !== 0 && (
                 
                 <CarouselOfTracker
@@ -656,7 +656,7 @@ export default function SingleCustomerView({ navigation, route }) {
                     setCloseSortModal={setSortModal}
                 />
             </Modal>
-        </>
+        </View>
     );
 }
 

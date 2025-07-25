@@ -20,7 +20,7 @@ import Animated, {
     SlideInDown,
     SlideOutDown,
 } from "react-native-reanimated";
-import { Banknote, X } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { supabase } from "../../utils/supabase";
 
 export default function AddNewCustomeRecordModal({
@@ -126,7 +126,7 @@ export default function AddNewCustomeRecordModal({
                     />
 
                     <View style={styles.iconContainer}>
-                        <Banknote size={28} color="#64748B" />
+                        <Feather name="dollar-sign" size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -194,7 +194,7 @@ export default function AddNewCustomeRecordModal({
                     onPress={() => setAddNewRecordModal(false)}
                     style={[styles.pressable, styles.pressable_close]}
                 >
-                    <X size={20} color="black" />
+                    <Feather name="x" size={20} color="black" />
                 </TouchableOpacity>
             </View>
         </Animated.View>

@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     FlatList,
 } from "react-native";
-import { Check, X } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 
 export default function SingleCustomerSortOptions({
     setSelected,
@@ -42,7 +42,7 @@ export default function SingleCustomerSortOptions({
                     </Text>
                     {isSelected && (
                         <View style={styles.checkContainer}>
-                            <Check size={18} color="#4299E1" />
+                            <Feather name="check" size={18} color="#4299E1" />
                         </View>
                     )}
                 </View>
@@ -65,7 +65,7 @@ export default function SingleCustomerSortOptions({
                             style={styles.closeButton}
                             onPress={() => setCloseSortModal(false)}
                         >
-                            <X size={20} color="#4A5568" />
+                            <Feather name="x" size={20} color="#4A5568" />
                         </TouchableOpacity>
                     </View>
 

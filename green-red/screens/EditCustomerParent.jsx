@@ -11,11 +11,7 @@ import {
     TouchableOpacity,
     ActivityIndicator,
 } from "react-native";
-import CurrencyDropdownListSearch from "../components/global/CurrencyDropdownList";
 import { validateUsername } from "../utils/validators/usernameValidator";
-
-import { amountOfMoneyValidator } from "../utils/validators/amountOfMoneyValidator";
-import { RadioButton } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { useNavigation } from "@react-navigation/native";
 import { useAppContext } from "../context/useAppContext";
@@ -26,9 +22,9 @@ import Animated, {
     useSharedValue,
     withSpring,
 } from "react-native-reanimated";
-import { User, Banknote, Phone, Mail } from "lucide-react-native";
 import { supabase } from "../utils/supabase";
 import { padi_color, received_color } from "../components/global/colors";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function EditCustomerParent({ navigation, route }) {
     const { username: prev_username } = route.params;
@@ -149,7 +145,7 @@ export default function EditCustomerParent({ navigation, route }) {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <User size={28} color="#64748B" />
+                        <MaterialIcons name="verified-user" size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -166,7 +162,7 @@ export default function EditCustomerParent({ navigation, route }) {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <Phone size={24} color="#64748B" />
+                        <MaterialIcons name="phone" size={24} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -182,7 +178,7 @@ export default function EditCustomerParent({ navigation, route }) {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <Mail size={24} color="#64748B" />
+                        <MaterialIcons name="mail" size={24} color="#64748B" />
                     </View>
                 </Animated.View>
 

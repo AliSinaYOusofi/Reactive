@@ -14,7 +14,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { formatDistanceToNowStrict } from "date-fns";
 import Toast from "react-native-toast-message";
-import { Search } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { supabase } from "../../utils/supabase";
 import { AntDesign } from "@expo/vector-icons";
 import { useAppContext } from "../../context/useAppContext";
@@ -379,7 +379,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
         <>
             <View style={styles.container}>
                 <View style={styles.searchContainer}>
-                    <Search size={20} color="#64748B" style={styles.icon} />
+                    <Feather name="search" size={20} color="#64748B" style={styles.icon} />
 
                     <TextInput
                         style={styles.input}

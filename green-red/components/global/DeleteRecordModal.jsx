@@ -17,7 +17,7 @@ import Animated, {
     useAnimatedStyle,
     withSpring,
 } from "react-native-reanimated";
-import { X, AlertTriangle } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { supabase } from "../../utils/supabase";
 
 const { width, height } = Dimensions.get("window");
@@ -161,7 +161,7 @@ export default function DeleteRecordModal({
                     hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                     activeOpacity={0.7}
                 >
-                    <X size={20} color="#64748B" strokeWidth={2.5} />
+                    <Feather name="x" size={20} color="#64748B" strokeWidth={2.5} />
                 </TouchableOpacity>
 
                 {/* Warning Icon */}
@@ -169,11 +169,7 @@ export default function DeleteRecordModal({
                     entering={FadeIn.duration(600).delay(200)}
                     style={styles.iconContainer}
                 >
-                    <AlertTriangle
-                        size={52}
-                        color="#EF4444"
-                        strokeWidth={2.5}
-                    />
+                    <Feather name="alert-triangle" size={52} color="#EF4444" strokeWidth={2.5} />
                 </Animated.View>
 
                 {/* Title */}
@@ -243,12 +239,7 @@ export default function DeleteRecordModal({
                                     />
                                 ) : (
                                     <>
-                                        <AlertTriangle
-                                            size={18}
-                                            color="#FFFFFF"
-                                            strokeWidth={2.5}
-                                            style={styles.buttonIcon}
-                                        />
+                                        <Feather name="alert-triangle" size={18} color="#FFFFFF" strokeWidth={2.5} style={styles.buttonIcon} />
                                         <Text style={styles.deleteButtonText}>
                                             Delete
                                         </Text>
@@ -277,7 +268,6 @@ const styles = StyleSheet.create({
         height: height,
         justifyContent: "flex-end",
         alignItems: "center",
-        zIndex: 1000,
     },
     backdrop: {
         position: "absolute",

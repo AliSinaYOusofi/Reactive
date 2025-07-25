@@ -2,9 +2,8 @@ import React, { useRef, useState, useCallback, useEffect } from "react";
 import Carousel from "react-native-reanimated-carousel";
 import TotalExpenses from "../Home/TotalExpenses";
 import { Dimensions, StyleSheet, View } from "react-native";
-import { Play, Pause, ArrowRight, ArrowLeft } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity, Text } from "react-native";
-import { Eye, EyeClosed } from "lucide-react-native";
 
 const styles = StyleSheet.create({
     container: {
@@ -23,6 +22,7 @@ const styles = StyleSheet.create({
     },
     carouselContainer: {
         height: 250,
+        marginTop: 10
     },
     playPauseButton: {
 
@@ -181,7 +181,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         style={[styles.prevButton, hideCarousel && { display: "none" }]}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                        <ArrowLeft color="#333333" size={20} />
+                        <Feather name="arrow-left" size={20} color="#333333" />
                     </TouchableOpacity>
                 )}
 
@@ -202,9 +202,9 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                         {isPaused ? (
-                            <Play color="#333333" size={20} />
+                            <Feather name="play" size={20} color="#333333" />
                         ) : (
-                            <Pause color="#333333" size={20} />
+                            <Feather name="pause" size={20} color="#333333" />
                         )}
                     </TouchableOpacity>
                 )}
@@ -216,7 +216,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         style={[styles.nextButton, hideCarousel && { display: "none" }]}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                        <ArrowRight color="#333333" size={20} />
+                        <Feather name="arrow-right" size={20} color="#333333" />
                     </TouchableOpacity>
                 )}
 
@@ -227,9 +227,9 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                     {hideCarousel ? (
-                        <EyeClosed color="#333333" size={20} />
+                        <Feather name="eye-off" size={20} color="#333333" />
                     ) : (
-                        <Eye color="#333333" size={20} />
+                        <Feather name="eye" size={20} color="#333333" />
                     )}
                 </TouchableOpacity>
             </View>

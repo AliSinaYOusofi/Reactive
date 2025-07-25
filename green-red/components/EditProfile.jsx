@@ -10,7 +10,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { supabase } from "../utils/supabase";
-import { Eye, EyeOff } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { printToFileAsync } from "expo-print";
 
 const EditProfileModal = ({ isVisible, onClose, profileData, onUpdate }) => {
@@ -111,9 +111,9 @@ const EditProfileModal = ({ isVisible, onClose, profileData, onUpdate }) => {
                                 style={styles.eyeIcon}
                             >
                                 {showPassword ? (
-                                    <EyeOff size={24} color="#007AFF" />
+                                    <Feather name="eye-off" size={24} color="#007AFF" />
                                 ) : (
-                                    <Eye size={24} color="#007AFF" />
+                                    <Feather name="eye" size={24} color="#007AFF" />
                                 )}
                             </TouchableOpacity>
                         </View>
@@ -134,9 +134,9 @@ const EditProfileModal = ({ isVisible, onClose, profileData, onUpdate }) => {
                                 style={styles.eyeIcon}
                             >
                                 {showConfirmPassword ? (
-                                    <EyeOff size={24} color="#007AFF" />
+                                    <Feather name="eye-off" size={24} color="#007AFF" />
                                 ) : (
-                                    <Eye size={24} color="#007AFF" />
+                                    <Feather name="eye" size={24} color="#007AFF" />
                                 )}
                             </TouchableOpacity>
                         </View>

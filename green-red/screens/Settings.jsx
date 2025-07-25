@@ -8,7 +8,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { User, LogOut, Trash2, ChevronRight, Edit } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { supabase } from "../utils/supabase";
 import { useAppContext } from "../context/useAppContext";
 import ProfileDetailsModal from "../components/ProfileDetails";
@@ -143,7 +143,7 @@ const SettingsScreen = () => {
                 {icon}
                 <Text style={styles.optionText}>{text}</Text>
             </View>
-            <ChevronRight color="#666" size={20} />
+            <Feather name="chevron-right" color="#666" size={20} />
         </TouchableOpacity>
     );
 
@@ -152,13 +152,13 @@ const SettingsScreen = () => {
             <Text style={styles.header}>Settings</Text>
 
             <SettingOption
-                icon={<User color="#555" size={24} />}
+                icon={<Feather name="user" color="#555" size={24} />}
                 text="View Profile"
                 onPress={() => setIsProfileModalVisible(true)}
             />
 
             <SettingOption
-                icon={<Edit color="#555" size={24} />}
+                icon={<Feather name="edit" color="#555" size={24} />}
                 text="Edit Profile"
                 onPress={() => setIsEditProfileModalVisible(true)}
             />
@@ -173,7 +173,7 @@ const SettingsScreen = () => {
                         <ActivityIndicator color="#fff" />
                     ) : (
                         <>
-                            <Trash2 color="#fff" size={24} />
+                            <Feather name="trash-2" color="#fff" size={24} />
                             <Text style={styles.buttonText}>
                                 Delete Account
                             </Text>
@@ -190,7 +190,7 @@ const SettingsScreen = () => {
                         <ActivityIndicator color="#fff" />
                     ) : (
                         <>
-                            <LogOut color="#fff" size={24} />
+                            <Feather name="log-out" color="#fff" size={24} />
                             <Text style={styles.buttonText}>Logout</Text>
                         </>
                     )}

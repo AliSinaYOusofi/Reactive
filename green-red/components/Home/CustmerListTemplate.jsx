@@ -5,8 +5,7 @@ import DeleteRecordModal from '../global/DeleteRecordModal';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
-import { Trash2, Edit3, ChevronRight } from 'lucide-react-native';
-import getRandomColor from '../../utils/random_color_gen';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window')
 
@@ -65,7 +64,7 @@ export default function CustomerListTemplate({
                 >
                     <View style={styles.mainContent}>
                         {/* Clean Black & White Avatar */}
-                        <View style={[styles.avatarContainer, { backgroundColor: getRandomColor({ excludeLight: true, excludeDark: true }) }]}>
+                        <View style={[styles.avatarContainer, { backgroundColor: "gray", borderRadius: 999 }]}>
                             <Text style={styles.avatarText}>
                                 {getUserInitials(username)}
                             </Text>
@@ -90,7 +89,7 @@ export default function CustomerListTemplate({
                         </View>
 
                         {/* Subtle Chevron */}
-                        <ChevronRight size={18} color="#666666" />
+                        <MaterialIcons name="chevron-right" size={18} color="#666666" />
                     </View>
                 </TouchableOpacity>
                 
@@ -101,7 +100,7 @@ export default function CustomerListTemplate({
                         style={styles.iconButton}
                         activeOpacity={0.7}
                     >
-                        <Edit3 size={18} color="#333333" />
+                        <MaterialIcons name="edit" size={18} color="#333333" />
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
@@ -109,7 +108,7 @@ export default function CustomerListTemplate({
                         style={styles.iconButton}
                         activeOpacity={0.7}
                     >
-                        <Trash2 size={18} color="#333333" />
+                        <MaterialIcons name="delete" size={18} color="#333333" />
                     </TouchableOpacity>
                 </View>
             </Animated.View>
