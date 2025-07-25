@@ -445,7 +445,14 @@ const styles = StyleSheet.create({
         marginRight: 5,
         color: "black",
         borderRadius: 50,
+<<<<<<< HEAD
         padding: 8,
+=======
+        padding: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 10,
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
     },
 
     input: {
@@ -467,6 +474,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         borderRadius: 10,
-        padding: 5,
+        padding: 0,
     },
 });

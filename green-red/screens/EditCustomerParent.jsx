@@ -175,8 +175,8 @@ export default function EditCustomerParent({ navigation, route }) {
                 >
                     <TextInput
                         style={styles.input}
-                        value={phoneNumber}
-                        onChangeText={setPhoneNumber}
+                        value={email}
+                        onChangeText={setEmail}
                         placeholder="email"
                         placeholderTextColor="#94A3B8"
                     />

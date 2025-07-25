@@ -52,7 +52,7 @@ function AddNewCustomerPopup() {
     };
 
     const onPressOut = () => {
-        scale.value = withSpring(1);
+        scale.value = withSpring(1.0);
     };
 
     const addNewCustomer = async () => {
