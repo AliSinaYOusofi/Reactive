@@ -5,8 +5,7 @@ import DeleteRecordModal from '../global/DeleteRecordModal';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
-import { TouchpadOff, Trash2 } from 'lucide-react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { MaterialIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window')
 
@@ -45,6 +44,10 @@ export default function CustomerListTemplate({onDelete, index=1, username='', cu
                     style={styles.pressableContainer}
                 >
                     <View style={styles.mainContent}>
+                        {/* Clean Black & White Avatar */}
+                        <View style={[styles.avatarContainer, { backgroundColor: "gray", borderRadius: 999 }]}>
+                            <Text style={styles.avatarText}>
+                                {getUserInitials(username)}
                         <View style={styles.usernameShortCutStyle}>
                             <Text style={styles.shortcutText}>
                                 {(index)}
@@ -61,6 +64,10 @@ export default function CustomerListTemplate({onDelete, index=1, username='', cu
                             </Text>
                             
                         </View>
+
+
+                        {/* Subtle Chevron */}
+                        <MaterialIcons name="chevron-right" size={18} color="#666666" />
                     </View>
                 </TouchableOpacity>
                 
@@ -69,6 +76,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', cu
                         onPress={() => setDeleteModal(true)} 
                         style={styles.iconButton}
                     >
+                        <MaterialIcons name="edit" size={18} color="#333333" />
                         <Trash2 
                             name="delete-alert-outline" 
                             size={24} 
@@ -80,6 +88,7 @@ export default function CustomerListTemplate({onDelete, index=1, username='', cu
                         onPress={() => navigator.navigate("EditCustomer", {username})}
                         style={[styles.iconButton, styles.edit_icon]}
                     >
+                        <MaterialIcons name="delete" size={18} color="#333333" />
                         <MaterialCommunityIcons 
                             name="circle-edit-outline" 
                             size={24} 

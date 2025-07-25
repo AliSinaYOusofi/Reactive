@@ -1,6 +1,5 @@
-<<<<<<< HEAD
+
 import React, { useEffect, useState } from "react";
-=======
 import React, {
     useEffect,
     useState,
@@ -8,7 +7,6 @@ import React, {
     useMemo,
     useRef,
 } from "react";
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
 import {
     View,
     StyleSheet,
@@ -38,13 +36,15 @@ configureReanimatedLogger({
 });
 
 export default function HomeScreen({ navigator }) {
+    const [customers, setCustomers] = useState([]);
+
     const [customer, setCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("");
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([]);
     const { refreshHomeScreenOnChangeDatabase, userId } = useAppContext();
     const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
+
     const [error, setError] = useState(false);
     const [refresh, setRefresh] = useState(false);
 
@@ -173,7 +173,6 @@ export default function HomeScreen({ navigator }) {
                 );
             } catch (error) {
                 console.error("Error fetching total amounts:", error);
-=======
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -463,14 +462,12 @@ export default function HomeScreen({ navigator }) {
             isMountedRef.current = false;
             if (searchTimeoutRef.current) {
                 clearTimeout(searchTimeoutRef.current);
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
             }
         };
 
         fetchTotalOfAmountsBasedOnCurrency();
     }, [refresh, refreshHomeScreenOnChangeDatabase]);
 
-<<<<<<< HEAD
     if (loading) {
         return (
             <ActivityIndicator
@@ -483,7 +480,6 @@ export default function HomeScreen({ navigator }) {
                 color="black"
                 size={"large"}
             />
-=======
         // Debounce search for better performance
         searchTimeoutRef.current = setTimeout(() => {
             setParentSearchTerm(searchTerm);
@@ -549,7 +545,6 @@ export default function HomeScreen({ navigator }) {
             <View style={styles.centerContainer}>
                 <ActivityIndicator size="large" color="#007AFF" />
             </View>
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
         );
     } else if (error) {
         return (
@@ -586,7 +581,6 @@ export default function HomeScreen({ navigator }) {
                 ) : null}
             </Animated.View>
 
-<<<<<<< HEAD
             <View style={{ flex: 1 }}>
                 <ScrollView indicatorStyle="black" style={style.scroll_view}>
                     {customer.length ? (
@@ -617,7 +611,6 @@ export default function HomeScreen({ navigator }) {
                                         />
                                     </Animated.View>
                                 ))
-=======
             {/* Customer List */}
             <View style={styles.listContainer}>
                 <ScrollView
@@ -645,12 +638,10 @@ export default function HomeScreen({ navigator }) {
                                 displayCustomers.map((item, index) =>
                                     renderCustomerItem(item, index, true)
                                 )
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
                             ) : (
                                 <ZeroSearchResult />
                             )
                         ) : (
-<<<<<<< HEAD
                             customer.map((item, index) => (
                                 <Animated.View
                                     key={item.id}
@@ -673,11 +664,9 @@ export default function HomeScreen({ navigator }) {
                                     />
                                 </Animated.View>
                             ))
-=======
                             customers.map((item, index) =>
                                 renderCustomerItem(item, index, false)
                             )
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
                         )
                     ) : (
                         <NoUserAddedInfo />
@@ -730,12 +719,10 @@ const style = StyleSheet.create({
         alignItems: "center",
         backgroundColor: "white",
     },
-<<<<<<< HEAD
+
     errorText: {
         color: "red",
         fontSize: 18,
         fontWeight: "bold",
     },
-=======
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
 });

@@ -1,3 +1,4 @@
+import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -8,25 +9,19 @@ import SingleCustomerView from "./screens/SingleCustomerView";
 import EditCustomerParent from "./screens/EditCustomerParent";
 import { AppContextProvider, useAppContext } from "./context/useAppContext";
 import * as SystemUI from "expo-system-ui";
-SystemUI.setBackgroundColorAsync("white");
-
-import {
-    Database,
-    House,
-    LogIn,
-    PenSquare,
-    Settings2,
-    Signature,
-    UserPlus,
-    Settings,
-    LogInIcon,
-} from "lucide-react-native";
-import LoginScreen from "./screens/LoginScreen";
-import SignupScreen from "./screens/Signup";
-import SettingsScreen from "./screens/Settings";
 import { ActivityIndicator } from "react-native-paper";
 
-const StackNavigator = createNativeStackNavigator();
+// Replace lucide-react-native icons with @expo/vector-icons variants
+import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
+import SettingsScreen from "./screens/Settings";
+import LoginScreen from "./screens/LoginScreen";
+import Signup from "./screens/Signup";
+SystemUI.setBackgroundColorAsync("white");
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
     return (
@@ -36,18 +31,12 @@ export default function App() {
     );
 }
 
-const Navigation = () => {
+function Navigation() {
     const { userId, loading } = useAppContext();
 
     if (loading) {
         return (
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
+            <View style={styles.loaderContainer}>
                 <ActivityIndicator />
             </View>
         );
@@ -57,7 +46,7 @@ const Navigation = () => {
 
     return (
         <NavigationContainer>
-            <StackNavigator.Navigator
+            <Stack.Navigator
                 initialRouteName={initialRoute}
                 screenOptions={({ navigation, route }) => ({
                     headerShown: true,
@@ -67,115 +56,148 @@ const Navigation = () => {
                         fontSize: 20,
                     },
                     headerRight: () =>
-                        route.name !== "login" && route.name !== "signup" && (
+                        route.name !== "login" &&
+                        route.name !== "signup" && (
                             <TouchableOpacity
                                 onPress={() => navigation.navigate("settings")}
-                                style={{ marginRight: 10 }}
+                                style={styles.headerIcon}
                             >
-                                <Settings size={24} color="black" />
+                                <Feather
+                                    name="settings"
+                                    size={24}
+                                    color="black"
+                                />
                             </TouchableOpacity>
                         ),
                 })}
             >
-                <StackNavigator.Screen
+                <Stack.Screen
                     name="homescreen"
                     component={HomeScreen}
                     options={{
                         headerStyle: { backgroundColor: "white" },
                         headerTitleStyle: { fontSize: 25 },
-                        headerTitle: () => <House size={24} color="black" />,
+                        headerTitle: () => (
+                            <Ionicons
+                                name="home-outline"
+                                size={24}
+                                color="black"
+                            />
+                        ),
                     }}
                 />
-                <StackNavigator.Screen
+                <Stack.Screen
                     name="settings"
                     component={SettingsScreen}
                     options={{
                         headerStyle: { backgroundColor: "white" },
                         headerTitleStyle: { fontSize: 25 },
-                        headerTitle: () => <Settings size={24} color="black" />,
+                        headerTitle: () => (
+                            <Feather name="settings" size={24} color="black" />
+                        ),
                         headerRight: () => null,
                     }}
                 />
-                <StackNavigator.Screen
+                <Stack.Screen
                     name="login"
                     component={LoginScreen}
                     options={{
                         headerStyle: { backgroundColor: "white" },
                         headerTitleStyle: { fontSize: 25 },
-                        headerTitle: () => <LogIn size={24} color="black" />,
+                        headerTitle: () => (
+                            <MaterialCommunityIcons
+                                name="login"
+                                size={24}
+                                color="black"
+                            />
+                        ),
                     }}
                 />
-                <StackNavigator.Screen
+                <Stack.Screen
                     name="signup"
-                    component={SignupScreen}
+                    component={Signup}
                     options={{
                         headerStyle: { backgroundColor: "white" },
                         headerTitleStyle: { fontSize: 25 },
                         headerTitle: () => (
-                            <LogInIcon size={24} color="black" />
+                            <MaterialCommunityIcons
+                                name="account-plus"
+                                size={24}
+                                color="black"
+                            />
                         ),
                     }}
                 />
-                <StackNavigator.Screen
+                <Stack.Screen
                     name="Add Customer"
                     component={AddUser}
                     options={{
                         title: "Add Customer",
                         headerTitleStyle: { fontSize: 25 },
                         headerTitle: () => (
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    columnGap: 4,
-                                }}
-                            >
-                                <UserPlus color="black" />
+                            <View style={styles.iconRow}>
+                                <FontAwesome5
+                                    name="user-plus"
+                                    size={24}
+                                    color="black"
+                                />
                             </View>
                         ),
-                        headerRight: () => null
+                        headerRight: () => null,
                     }}
                 />
-                <StackNavigator.Screen
+                <Stack.Screen
                     name="CustomerData"
                     component={SingleCustomerView}
                     options={{
                         title: "Customer Data",
                         headerTitle: () => (
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    columnGap: 4,
-                                }}
-                            >
-                                <Database size={24} color="black" />
+                            <View style={styles.iconRow}>
+                                <MaterialCommunityIcons
+                                    name="database"
+                                    size={24}
+                                    color="black"
+                                />
                             </View>
                         ),
-                        headerRight: () => null
+                        headerRight: () => null,
                     }}
                 />
-                <StackNavigator.Screen
+                <Stack.Screen
                     name="EditCustomer"
                     component={EditCustomerParent}
                     options={{
                         title: "Customer Data",
                         headerTitle: () => (
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    columnGap: 4,
-                                }}
-                            >
-                                <PenSquare color="black" />
+                            <View style={styles.iconRow}>
+                                <Feather
+                                    name="edit-2"
+                                    size={24}
+                                    color="black"
+                                />
                             </View>
                         ),
-                        headerRight: () => null
+                        headerRight: () => null,
                     }}
                 />
-            </StackNavigator.Navigator>
+            </Stack.Navigator>
             <Toast />
         </NavigationContainer>
     );
-};
+}
+
+const styles = StyleSheet.create({
+    loaderContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    headerIcon: {
+        marginRight: 10,
+    },
+    iconRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+    },
+});

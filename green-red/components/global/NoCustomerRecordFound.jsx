@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, interpolate, Easing, withRepeat, withTiming } from 'react-native-reanimated';
-import { ArrowDown } from 'lucide-react-native';
+import { Feather } from '@expo/vector-icons';
 
 export default function NoCustomerRecordFound() {
 
@@ -26,7 +26,7 @@ export default function NoCustomerRecordFound() {
             <Text style={styles.text}>Add a new record by clicking the button below</Text>
             
             <Animated.View style={[styles.iconContainer, styles.icon, animatedStyle]}>
-                <ArrowDown size={24} color="black" />
+                <Feather name="arrow-down" size={24} color="black" />
             </Animated.View>
         </View>
     );

@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View, StyleSheet } from "react-native";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import Flag from "react-native-flags";
 import { options } from "../../utils/currencies_arr";
 
@@ -18,7 +18,7 @@ export default function TotalExpenses({
         <View style={styles.container}>
             <View style={styles.item}>
                 <View style={[styles.iconContainer, styles.paidIcon]}>
-                    <ArrowUpRight size={20} color="#E46C62" />
+                    <Feather name="arrow-up-right" size={20} color="#E46C62" />
                 </View>
                 <View style={styles.textContainer}>
                     <Text style={styles.label}>You Paid</Text>
@@ -30,7 +30,7 @@ export default function TotalExpenses({
 
             <View style={[styles.item, styles.receivedItem]}>
                 <View style={[styles.iconContainer, styles.receivedIcon]}>
-                    <ArrowDownLeft size={20} color="#62B485" />
+                    <Feather name="arrow-down-left" size={20} color="#62B485" />
                 </View>
                 <View style={styles.textContainer}>
                     <Text style={styles.label}>You Received</Text>

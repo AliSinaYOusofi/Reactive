@@ -1,3 +1,11 @@
+
+import React, { useRef, useState, useCallback, useEffect } from "react";
+import Carousel from "react-native-reanimated-carousel";
+import TotalExpenses from "../Home/TotalExpenses";
+import { Dimensions, StyleSheet, View } from "react-native";
+import { Feather } from '@expo/vector-icons';
+import { TouchableOpacity, Text } from "react-native";
+
 import React from 'react';
 import Carousel from 'react-native-reanimated-carousel';
 import TotalExpenses from '../Home/TotalExpenses';
@@ -12,6 +20,39 @@ const style = StyleSheet.create({
         height: 'auto'
     },
     slide: {
+
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "white",
+    },
+    carouselContainer: {
+        height: 250,
+        marginTop: 10
+    },
+    playPauseButton: {
+
+        borderRadius: 18,
+        backgroundColor: '#F8F8F8',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        padding: 6,
+        
+    },
+    pageIndicator: {
+        backgroundColor: "rgba(0,0,0,0.7)", // Enhanced opacity
+        paddingHorizontal: 10, // Slightly more padding
+        paddingVertical: 5,
+        borderRadius: 12,
+    },
+    pageIndicatorText: {
+        color: "white",
+        fontSize: 12,
+        fontWeight: "600", // Enhanced font weight
+    },
+    nextButton: {
+        backgroundColor: '#F8F8F8',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'white',
@@ -25,7 +66,6 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
     const width = Dimensions.get('window').width;
 
     return (
-<<<<<<< HEAD
         <View style={style.container}>
             {totalExpenseOfCustomer.length > 0 && (
                 <View style={style.carouselContainer}>
@@ -45,7 +85,6 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                                     currency={item.currency}
                                 />
                             </View>
-=======
         <View style={styles.container}>
             {/* Carousel */}
             <View
@@ -87,7 +126,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         style={[styles.prevButton, hideCarousel && { display: "none" }]}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                        <ArrowLeft color="#333333" size={20} />
+                        <Feather name="arrow-left" size={20} color="#333333" />
                     </TouchableOpacity>
                 )}
 
@@ -108,14 +147,44 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                         {isPaused ? (
-                            <Play color="#333333" size={20} />
+                            <Feather name="play" size={20} color="#333333" />
                         ) : (
+                            <Feather name="pause" size={20} color="#333333" />
+                        )}
+                    </TouchableOpacity>
+                )}
+
+                {/* Next */}
+                {totalCount > 1 && (
+                    <TouchableOpacity
+                        onPress={goNext}
+                        style={[styles.nextButton, hideCarousel && { display: "none" }]}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                        <Feather name="arrow-right" size={20} color="#333333" />
+                    </TouchableOpacity>
+                )}
+
+                {/* Hide / Unhide */}
+                <TouchableOpacity
+                    onPress={() => setHideCarousel((h) => !h)}
+                    style={styles.hideunhideButton}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    {hideCarousel ? (
+                        <Feather name="eye-off" size={20} color="#333333" />
+                    ) : (
+                        <Feather name="eye" size={20} color="#333333" />
+                    )}
+                </TouchableOpacity>
+            </View>
                             <Pause color="#333333" size={20} />
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
+
                         )}
                     />
                 </View>
             )}
+
         </View>
     );
 }

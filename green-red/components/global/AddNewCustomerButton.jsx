@@ -13,7 +13,7 @@ import {
     Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { UserRoundPlus, TrendingUp } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -94,11 +94,7 @@ export default function ActionButtons() {
                         {...createPressAnimation(addUserScale)}
                     >
                         <View style={styles.iconContainer}>
-                            <UserRoundPlus
-                                size={22}
-                                color="#FFFFFF"
-                                strokeWidth={2.5}
-                            />
+                            <Feather name="user-plus" size={22} color="#FFFFFF" />
                         </View>
                         <View style={styles.textContainer}>
                             <Text style={styles.buttonText}>Add User</Text>
@@ -128,11 +124,7 @@ export default function ActionButtons() {
                                 styles.analyticsIconContainer,
                             ]}
                         >
-                            <TrendingUp
-                                size={22}
-                                color="#FFFFFF"
-                                strokeWidth={2.5}
-                            />
+                            <Feather name="trending-up" size={22} color="#FFFFFF" />
                         </View>
                         <View style={styles.textContainer}>
                             <Text style={styles.buttonText}>Analytics</Text>
@@ -200,9 +192,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         width: "100%",
         left: 0,
-        right: 0,
-        zIndex: 10,
-        
+        right: 0, 
     },
     container: {
         backgroundColor: "#FFFFFF",

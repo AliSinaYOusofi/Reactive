@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Text, TextInput, FlatList, TouchableOpacity, Modal } from 'react-native';
 import Flag from 'react-native-flags';
-import { ChevronDown } from 'lucide-react-native';
+import { Feather } from '@expo/vector-icons';
 import { options } from '../../utils/currencies_arr';
 
 
@@ -76,7 +76,7 @@ export default function CurrencyDropdownListSearch({setSelected, selected}) {
                 ) : (
                     <Text style={styles.placeholderText}>Select a currency</Text>
                 )}
-                <ChevronDown size={20} color="#4A5568" />
+                <Feather name="chevron-down" size={20} color="#4A5568" />
             </TouchableOpacity>
 
             <Modal

@@ -1,3 +1,23 @@
+
+import React, { useState } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    Modal,
+    Dimensions,
+    TouchableOpacity,
+} from "react-native";
+import ShowTransactionDetailsModal from "./ShowTransactionDetailsModal";
+import DeleteRecordModal from "../global/DeleteRecordModal";
+import EditCustomerRecordModal from "../global/EditCustomerRecordModal";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import useListAnimation from "../animations/useListAnimation";
+import useDeleteAnimation from "../animations/useDeleteAnimation";
+import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { padi_color, received_color } from "../global/colors";
+
 import React, { useState } from 'react'
 import { Pressable, View, Text, StyleSheet, Modal, Dimensions, TouchableOpacity } from 'react-native'
 import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
@@ -17,6 +37,28 @@ export default function UserListView({username, amount, currency, transaction_ty
     return (
         <>
 
+            <View style={[styles.container, animatedStyle]}>
+                {/* MAIN CONTENT */}
+                <TouchableOpacity
+                    onPress={() => setDetailsModal(true)}
+                    style={styles.pressable}
+                    activeOpacity={0.8}
+                >
+                    <View style={styles.mainRow}>
+                        {/* Avatar */}
+                        <View
+                            style={[
+                                styles.avatar,
+                                {
+                                    backgroundColor: transaction_type === "received" ? received_color : padi_color,
+                                },
+                            ]}
+                        >
+                            <Text style={styles.avatarText}>
+                                {currency.substring(0, 2).toUpperCase()}
+                            </Text>
+                        </View>
+
             <View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}]}>
                 <TouchableOpacity onPress={() => setDetailsModal(true)} style={[styles.container]}>
                     
@@ -26,7 +68,21 @@ export default function UserListView({username, amount, currency, transaction_ty
                         </View>
                         
                     </View>
-
+                {/* ACTIONS */}
+                <View style={styles.actions}>
+                    <TouchableOpacity
+                        onPress={(e) => {e.stopPropagation(); setEditModal(true)}}
+                        style={styles.iconBtn}
+                        activeOpacity={0.7}
+                    >
+                        <Feather name="edit-3" size={18} color="#333333" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setDeleteModal(true)}
+                        style={styles.iconBtn}
+                        activeOpacity={0.7}
+                    >
+                        <Feather name="trash-2" size={18} color="#333" />
                     <View style={styles.textContainer}>
                         
                         <Text style={styles.amountText}

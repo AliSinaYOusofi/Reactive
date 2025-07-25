@@ -27,7 +27,7 @@ import Animated, {
     useSharedValue,
     withSpring,
 } from "react-native-reanimated";
-import { User, Banknote } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
 import { supabase } from "../../utils/supabase";
 
 function AddNewCustomerPopup() {
@@ -199,7 +199,7 @@ function AddNewCustomerPopup() {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <User size={28} color="#64748B" />
+                        <Feather name="user" size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 
@@ -215,7 +215,7 @@ function AddNewCustomerPopup() {
                         placeholderTextColor="#94A3B8"
                     />
                     <View style={styles.iconContainer}>
-                        <Banknote size={28} color="#64748B" />
+                        <Feather name="dollar-sign" size={28} color="#64748B" />
                     </View>
                 </Animated.View>
 
