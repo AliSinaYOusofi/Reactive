@@ -549,11 +549,14 @@ export default function SingleCustomerView({ navigation, route }) {
     return (
         <View style={styles.container}>
             {customers.length !== 0 && (
-                
-                <CarouselOfTracker
-                    totalExpenseOfCustomer={singleCustomerExpense}
-                />
-                
+                <Animated.View
+                    style={{ backgroundColor: "white", height: 195 }}
+                    entering={FadeIn.duration(500)}
+                >
+                    <CarouselOfTracker
+                        totalExpenseOfCustomer={singleCustomerExpense}
+                    />
+                </Animated.View>
             )}
 
             <View
@@ -561,11 +564,13 @@ export default function SingleCustomerView({ navigation, route }) {
                     flex: 1,
                     paddingBottom: 40,
                     backgroundColor: "white",
-                    
+                    marginTop: 50,
                 }}
             >
                 <View style={styles.usernameContainer}>
-                    
+                    <Text style={styles.username}>
+                        Transactions with {username} ({customers.length})
+                    </Text>
                 </View>
                 <ScrollView style={styles.container}>
                     {customers.length > 0 ? (
@@ -682,13 +687,18 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "between",
         alignItems: "stretch",
+        backgroundColor: "#181c20",
+        color: "white",
+        height: "auto",
+        backgroundColor: "#14171A",
+        borderRadius: 99,
         paddingVertical: 10,
         paddingHorizontal: 10,
         justifyContent: "center",
         alignItems: "center",
         alignSelf: "center",
         position: "absolute",
-        backgroundColor: "white",
+        backgroundColor: "#14171A",
         borderRadius: 9999,
         width: "70%",
         flexDirection: "row",
@@ -696,8 +706,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         gap: 10,
         bottom: 1,
-        borderWidth: 1,
-        borderColor: "#EDF2F7",
+        
     },
     button: {
         flexDirection: "row",
@@ -706,9 +715,7 @@ const styles = StyleSheet.create({
         backgroundColor: "white", // A modern blue shade
         paddingVertical: 12,
         paddingHorizontal: 16, // Adjusted padding for better text fit
-        borderRadius: 9999,
-        borderWidth: 1,
-        borderColor: "#EDF2F7",
+        borderRadius: 25,
     },
     icon: {
         color: "black",
