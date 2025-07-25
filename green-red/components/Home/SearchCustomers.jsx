@@ -68,9 +68,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
         try {
             const { data: customers, error } = await supabase
                 .from("customers")
-                .select("*")
-                .eq("user_id", userId)
-                .order("created_at", { ascending: false });
+                .select("*");
 
             if (error) {
                 console.error("Error fetching customers:", error);
@@ -142,7 +140,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
     const convertQueryResultToPdf = async () => {
         setConvertingToPdf(true);
         try {
-            const allCustomersDataToConvert = await AllCustomersData();
+            const allCustomersDataToConvert = await AllCustomersData()
 
             if (
                 !allCustomersDataToConvert ||
@@ -393,7 +391,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                     <TouchableOpacity onPress={() => setSortModalVisible(true)}>
                         <AntDesign
                             name="filter"
-                            size={20}
+                            size={24}
                             color="white"
                             style={styles.icon}
                         />
@@ -405,7 +403,7 @@ export default function SearchCustomers({ handleSearch, setCustomers }) {
                         ) : (
                             <AntDesign
                                 name="download"
-                                size={20}
+                                size={24}
                                 color="white"
                                 style={styles.icon}
                             />
@@ -440,17 +438,21 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f9fa",
         padding: 3,
         borderRadius: 10,
-        marginTop: 10,
+        marginTop: 120,
     },
 
     icon: {
         marginRight: 5,
         color: "black",
         borderRadius: 50,
+<<<<<<< HEAD
+        padding: 8,
+=======
         padding: 6,
         justifyContent: 'center',
         alignItems: 'center',
         marginLeft: 10,
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
     },
 
     input: {

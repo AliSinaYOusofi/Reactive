@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+import React, { useEffect, useState } from "react";
+=======
 import React, {
     useEffect,
     useState,
@@ -5,15 +8,12 @@ import React, {
     useMemo,
     useRef,
 } from "react";
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
 import {
     View,
     StyleSheet,
     ScrollView,
     ActivityIndicator,
-    RefreshControl,
-    Alert,
-    AppState,
-    InteractionManager,
 } from "react-native";
 import SearchCustomers from "../components/Home/SearchCustomers";
 import CustomerListTemplate from "../components/Home/CustmerListTemplate";
@@ -21,6 +21,7 @@ import AddNewCustomer from "../components/global/AddNewCustomerButton";
 import { useAppContext } from "../context/useAppContext";
 import NoUserAddedInfo from "../components/global/NoUserAddedInfo";
 import ZeroSearchResult from "../components/global/ZeroSearchResult";
+
 import CarouselOfTracker from "../components/carousel/Carouself";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { supabase } from "../utils/supabase";
@@ -37,12 +38,142 @@ configureReanimatedLogger({
 });
 
 export default function HomeScreen({ navigator }) {
-    const [customers, setCustomers] = useState([]);
+    const [customer, setCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
     const [parentSearchTerm, setParentSearchTerm] = useState("");
     const [totalExpenseOfCustomer, setTotalExpenseOfCustomers] = useState([]);
     const { refreshHomeScreenOnChangeDatabase, userId } = useAppContext();
     const [loading, setLoading] = useState(false);
+<<<<<<< HEAD
+    const [error, setError] = useState(false);
+    const [refresh, setRefresh] = useState(false);
+
+    useEffect(() => {
+        const loadCustomerDataList = async () => {
+            setLoading(true);
+            try {
+                let { data: singleCustomer, error } = await supabase
+                    .from("customers")
+                    .select("*")
+                    .eq("user_id", userId);
+
+                if (error) {
+                    console.error("Error fetching customers:", error);
+                    setError(error.message || "Error Fetching customers table");
+                    return;
+                }
+
+                if (!singleCustomer || singleCustomer.length === 0) {
+                    setCustomers([]);
+                    return;
+                }
+
+                setCustomers(singleCustomer);
+            } catch (error) {
+                console.error("Error loading customer data:", error);
+                setError(error.message || "Error Fetching users table");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCustomerDataList();
+    }, [refreshHomeScreenOnChangeDatabase, refresh]);
+
+    const handleSearch = (searchTerm) => {
+        setParentSearchTerm(searchTerm);
+        setFilteredCustomers(
+            customer.filter(
+                (item) =>
+                    searchTerm &&
+                    item.username
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+            )
+        );
+    };
+
+    useEffect(() => {
+        const fetchTotalOfAmountsBasedOnCurrency = async () => {
+            try {
+                let totalAmountsByCurrency = {};
+
+                const { data: transactionRecords, error: error1 } =
+                    await supabase
+                        .from("customer_transactions")
+                        .select("currency")
+                        .eq("user_id", userId);
+
+                if (error1) {
+                    console.error(
+                        "Error fetching transaction records:",
+                        error1
+                    );
+                    return;
+                }
+
+                const distinctCurrencies = [
+                    ...new Set(
+                        transactionRecords.map((record) => record.currency)
+                    ),
+                ];
+
+                // For each currency, fetch the totals for "received" and "paid" transactions
+                await Promise.all(
+                    distinctCurrencies.map(async (currency) => {
+                        const [toGiveResult, toTakeResult] = await Promise.all([
+                            supabase
+                                .from("customer_transactions")
+                                .select("amount")
+                                .eq("transaction_type", "received")
+                                .eq("currency", currency)
+                                .eq("user_id", userId),
+                            supabase
+                                .from("customer_transactions")
+                                .select("amount")
+                                .eq("transaction_type", "paid")
+                                .eq("currency", currency)
+                                .eq("user_id", userId),
+                        ]);
+
+                        if (toGiveResult.error || toTakeResult.error) {
+                            console.error(
+                                "Error fetching transaction data:",
+                                toGiveResult.error || toTakeResult.error
+                            );
+                            return;
+                        }
+
+                        const toGiveTotal = toGiveResult.data.reduce(
+                            (sum, record) => sum + record.amount,
+                            0
+                        );
+                        const toTakeTotal = toTakeResult.data.reduce(
+                            (sum, record) => sum + record.amount,
+                            0
+                        );
+
+                        totalAmountsByCurrency[currency] = {
+                            totalAmountBasedOnCurrencyToGive: toGiveTotal,
+                            totalAmountBasedOnCurrencyToTake: toTakeTotal,
+                        };
+                    })
+                );
+
+                setTotalExpenseOfCustomers(
+                    Object.entries(totalAmountsByCurrency).map(
+                        ([currency, amounts]) => ({
+                            currency,
+                            totalAmountBasedOnCurrencyToGive:
+                                amounts.totalAmountBasedOnCurrencyToGive,
+                            totalAmountBasedOnCurrencyToTake:
+                                amounts.totalAmountBasedOnCurrencyToTake,
+                        })
+                    )
+                );
+            } catch (error) {
+                console.error("Error fetching total amounts:", error);
+=======
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -332,17 +463,27 @@ export default function HomeScreen({ navigator }) {
             isMountedRef.current = false;
             if (searchTimeoutRef.current) {
                 clearTimeout(searchTimeoutRef.current);
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
             }
         };
-    }, []);
 
-    // Enhanced search handler with debouncing and performance optimization
-    const handleSearch = useCallback((searchTerm) => {
-        // Clear previous timeout
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
-        }
+        fetchTotalOfAmountsBasedOnCurrency();
+    }, [refresh, refreshHomeScreenOnChangeDatabase]);
 
+<<<<<<< HEAD
+    if (loading) {
+        return (
+            <ActivityIndicator
+                style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "white",
+                }}
+                color="black"
+                size={"large"}
+            />
+=======
         // Debounce search for better performance
         searchTimeoutRef.current = setTimeout(() => {
             setParentSearchTerm(searchTerm);
@@ -408,46 +549,75 @@ export default function HomeScreen({ navigator }) {
             <View style={styles.centerContainer}>
                 <ActivityIndicator size="large" color="#007AFF" />
             </View>
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
         );
-    }
-
-    // Error state with retry option
-    if (error && !refreshing && !customers.length) {
+    } else if (error) {
         return (
-            <View style={styles.errorContainer}>
+            <View style={style.errorContainer}>
                 <RetryComponent
                     setError={setError}
-                    setRefresh={handleRetry}
-                    errorMessage={error}
+                    setRefresh={setRefresh}
+                    errorMessage={error?.message || "Failed to fetch data"}
                 />
             </View>
         );
     }
 
     return (
-        <Animated.View style={styles.container} entering={FadeIn.duration(500)}>
-            {/* Carousel - only show if there are customers and expenses */}
-            {customers.length > 0 && totalExpenseOfCustomer.length > 0 && (
+        <Animated.View style={style.container} entering={FadeIn.duration(500)}>
+            {
+                customer.length !== 0
+                &&
                 <CarouselOfTracker
                     totalExpenseOfCustomer={totalExpenseOfCustomer}
                 />
-            )}
-
-            {/* Search Component */}
-            {customers.length > 0 && (
-                <Animated.View
-                    style={styles.searchContainer}
-                    entering={FadeInDown.delay(200)}
-                >
+            }
+            <Animated.View
+                style={{ marginTop: 50 }}
+                entering={FadeInDown.delay(200)}
+            >
+                {customer.length ? (
                     <SearchCustomers
-                        style={styles.item}
+                        style={style.item}
                         handleSearch={handleSearch}
                         setCustomers={setCustomers}
-                        customersToConvert={customers}
+                        customersToConvert={customer}
                     />
-                </Animated.View>
-            )}
+                ) : null}
+            </Animated.View>
 
+<<<<<<< HEAD
+            <View style={{ flex: 1 }}>
+                <ScrollView indicatorStyle="black" style={style.scroll_view}>
+                    {customer.length ? (
+                        parentSearchTerm ? (
+                            filteredCustomers.length ? (
+                                filteredCustomers.map((item, index) => (
+                                    <Animated.View
+                                        key={item.id}
+                                        entering={FadeInDown.delay(index * 100)}
+                                    >
+                                        <CustomerListTemplate
+                                            username={item.username}
+                                            usernameShortCut={"AS"}
+                                            totalAmount={item.amount}
+                                            style={style.item}
+                                            transaction_type={
+                                                item.transaction_type
+                                            }
+                                            currency={item.currency}
+                                            at={item.at}
+                                            border_color={item.border_color}
+                                            email={item.email}
+                                            phone={item.phone}
+                                            isSearchComponent={true}
+                                            searchResultLength={
+                                                filteredCustomers.length
+                                            }
+                                        />
+                                    </Animated.View>
+                                ))
+=======
             {/* Customer List */}
             <View style={styles.listContainer}>
                 <ScrollView
@@ -475,21 +645,45 @@ export default function HomeScreen({ navigator }) {
                                 displayCustomers.map((item, index) =>
                                     renderCustomerItem(item, index, true)
                                 )
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
                             ) : (
                                 <ZeroSearchResult />
                             )
                         ) : (
+<<<<<<< HEAD
+                            customer.map((item, index) => (
+                                <Animated.View
+                                    key={item.id}
+                                    entering={FadeInDown.delay(index * 100)}
+                                >
+                                    <CustomerListTemplate
+                                        index={index}
+                                        username={item.username}
+                                        usernameShortCut={"AS"}
+                                        totalAmount={item.amount}
+                                        style={style.item}
+                                        transaction_type={item.transaction_type}
+                                        currency={item.currency}
+                                        at={item.at}
+                                        border_color={item.border_color}
+                                        email={item.email}
+                                        phone={item.phone}
+                                        isSearchComponent={false}
+                                        customer_id={item.id}
+                                    />
+                                </Animated.View>
+                            ))
+=======
                             customers.map((item, index) =>
                                 renderCustomerItem(item, index, false)
                             )
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
                         )
                     ) : (
                         <NoUserAddedInfo />
                     )}
                 </ScrollView>
             </View>
-
-            {/* Add New Customer Button */}
             {!parentSearchTerm.length && (
                 <Animated.View entering={FadeInDown.delay(300)}>
                     <AddNewCustomer />
@@ -499,38 +693,49 @@ export default function HomeScreen({ navigator }) {
     );
 }
 
-const styles = StyleSheet.create({
+const style = StyleSheet.create({
     container: {
-        flex: 1,
+        flexDirection: "column",
+        rowGap: 10,
         backgroundColor: "white",
-        paddingTop: 10,
-    },
-    centerContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "white",
-    },
-    searchContainer: {
-        marginTop: 0,
-        marginBottom: 10,
-    },
-    listContainer: {
-        flex: 1,
+        height: "100%",
+        fontFamily: "Roboto",
+        width: "100%",
     },
     item: {
-        marginHorizontal: 10,
-        marginVertical: 5,
-    },
-    scrollView: {
-        paddingHorizontal: 4,
         flex: 1,
+        marginHorizontal: 10,
+        fontFamily: "Roboto",
+    },
+    scroll_view: {
+        paddingHorizontal: 4,
+    },
+    slide: {
+        flex: 1,
+        justifyContent: "start",
+        alignItems: "start",
+        backgroundColor: "white",
+        height: "auto",
+        width: "85%",
+    },
+    spinner: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "white",
     },
     errorContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "white",
-        padding: 20,
     },
+<<<<<<< HEAD
+    errorText: {
+        color: "red",
+        fontSize: 18,
+        fontWeight: "bold",
+    },
+=======
+>>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
 });

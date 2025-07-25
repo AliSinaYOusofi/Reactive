@@ -61,12 +61,13 @@ const SignupScreen = () => {
             const user = authData.user;
 
             if (user) {
+                // Step 2: Insert user data into your custom users table
                 const { error: customInsertError } = await supabase
                     .from("users")
                     .insert([
                         {
-                            id: user.id, 
-                            username: username,
+                            id: user.id, // Use the UUID from Supabase Auth
+                            username: username, // Replace with your desired username
                             email: user.email,
                             password: password,
                         },
@@ -78,7 +79,12 @@ const SignupScreen = () => {
                     );
                     throw customInsertError;
                 }
+
+                setUserId(user.id);
+                await AsyncStorage.setItem("userId", user.id);
+
                 setConfirmationModal(true)
+                
             }
         } catch (error) {
             console.error("Signup process error:", error);
