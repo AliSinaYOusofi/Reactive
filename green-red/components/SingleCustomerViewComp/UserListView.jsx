@@ -145,6 +145,7 @@ export default function UserListView({
                 <DeleteRecordModal
                     username={username}
                     customer_id={record_id}
+                    record_id={record_id}
                     setCloseModal={setDeleteModal}
                     message={`All data related to ${username} will be deleted!`}
                     onConfirmDelete={handleDelete}

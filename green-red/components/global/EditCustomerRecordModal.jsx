@@ -1,23 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { RadioButton } from "react-native-paper";
+import React, { useState } from "react";
 import {
     View,
     TextInput,
     Text,
     StyleSheet,
-    Pressable,
     TouchableOpacity,
     ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    TouchableWithoutFeedback,
+    Keyboard,
+    Dimensions,
 } from "react-native";
 import CurrencyDropdownListSearch from "./CurrencyDropdownList";
 import Toast from "react-native-toast-message";
 import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyValidator";
 import { format } from "date-fns";
 import { useAppContext } from "../../context/useAppContext";
-import Animated, { SlideInDown, SlideOutDown } from "react-native-reanimated";
-import { FadeIn, FadeInDown } from "react-native-reanimated";
-import { Feather } from '@expo/vector-icons';
+import Animated, { SlideInDown, SlideOutDown, FadeIn } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
 import { supabase } from "../../utils/supabase";
+
+const { width, height } = Dimensions.get("window");
+
 export default function EditCustomerRecordModal({
     amount,
     currency,
@@ -35,287 +41,206 @@ export default function EditCustomerRecordModal({
         setRefreshHomeScreenOnChangeDatabase,
     } = useAppContext();
 
-    const handleAddNewRecord = async () => {
-        if (!amountOfMoneyValidator(newAmount)) {
-            return showToast("Amount of money is not valid");
-        }
-
-        if (!newTransactionType) {
-            return showToast("Please select a payment status");
-        }
-
-        if (!newCurrency) {
-            return showToast("Please select a currency");
-        }
-        await updateCustomerRecrod();
-    };
-
     const showToast = (message, type = "error") => {
         Toast.show({
-            type: type,
+            type,
             text1: message,
             position: "top",
-            onPress: () => Toast.hide(),
-            swipeable: true,
             topOffset: 100,
         });
     };
 
-    const updateCustomerRecrod = async () => {
-        setSaving(true)
-        try {
-            const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+    const handleUpdate = async () => {
+        if (!amountOfMoneyValidator(newAmount)) {
+            return showToast("Amount is not valid");
+        }
+        if (!newTransactionType) {
+            return showToast("Please choose a transaction type");
+        }
+        if (!newCurrency) {
+            return showToast("Please select a currency");
+        }
 
-            const { data, error } = await supabase
+        setSaving(true);
+        try {
+            const now = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+            const { error } = await supabase
                 .from("customer_transactions")
                 .update({
                     amount: newAmount,
                     transaction_type: newTransactionType,
                     currency: newCurrency,
-                    transaction_updated_at: currentDateTime,
+                    transaction_updated_at: now,
                 })
                 .eq("id", record_id);
-            if (error) {
-                showToast("No record found to update");
-            } else {
-                setSaving(false)
-                showToast("User record updated!", "success");
-                setUpdateRecordModal(false);
-                setRefreshSingleViewChangeDatabase((prev) => !prev);
-                setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
-            }
-        } catch (error) {
-            console.error("Error while updating record", error.message);
-            showToast("Failed to update record");
+            if (error) throw error;
+
+            showToast("Record updated!", "success");
+            setRefreshSingleViewChangeDatabase(prev => !prev);
+            setRefreshHomeScreenOnChangeDatabase(prev => !prev);
+            setUpdateRecordModal(false);
+        } catch (err) {
+            console.error(err);
+            showToast("Update failed");
         } finally {
-            setNewAmount("");
-            setNewTransactionType("");
-            setNewCurrency("");
-            
+            setSaving(false);
         }
     };
 
+    // Colors
+    const green = '#10B981';
+    const red = '#EF4444';
+
     return (
-        <Animated.View
-            entering={SlideInDown.duration(500)}
-            style={styles.modalView}
-            exiting={SlideOutDown.duration(400)}
-        >
-            <Animated.View style={styles.options_container}>
-                <Animated.View
-                    entering={FadeIn.duration(300).delay(300)}
-                    style={styles.input_container}
-                >
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={(text) => setNewAmount(text)}
-                        keyboardType="phone-pad"
-                        value={newAmount}
-                    />
-                    <View style={styles.iconContainer}>
-                        <Feather name="dollar-sign" size={28} color="#64748B" />
-                    </View>
-                </Animated.View>
+        <View style={styles.overlay} pointerEvents="box-none">
+            {/* backdrop closes modal */}
+            <TouchableWithoutFeedback onPress={() => setUpdateRecordModal(false)}>
+                <View style={styles.backdrop} />
+            </TouchableWithoutFeedback>
 
-                <Animated.View
-                    entering={FadeIn.duration(300).delay(200)}
-                    style={styles.paymentStatusContainer}
-                >
-                    <Text style={styles.paymentLabel}>Payment Status</Text>
-                    <RadioButton.Group
-                        onValueChange={setNewTransactionType}
-                        value={newTransactionType}
+            {/* modal content */}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.container}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <Animated.View
+                        entering={SlideInDown.duration(300)}
+                        exiting={SlideOutDown.duration(300)}
+                        style={styles.modal}
                     >
-                        <View style={styles.radioGroup}>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="received"
-                                    color="#10B981"
-                                    uncheckedColor="#CBD5E1"
+                        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+                            <Text style={styles.header}>Edit Record</Text>
+                            <View style={styles.inputGroup}>
+                                <TextInput
+                                    style={styles.input}
+                                    value={newAmount}
+                                    onChangeText={setNewAmount}
+                                    keyboardType="decimal-pad"
+                                    placeholder="Amount"
+                                    placeholderTextColor="#94A3B8"
                                 />
-                                <Text style={styles.radioLabel}>Received</Text>
+                                <Feather name="dollar-sign" size={20} color="#64748B" style={styles.icon} />
                             </View>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="paid"
-                                    color="#EF4444"
-                                    uncheckedColor="#CBD5E1"
+
+                            <View style={styles.pillGroup}>
+                                {['received','paid'].map(type => {
+                                    const isSel = newTransactionType === type;
+                                    const color = type === 'received' ? green : red;
+                                    return (
+                                        <TouchableOpacity
+                                            key={type}
+                                            style={[
+                                                styles.pill,
+                                                isSel && { borderColor: color, backgroundColor: color+'20' }
+                                            ]}
+                                            onPress={() => setNewTransactionType(type)}
+                                        >
+                                            <Text style={[styles.pillText, isSel && { color }]}>
+                                                {type.charAt(0).toUpperCase()+type.slice(1)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+
+                            <View style={styles.dropdownWrapper}>
+                                <CurrencyDropdownListSearch
+                                    selected={newCurrency}
+                                    setSelected={setNewCurrency}
                                 />
-                                <Text style={styles.radioLabel}>Paid</Text>
                             </View>
-                        </View>
-                    </RadioButton.Group>
-                </Animated.View>
 
-                <Animated.View
-                    entering={FadeIn.duration(300).delay(100)}
-                    style={styles.drop_down_container}
-                >
-                    <CurrencyDropdownListSearch
-                        setSelected={setNewCurrency}
-                        selected={newCurrency}
-                    />
-                </Animated.View>
+                            <TouchableOpacity
+                                style={[styles.saveBtn, { backgroundColor: green }]}
+                                onPress={handleUpdate}
+                                disabled={saving}
+                            >
+                                {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveTxt}>Update</Text>}
+                            </TouchableOpacity>
 
-                <Animated.View entering={FadeInDown.duration(300).delay(400)}>
-                    <TouchableOpacity
-                        style={styles.add_new_customer_btn}
-                        onPress={handleAddNewRecord}
-                        title="add new customer"
-                    >
-                        {saving ? (
-                            <ActivityIndicator
-                                size="small"
-                                color="white"
-                                style={{ marginLeft: 12, marginTop: 5 }}
-                            />
-                        ) : (
-                            <Text style={styles.buttonText}>
-                                Update Record
-                            </Text>
-                        )}
-                    </TouchableOpacity>
-                </Animated.View>
-
-                <TouchableOpacity
-                    onPress={() => setUpdateRecordModal(false)}
-                    style={[styles.pressable, styles.pressable_close]}
-                >
-                    <Feather name="x" size={24} color="black" />
-                </TouchableOpacity>
-            </Animated.View>
-        </Animated.View>
+                            <TouchableOpacity style={styles.closeBtn} onPress={() => setUpdateRecordModal(false)}>
+                                <Feather name="x" size={24} color="#64748B" />
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </Animated.View>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    modalView: {
-        flex: 1,
-        justifyContent: "flex-end",
-        alignItems: "center",
-        position: "relative",
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: 'flex-end',
     },
-    input: {
-        borderWidth: 1,
-        borderColor: "#EDF2F7",
-        padding: 20,
-        borderRadius: 5,
-        width: "100%",
-        borderRadius: 20,
+    backdrop: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
-    input_container: {
-        flexDirection: "row",
-        alignContent: "center",
-        alignItems: "center",
-        position: "relative",
-        marginTop: 20,
+    container: {
+        width: '100%',
     },
-
-    icon: {
-        position: "absolute",
-        right: 10,
-        top: "10%",
-        color: "black",
-        zIndex: 1,
-        backgroundColor: "white",
-        padding: 5,
-        borderRadius: 50,
-    },
-
-    payment_status: {
-        width: "100%",
-    },
-
-    payment_text: {
-        fontSize: 14,
-        fontWeight: "bold",
-        marginLeft: 4,
-    },
-    options_container: {
-        backgroundColor: "white",
-        padding: 40,
+    modal: {
+        backgroundColor: '#FFF',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        width: "100%",
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        shadowColor: "black",
-        shadowOffset: { width: 3, height: -2 },
-        shadowOpacity: 1,
-        shadowRadius: 14,
-        elevation: 15,
-    },
-
-    add_new_customer_btn: {
-        backgroundColor: "green",
-        color: "white",
-        marginTop: 20,
-        textAlign: "center",
-        alignSelf: "center",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "50%",
-        borderRadius: 99,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
-        marginBottom: -30,
-        marginTop: 20,
-    },
-
-    drop_down_container: {
-        marginTop: 10,
-    },
-
-    pressable: {
-        position: "absolute",
-        borderRadius: 50,
-        color: "white",
-        top: 10,
-        right: 10,
-        position: "absolute",
-        zIndex: 1,
-        backgroundColor: "white",
-        padding: 8,
-        borderRadius: 50,
-    },
-    paymentStatusContainer: {
-        width: "100%",
-        borderRadius: 20,
-        padding: 16,
-        marginTop: 10,
         borderWidth: 1,
-        borderColor: "#EDF2F7",
+        borderColor: '#EDF2F7',
+        maxHeight: height * 0.8,
     },
-    paymentLabel: {
+    content: {
+        padding: 24,
+        paddingBottom: 40,
+    },
+    header: {
+        fontSize: 22,
+        fontWeight: '700',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    inputGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#EDF2F7',
+        borderRadius: 12,
+        marginBottom: 16,
+        paddingHorizontal: 12,
+    },
+    input: {
+        flex: 1,
+        paddingVertical: 12,
         fontSize: 16,
-        fontWeight: "600",
-        color: "#1E293B",
-        marginBottom: 12,
+        color: '#1E293B',
     },
-    radioGroup: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
+    icon: { marginLeft: 8 },
+    pillGroup: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+    pill: {
+        flex: 1,
+        marginHorizontal: 4,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: '#CBD5E1',
+        borderRadius: 12,
+        alignItems: 'center',
     },
-    radioOption: {
-        flexDirection: "row",
-        alignItems: "center",
+    pillText: { fontSize: 16, color: '#475569', fontWeight: '500' },
+    dropdownWrapper: { marginBottom: 24 },
+    saveBtn: {
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginBottom: 16,
     },
-    radioLabel: {
-        fontSize: 16,
-        color: "#475569",
-        marginLeft: 8,
-    },
-    iconContainer: {
-        position: "absolute",
+    saveTxt: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+    closeBtn: {
+        position: 'absolute',
+        top: 16,
         right: 16,
-        height: "100%",
-        justifyContent: "center",
-        bottom: 10,
+        backgroundColor: '#EDF2F7',
+        padding: 8,
+        borderRadius: 18,
     },
-    buttonText : {
-        color: "white"
-    }
 });

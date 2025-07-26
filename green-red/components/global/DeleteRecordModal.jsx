@@ -6,6 +6,7 @@ import {
     ActivityIndicator,
     View,
     Dimensions,
+    TouchableWithoutFeedback,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { useAppContext } from "../../context/useAppContext";
@@ -33,7 +34,7 @@ export default function DeleteRecordModal({
         setRefreshSingleViewChangeDatabase,
     } = useAppContext();
     const [saving, setSaving] = useState(false);
-
+    
     // Animation values for button press feedback
     const cancelScale = useSharedValue(1);
     const deleteScale = useSharedValue(1);
@@ -47,8 +48,7 @@ export default function DeleteRecordModal({
     }));
 
     const handleDelete = async () => {
-        console.log("Delete button pressed");
-
+    
         // Button press animation
         deleteScale.value = withSpring(
             0.95,
@@ -75,7 +75,6 @@ export default function DeleteRecordModal({
     };
 
     const handleCancel = () => {
-        console.log("Cancel button pressed");
 
         // Button press animation
         cancelScale.value = withSpring(
@@ -93,7 +92,6 @@ export default function DeleteRecordModal({
     };
 
     const handleClose = () => {
-        console.log("Close button pressed");
         setCloseModal(false);
     };
 
@@ -117,7 +115,7 @@ export default function DeleteRecordModal({
             if (error) {
                 throw error;
             }
-            showToast("Record deleted successfully", "success");
+            showToast("Record deleted", "success");
         } catch (error) {
             console.error("Failed to delete record", error.message);
             showToast("Failed to delete record", "error");
@@ -137,7 +135,7 @@ export default function DeleteRecordModal({
                 showToast("Failed to delete customer", "error");
                 return;
             }
-            showToast("Customer deleted successfully", "success");
+            showToast("Customer deleted", "success");
         } catch (error) {
             console.error("Unexpected error while deleting customer:", error);
             showToast("An error occurred while deleting customer", "error");
@@ -147,7 +145,11 @@ export default function DeleteRecordModal({
     };
 
     return (
-        <View style={styles.modalOverlay}>
+        <View style={styles.modalOverlay} >
+
+            <TouchableWithoutFeedback onPress={handleClose}>
+                <View style={styles.backdrop} />
+            </TouchableWithoutFeedback>
 
             <Animated.View
                 entering={SlideInDown.duration(400).springify().damping(15)}

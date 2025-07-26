@@ -81,8 +81,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-around",
         width: "90%",
-        marginTop: 0
-       
+        
     },
 });
 
@@ -103,7 +102,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
         if (totalCount > 1 && carouselRef.current) {
             const newIndex =
                 currentIndex === 0 ? totalCount - 1 : currentIndex - 1;
-            console.log("Going to prev index:", newIndex);
+            
             carouselRef.current.scrollTo({ index: newIndex, animated: true });
         }
     }, [currentIndex, totalCount]);
@@ -112,7 +111,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
         if (totalCount > 1 && carouselRef.current) {
             const newIndex =
                 currentIndex === totalCount - 1 ? 0 : currentIndex + 1;
-            console.log("Going to next index:", newIndex);
+            
             carouselRef.current.scrollTo({ index: newIndex, animated: true });
         }
     }, [currentIndex, totalCount]);
@@ -140,7 +139,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
     if (totalCount === 0) return null;
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, ]}>
             {/* Carousel */}
             <View
                 style={[
@@ -173,7 +172,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
             </View>
 
             {/* Controls Row */}
-            <View style={styles.controlsRow}>
+            <View style={[styles.controlsRow, !hideCarousel && {marginTop: -30, marginBottom: 10}, hideCarousel && {marginTop: 10}]}>
                 {/* Prev */}
                 {totalCount > 1 && (
                     <TouchableOpacity

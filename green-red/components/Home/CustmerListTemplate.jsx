@@ -5,7 +5,7 @@ import DeleteRecordModal from '../global/DeleteRecordModal';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window')
 
@@ -100,7 +100,7 @@ export default function CustomerListTemplate({
                         style={styles.iconButton}
                         activeOpacity={0.7}
                     >
-                        <MaterialIcons name="edit" size={18} color="#333333" />
+                        <Feather name="edit-3" size={18} color="#333333" />
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
@@ -108,7 +108,7 @@ export default function CustomerListTemplate({
                         style={styles.iconButton}
                         activeOpacity={0.7}
                     >
-                        <MaterialIcons name="delete" size={18} color="#333333" />
+                        <Feather name="trash-2" size={18} color="#333333" />
                     </TouchableOpacity>
                 </View>
             </Animated.View>

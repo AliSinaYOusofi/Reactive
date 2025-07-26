@@ -1,164 +1,358 @@
-import React, { useState } from 'react';
-import { Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
-import { formatDistanceToNowStrict } from 'date-fns';
-import DateDiffDetails from './DateDiffDetails';
-import * as Clipboard from 'expo-clipboard';
-import Animated, { 
-    FadeIn, 
-    BounceInDown, 
-    ZoomOut, 
-    SlideInDown, 
-    SlideOutDown, 
-    FadeInLeft
-} from 'react-native-reanimated';
-import { Feather } from '@expo/vector-icons';
+"use client";
 
-export default function ShowTransactionDetailsModal({ username, amount, currency, transaction_type, transaction_date, closeModal }) {
+import { useState } from "react";
+import {
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+    Dimensions,
+} from "react-native";
+import { formatDistanceToNowStrict } from "date-fns";
+import DateDiffDetails from "./DateDiffDetails";
+import * as Clipboard from "expo-clipboard";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+
+const { width, height } = Dimensions.get("window");
+
+export default function ShowTransactionDetailsModal({
+    username,
+    amount,
+    currency,
+    transaction_type,
+    transaction_date,
+    closeModal,
+}) {
     const [copied, setCopied] = useState(false);
-    
+
     const copy_to_clipboard = async () => {
         setCopied(true);
-        const content = `
-${transaction_type.toUpperCase()}
+        const content = `${transaction_type.toUpperCase()}
 ${amount} ${currency}
-${transaction_type !== 'received' ? 'To' : 'From'}: ${username}
-On: ${transaction_date} ${transaction_date ? formatDistanceToNowStrict(new Date(transaction_date), { addSuffix: true }) : 'N/A'}
-        `;
+${transaction_type !== "received" ? "To" : "From"}: ${username}
+On: ${transaction_date} ${
+            transaction_date
+                ? formatDistanceToNowStrict(new Date(transaction_date), {
+                      addSuffix: true,
+                  })
+                : "N/A"
+        }`;
+
         await Clipboard.setStringAsync(content);
         setTimeout(() => setCopied(false), 2000);
     };
 
-    return (
-        <Animated.View 
-            style={styles.modalContainer} 
-            entering={BounceInDown.springify()} 
-            exiting={ZoomOut.duration(400)} 
-        >
-            <Animated.View entering={FadeIn.duration(600).delay(200)} style={styles.all_text_container}>
-                <Animated.Text entering={FadeInLeft.duration(400)}  style={[styles.transaction_type_, { color: transaction_type === "received" ? "#4CAF50" : "#F44336" }]}>
-                    {transaction_type}
-                </Animated.Text>
-                
-                <Animated.View entering={FadeIn.duration(500).delay(400)}  style={styles.two_texts}>
-                    <Text style={styles.amount}>{amount}</Text>
-                    <Text style={styles.currency}>{currency}</Text>
-                </Animated.View>
-                
-                <Animated.View entering={FadeIn.duration(400).delay(500)} style={styles.row}>
-                    <Text style={styles.label}>{transaction_type !== 'received' ? 'To' : 'From'}:</Text>
-                    <Text style={styles.value}>{username}</Text>
-                </Animated.View>
+    const handleClose = () => {
+        closeModal(false);
+    };
 
-                <Animated.View entering={FadeIn.duration(400).delay(600)} style={styles.row}>
-                    <Text style={styles.label}>On:</Text>
-                    <Text style={[styles.value]}>
-                        {transaction_date ? <DateDiffDetails date={transaction_date} /> : 'N/A'}
-                    </Text>
+    const isReceived = transaction_type === "received";
+
+    return (
+        <View style={styles.modalOverlay}>
+            {/* Backdrop */}
+            <TouchableOpacity
+                style={styles.backdrop}
+                activeOpacity={1}
+                onPress={handleClose}
+            />
+
+            <Animated.View
+                entering={FadeIn.duration(300).delay(100)}
+                exiting={FadeOut.duration(300).delay(100)}
+                style={styles.modalContainer}
+            >
+                <Animated.View
+                    style={styles.contentContainer}
+                    entering={FadeIn.duration(300).delay(100)}
+                >
+                    {/* Header with Transaction Type */}
+                    <Animated.View
+                        entering={FadeIn.duration(300).delay(200)}
+                        style={styles.headerContainer}
+                    >
+                        <View
+                            style={[
+                                styles.typeIconContainer,
+                                isReceived
+                                    ? styles.receivedIcon
+                                    : styles.paidIcon,
+                            ]}
+                        >
+                            <MaterialIcons
+                                name={
+                                    isReceived
+                                        ? "arrow-downward"
+                                        : "arrow-upward"
+                                }
+                                size={28}
+                                color="#FFFFFF"
+                            />
+                        </View>
+                        <Text
+                            style={[
+                                styles.transactionType,
+                                { color: isReceived ? "#10B981" : "#EF4444" },
+                            ]}
+                        >
+                            {transaction_type.toUpperCase()}
+                        </Text>
+                    </Animated.View>
+
+                    {/* Amount Section */}
+                    <Animated.View
+                        entering={FadeIn.duration(300).delay(300)}
+                        style={styles.amountContainer}
+                    >
+                        <View style={styles.amountRow}>
+                            <Text style={styles.amount}>{amount}</Text>
+                            <Text style={styles.currency}>{currency}</Text>
+                        </View>
+                    </Animated.View>
+
+                    {/* Details Section */}
+                    <Animated.View
+                        entering={FadeIn.duration(300).delay(400)}
+                        style={styles.detailsSection}
+                    >
+                        <View style={styles.detailRow}>
+                            <Text style={styles.label}>
+                                {transaction_type !== "received"
+                                    ? "To"
+                                    : "From"}
+                                :
+                            </Text>
+                            <Text style={styles.value}>{username}</Text>
+                        </View>
+
+                        <View style={styles.detailRow}>
+                            <Text style={styles.label}>Date:</Text>
+                            <View style={styles.dateContainer}>
+                                {transaction_date ? (
+                                    <DateDiffDetails date={transaction_date} />
+                                ) : (
+                                    <Text style={styles.value}>N/A</Text>
+                                )}
+                            </View>
+                        </View>
+                    </Animated.View>
+
+                    {/* Action Buttons */}
+                    <Animated.View
+                        entering={FadeIn.duration(300).delay(500)}
+                        style={styles.actionButtonsContainer}
+                    >
+                        <TouchableOpacity
+                            onPress={copy_to_clipboard}
+                            style={styles.actionButton}
+                        >
+                            {copied ? (
+                                <Feather
+                                    name="check-circle"
+                                    size={20}
+                                    color="#10B981"
+                                />
+                            ) : (
+                                <Feather
+                                    name="copy"
+                                    size={20}
+                                    color="#64748B"
+                                />
+                            )}
+                            <Text
+                                style={[
+                                    styles.actionButtonText,
+                                    copied && styles.actionButtonTextSuccess,
+                                ]}
+                            >
+                                {copied ? "Copied!" : "Copy Details"}
+                            </Text>
+                        </TouchableOpacity>
+                    </Animated.View>
+
+                    {/* Close Button */}
+                    <Animated.View
+                        style={styles.closeButtonContainer}
+                        entering={FadeIn.duration(300).delay(600)}
+                    >
+                        <TouchableOpacity
+                            onPress={handleClose}
+                            style={styles.closeButton}
+                        >
+                            <Feather name="x" size={20} color="#64748B" />
+                        </TouchableOpacity>
+                    </Animated.View>
                 </Animated.View>
-                
-                <TouchableOpacity onPress={() => closeModal(false)} style={[styles.pressable, styles.pressable_close]}>
-                    <Feather name="x" size={24} color="black" />
-                </TouchableOpacity>
-                
-                <TouchableOpacity onPress={copy_to_clipboard} style={[styles.pressable, styles.pressable_clipboard]}>
-                    {
-                        copied
-                        ?
-                        <Feather name="check-square" size={24} color="black"/>
-                        :
-                        <Feather name="copy" size={24} color="black"/>
-                    }
-                    
-                </TouchableOpacity>
             </Animated.View>
-        </Animated.View>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        alignItems: 'center',
+    modalOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: width,
+        height: height,
+        justifyContent: "flex-end",
+        alignItems: "center",
+        zIndex: 1000,
     },
-    all_text_container: {
-        alignItems: 'stretch',
+    backdrop: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+
+    modalContainer: {
+        width: "100%",
+        justifyContent: "flex-end",
+        alignItems: "center",
+    },
+    
+    contentContainer: {
         backgroundColor: "white",
         padding: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         width: "100%",
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
+        alignItems: "stretch",
+        position: "relative",
         shadowColor: "black",
-        shadowOffset: { width: 3, height: -2 },
-        shadowOpacity: 1,
-        shadowRadius: 14,
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
         elevation: 15,
     },
-    transaction_type_: {
-        fontSize: 28,
-        fontWeight: "bold",
-        textAlign: 'center',
-        textTransform: 'uppercase',
-        marginBottom: 15,
+    headerContainer: {
+        alignItems: "center",
+        marginBottom: 30,
     },
-    two_texts: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'baseline',
-        marginBottom: 20,
+    typeIconContainer: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: 12,
+    },
+    receivedIcon: {
+        backgroundColor: "#10B981",
+    },
+    paidIcon: {
+        backgroundColor: "#EF4444",
+    },
+    transactionType: {
+        fontSize: 24,
+        fontWeight: "700",
+        letterSpacing: 1,
+    },
+    amountContainer: {
+        alignItems: "center",
+        marginBottom: 30,
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        backgroundColor: "#F8FAFC",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+    },
+    amountRow: {
+        flexDirection: "row",
+        alignItems: "baseline",
+        justifyContent: "center",
     },
     amount: {
         fontSize: 32,
-        fontWeight: "bold",
-        color: "black",
-        marginRight: 5,
+        fontWeight: "800",
+        color: "#0F172A",
+        marginRight: 8,
     },
     currency: {
-        fontSize: 24,
-        color: "gray",
+        fontSize: 22,
+        fontWeight: "600",
+        color: "#64748B",
     },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-        paddingVertical: 5,
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    detailsSection: {
+        marginBottom: 30,
+    },
+    detailRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        marginBottom: 12,
+        backgroundColor: "#FFFFFF",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        
     },
     label: {
-        fontSize: 18,
-        color: "#B0BEC5",
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#64748B",
         flex: 1,
     },
     value: {
-        fontSize: 18,
-        color: "black",
-        fontWeight: "500",
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#0F172A",
         flex: 2,
-        textAlign: 'right',
+        textAlign: "right",
     },
-    pressable: {
-        position: 'absolute',
-        zIndex: 1,
-        backgroundColor: 'white',
-        padding: 8,
-        borderRadius: 50,
+    dateContainer: {
+        flex: 2,
+        alignItems: "flex-end",
     },
-    pressable_close: {
+    actionButtonsContainer: {
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    actionButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#F8FAFC",
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E2E8F0",
+        minWidth: 140,
+    },
+    actionButtonText: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#64748B",
+        marginLeft: 8,
+    },
+    actionButtonTextSuccess: {
+        color: "#10B981",
+    },
+    closeButtonContainer: {
+        position: "absolute",
         top: 10,
         right: 10,
+        zIndex: 10,
     },
-    pressable_clipboard: {
-        top: 10,
-        right: 60,
+    closeButton: {
+        backgroundColor: "white",
+        padding: 8,
+        borderRadius: 20,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: "#EDF2F7",
+        justifyContent: "center",
+        alignItems: "center",
     },
-    date_diff: {
-        color: "gray",
-        fontSize: 10
-    }
 });

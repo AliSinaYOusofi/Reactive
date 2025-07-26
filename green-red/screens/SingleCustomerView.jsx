@@ -28,7 +28,7 @@ import * as Sharing from "expo-sharing";
 import { format, parseISO } from "date-fns";
 import { formatDistanceToNowStrict } from "date-fns";
 
-export default function SingleCustomerView({ navigation, route }) {
+export default function SingleCustomerView({ route }) {
     const [customers, setCustomers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sortModal, setSortModal] = useState(false);
@@ -70,7 +70,6 @@ export default function SingleCustomerView({ navigation, route }) {
                 }
 
                 if (!customerData || customerData.length === 0) {
-                    console.log("No customer found for username", username);
                     return;
                 }
 
@@ -172,7 +171,6 @@ export default function SingleCustomerView({ navigation, route }) {
                 setIsLoading(false);
             }
         };
-
         fetchAllCustomerExpense();
     }, [refreshSingelViewChangeDatabase, refresh, refreshHomeScreenOnChangeDatabase]);
 
@@ -191,7 +189,6 @@ export default function SingleCustomerView({ navigation, route }) {
             }
 
             if (!customerData || customerData.length === 0) {
-                console.log("No customer found for username", username);
                 return;
             }
 
@@ -249,6 +246,21 @@ export default function SingleCustomerView({ navigation, route }) {
         refreshHomeScreenOnChangeDatabase,
         refresh,
     ]);
+
+    useEffect(() => {
+  if (!selectedSortOption) return;           // nothing selected yet
+  setCustomers(prev => {
+    // clone so we don’t mutate
+    const copy = [...prev];
+    if (selectedSortOption === "HIGHEST") {
+      copy.sort((a, b) => b.amount - a.amount);
+    } else {
+      // LOWEST
+      copy.sort((a, b) => a.amount - b.amount);
+    }
+    return copy;
+  });
+}, [selectedSortOption]);
 
     const fetchSingleCustomerData = async () => {
         try {
@@ -556,18 +568,8 @@ export default function SingleCustomerView({ navigation, route }) {
                 
             )}
 
-            <View
-                style={{
-                    flex: 1,
-                    paddingBottom: 40,
-                    backgroundColor: "white",
-                    
-                }}
-            >
-                <View style={styles.usernameContainer}>
-                    
-                </View>
-                <ScrollView style={styles.container}>
+            <View>
+                <ScrollView >
                     {customers.length > 0 ? (
                         customers.map((customer, index) => (
                             <AnimatedUserListView
@@ -628,7 +630,7 @@ export default function SingleCustomerView({ navigation, route }) {
 
             <Modal
                 visible={addNewRecordModal}
-                animationType="none"
+                animationType="slide"
                 transparent={true}
                 onRequestClose={() => {
                     modalScale.value = withSpring(0);
@@ -698,6 +700,8 @@ const styles = StyleSheet.create({
         bottom: 1,
         borderWidth: 1,
         borderColor: "#EDF2F7",
+        marginBottom: 15
+    
     },
     button: {
         flexDirection: "row",

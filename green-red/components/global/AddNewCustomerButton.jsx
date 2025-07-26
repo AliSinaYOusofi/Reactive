@@ -81,7 +81,7 @@ export default function ActionButtons() {
                     </View>
 
                     {/* Analytics Button */}
-                    <AnimatedTouchableOpacity
+                    {/* <AnimatedTouchableOpacity
                         onPress={() => navigation.navigate("Chart")}
                         style={[
                             styles.actionButton,
@@ -102,27 +102,15 @@ export default function ActionButtons() {
                         <View style={styles.textContainer}>
                             <Text style={styles.buttonText}>Analytics</Text>
                         </View>
-                    </AnimatedTouchableOpacity>
+                    </AnimatedTouchableOpacity> */}
                 </View>
 
-                {/* Professional indicator dots */}
-                <View style={styles.indicatorContainer}>
-                    <View style={[styles.indicator, styles.activeIndicator]} />
-                    <View style={styles.indicator} />
-                </View>
             </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    wrapper: {
-        position: "absolute",
-        bottom: 0,
-        width: "100%",
-        left: 0,
-        right: 0, 
-    },
     container: {
         backgroundColor: "#FFFFFF",
         paddingTop: 10,
@@ -139,7 +127,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         borderRadius: 20,
         padding: 6,
-        marginBottom: 16,
+        marginBottom: 0,
     },
     actionButton: {
         flex: 1,
@@ -154,8 +142,6 @@ const styles = StyleSheet.create({
     },
     addUserButton: {
         marginRight: 3,
-        borderLeftWidth: 4,
-        borderLeftColor: "#1E293B",
     },
     analyticsButton: {
         marginLeft: 3,
