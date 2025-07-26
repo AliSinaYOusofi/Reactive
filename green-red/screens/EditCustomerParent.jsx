@@ -23,6 +23,7 @@ import Animated, {
     withSpring,
 } from "react-native-reanimated";
 import { supabase } from "../utils/supabase";
+
 import { padi_color, received_color } from "../components/global/colors";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -281,12 +282,19 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     addButton: {
-        width: "50%",
-        minWidth: 180,
-        backgroundColor: received_color,
+        width: "100%",
+        minWidth: 280,
+        backgroundColor: "green",
+        paddingVertical: 16,
+        borderRadius: 12,
+        shadowColor: "#3B82F6",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
         borderRadius: 99,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
+        paddingVertical: 18,
+        paddingHorizontal: 16,
     },
     buttonText: {
         color: "#FFFFFF",

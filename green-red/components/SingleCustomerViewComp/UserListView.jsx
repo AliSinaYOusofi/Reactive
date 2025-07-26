@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
     View,
@@ -17,50 +18,25 @@ import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { padi_color, received_color } from "../global/colors";
 
-const { width } = Dimensions.get("window");
+import React, { useState } from 'react'
+import { Pressable, View, Text, StyleSheet, Modal, Dimensions, TouchableOpacity } from 'react-native'
+import ShowTransactionDetailsModal from './ShowTransactionDetailsModal'
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DeleteRecordModal from '../global/DeleteRecordModal';
+import EditCustomerRecordModal from '../global/EditCustomerRecordModal';
+import { padi_color, received_color } from '../global/colors';
+import { Trash2 } from 'lucide-react-native';
+const { width } = Dimensions.get('window')
 
-export default function UserListView({
-    username,
-    amount,
-    currency,
-    transaction_type,
-    transaction_date,
-    record_id,
-    index = 1,
-    onDelete,
-}) {
-    const [detailsModal, setDetailsModal] = useState(false);
-    const [deleteModal, setDeleteModal] = useState(false);
-    const [editModal, setEditModal] = useState(false);
+export default function UserListView({username, amount, currency, transaction_type, transaction_date, record_id}) {
 
-    // reuse your list + delete animations
-    const { opacity: listOpacity, translateY } = useListAnimation(index);
-    const {
-        opacity: deleteOpacity,
-        translateX,
-        height,
-        animateDelete,
-    } = useDeleteAnimation();
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: deleteOpacity.value * listOpacity.value,
-        transform: [
-            { translateY: translateY.value },
-            { translateX: translateX.value },
-        ],
-        height: height.value,
-    }));
-
-    const handleDelete = () => {
-        animateDelete();
-        setTimeout(() => {
-            setDeleteModal(false);
-            onDelete?.(record_id);
-        }, 300);
-    };
-
+    const [detailsModal, setDetailsModal] = useState(false)
+    const [ deleteModal, setDeleteModal] = useState(false)
+    const [editModal, setEditModal] = useState(false)
+    
     return (
         <>
+
             <View style={[styles.container, animatedStyle]}>
                 {/* MAIN CONTENT */}
                 <TouchableOpacity
@@ -83,22 +59,15 @@ export default function UserListView({
                             </Text>
                         </View>
 
-                        {/* Username & Amount */}
-                        <View style={styles.textBlock}>
-                            <Text style={styles.amount}>
-                                {amount} {currency}
-                            </Text>
+            <View style={[styles.container, { backgroundColor: transaction_type === 'received' ? received_color : padi_color}]}>
+                <TouchableOpacity onPress={() => setDetailsModal(true)} style={[styles.container]}>
+                    
+                    <View style={styles.username_and_shortcut_container}>
+                        <View style={styles.usernameShortCutStyle}>
+                            <Text >{(currency)}</Text>
                         </View>
-
-                        {/* Chevron */}
-                        <MaterialCommunityIcons
-                            name="chevron-right"
-                            size={20}
-                            color="#999"
-                        />
+                        
                     </View>
-                </TouchableOpacity>
-
                 {/* ACTIONS */}
                 <View style={styles.actions}>
                     <TouchableOpacity
@@ -114,18 +83,45 @@ export default function UserListView({
                         activeOpacity={0.7}
                     >
                         <Feather name="trash-2" size={18} color="#333" />
+                    <View style={styles.textContainer}>
+                        
+                        <Text style={styles.amountText}
+                            numberOfLines={1} 
+                            ellipsizeMode="tail">  
+                            <Text style={styles.amount}>{amount}</Text> {currency} 
+                        </Text>
+                        
+                    </View>                
+                </TouchableOpacity>
+                
+                <View style={styles.icon_container}>
+                    
+                    <TouchableOpacity style={styles.deleteicon} onPress={() => setDeleteModal(true)}>
+                        <Trash2 
+                            style={styles._icon} 
+                            size={24} 
+                            color="black" 
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => setEditModal(true)}>
+                        <MaterialCommunityIcons 
+                            style={styles._icon} 
+                            name="circle-edit-outline" 
+                            size={24} 
+                            color="black"
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
 
-            {/* DETAILS MODAL */}
             <Modal
                 visible={detailsModal}
-                animationType="slide"
-                transparent
-                onRequestClose={() => setDetailsModal(false)}
+                animationType='slide'
+                transparent={true}
+                onRequestClose={() => setDetailsModal(!detailsModal)}
             >
-                <ShowTransactionDetailsModal
+                <ShowTransactionDetailsModal 
                     username={username}
                     amount={amount}
                     currency={currency}
@@ -135,31 +131,31 @@ export default function UserListView({
                 />
             </Modal>
 
-            {/* DELETE MODAL */}
             <Modal
                 visible={deleteModal}
-                animationType="slide"
-                transparent
+                animationType='slide'
+                transparent={true}
                 onRequestClose={() => setDeleteModal(false)}
             >
-                <DeleteRecordModal
+                <DeleteRecordModal 
                     username={username}
+
                     customer_id={record_id}
                     record_id={record_id}
+
                     setCloseModal={setDeleteModal}
-                    message={`All data related to ${username} will be deleted!`}
-                    onConfirmDelete={handleDelete}
+                    message={"Are you sure you want to delete this record?"}
+                    record_id={record_id}
                 />
             </Modal>
-
-            {/* EDIT MODAL */}
+            
             <Modal
                 visible={editModal}
-                animationType="slide"
-                transparent
+                animationType='slide'
+                transparent={true}
                 onRequestClose={() => setEditModal(false)}
             >
-                <EditCustomerRecordModal
+                <EditCustomerRecordModal 
                     username={username}
                     setUpdateRecordModal={setEditModal}
                     record_id={record_id}
@@ -169,71 +165,82 @@ export default function UserListView({
                 />
             </Modal>
         </>
-    );
+    )
 }
+
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: 12,
-        marginVertical: 6,
-        borderRadius: 12,
-        width: width - 30,
-        backgroundColor: "#fff",
-        borderWidth: 1,
-        borderColor: "#E8E8E8",
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 4,
+        marginVertical: 5,
+        borderRadius: 10
     },
-    pressable: {
-        flex: 1,
+    
+    usernameShortCutStyle: {
+        backgroundColor: "white", // the bg-color
+        borderRadius: 50,
+        padding: 8
     },
-    mainRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        flex: 1,
+    
+    hr: {
+
+        // Adjust as needed for spacing
     },
-    avatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 12,
+
+    username_and_shortcut_container: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        columnGap: 10
     },
-    avatarText: {
-        color: "#fff",
-        fontWeight: "700",
-    },
-    textBlock: {
-        flex: 1,
-    },
+    
     username: {
+
+    },
+    _icon: {
+        backgroundColor: "white",
+        padding: 5,
+        borderRadius: 50,
+        backgroundColor: "white", // the bg-color
+        borderRadius: 50,
+        padding: 8
+        
+    },
+
+    icon_container: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        columnGap: 10,
+    },
+    textContainer: {
+        marginLeft: 10,
+        
+    },
+    usernameText: {
         fontSize: 16,
-        fontWeight: "600",
-        color: "#212121",
-        marginBottom: 2,
+        fontWeight: '500',
+        maxWidth: width * 0.5,
+    },
+    amountText: {
+        fontSize: 14,
+        color: 'gray',
+        marginTop: 4,
+    },
+    deleteicon : {
+        backgroundColor: "white",
+        padding: 8,
+        borderRadius: 50,
     },
     amount: {
-        fontSize: 14,
-        color: "#666",
-    },
-    actions: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        paddingLeft: 12,
-        borderLeftWidth: 1,
-        borderLeftColor: "#F0F0F0",
-    },
-    iconBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#F8F8F8",
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#E8E8E8",
-    },
-});
+        color: 'black',
+        fontWeight: '600',
+        fontSize: 18
+    }
+})
