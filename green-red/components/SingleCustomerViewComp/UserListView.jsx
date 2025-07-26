@@ -139,6 +139,10 @@ export default function UserListView({username, amount, currency, transaction_ty
             >
                 <DeleteRecordModal 
                     username={username}
+
+                    customer_id={record_id}
+                    record_id={record_id}
+
                     setCloseModal={setDeleteModal}
                     message={"Are you sure you want to delete this record?"}
                     record_id={record_id}

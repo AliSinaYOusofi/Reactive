@@ -5,7 +5,7 @@ import DeleteRecordModal from '../global/DeleteRecordModal';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import useListAnimation from '../animations/useListAnimation';
 import useDeleteAnimation from '../animations/useDeleteAnimation';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window')
 
@@ -76,6 +76,8 @@ export default function CustomerListTemplate({onDelete, index=1, username='', cu
                         onPress={() => setDeleteModal(true)} 
                         style={styles.iconButton}
                     >
+
+                        <Feather name="edit-3" size={18} color="#333333" />
                         <MaterialIcons name="edit" size={18} color="#333333" />
                         <Trash2 
                             name="delete-alert-outline" 
@@ -88,6 +90,9 @@ export default function CustomerListTemplate({onDelete, index=1, username='', cu
                         onPress={() => navigator.navigate("EditCustomer", {username})}
                         style={[styles.iconButton, styles.edit_icon]}
                     >
+
+                        <Feather name="trash-2" size={18} color="#333333" />
+
                         <MaterialIcons name="delete" size={18} color="#333333" />
                         <MaterialCommunityIcons 
                             name="circle-edit-outline" 

@@ -1,36 +1,37 @@
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
     View,
     TextInput,
     StyleSheet,
-    Pressable,
     Text,
     KeyboardAvoidingView,
     Platform,
     ActivityIndicator,
     TouchableOpacity,
+    TouchableWithoutFeedback,
+    Keyboard,
+    Dimensions,
 } from "react-native";
 import CurrencyDropdownListSearch from "../global/CurrencyDropdownList";
 import { validateUsername } from "../../utils/validators/usernameValidator";
 import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyValidator";
-import { RadioButton } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { useNavigation } from "@react-navigation/native";
 import { useAppContext } from "../../context/useAppContext";
 import { format } from "date-fns";
 import Animated, {
     FadeIn,
-    FadeInDown,
     SlideInLeft,
     SlideInRight,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
 } from "react-native-reanimated";
-import { Feather } from '@expo/vector-icons';
+import { Feather } from "@expo/vector-icons";
 import { supabase } from "../../utils/supabase";
 
-function AddNewCustomerPopup() {
+const { width } = Dimensions.get("window");
+const green = "#10B981";
+const red = "#EF4444";
+
+export default function AddNewCustomerPopup() {
     const [username, setUsername] = useState("");
     const [amountOfMoney, setAmountOfMoney] = useState("");
     const [paymentStatus, setPaymentStatus] = useState("");
@@ -40,111 +41,35 @@ function AddNewCustomerPopup() {
     const { setRefreshHomeScreenOnChangeDatabase, userId } = useAppContext();
     const navigator = useNavigation();
 
-    const scale = useSharedValue(1);
-    const buttonStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: scale.value }],
-        };
-    });
-
-    const onPressIn = () => {
-        scale.value = withSpring(0.95);
-    };
-
-    const onPressOut = () => {
-        scale.value = withSpring(1.0);
-    };
-
+    // Add customer and initial transaction
     const addNewCustomer = async () => {
-        if (!validateUsername(username)) {
+        if (!validateUsername(username))
             return showToast("Username is invalid");
-        }
-
-        if (amountOfMoney.length && !amountOfMoneyValidator(amountOfMoney)) {
-            setAmountOfMoney(0);
+        if (amountOfMoney && !amountOfMoneyValidator(amountOfMoney))
             return showToast("Amount of money is invalid");
-        }
-
-        if (!paymentStatus) {
-            return showToast("Please select a payment status");
-        }
-
-        if (!selectedCurrency) {
-            return showToast("Please select a currency");
-        }
+        if (!paymentStatus) return showToast("Please select a payment status");
+        if (!selectedCurrency) return showToast("Please select a currency");
 
         setSaving(true);
-        try {
-            const { data, error } = await supabase
-                .from("customers")
-                .select("username")
-                .eq("username", username)
-                .eq("user_id", userId);
-
-            if (data && data.length > 0) {
-                showToast("Username already exists");
-            } else {
-                await insertCustomer();
-            }
-        } catch (error) {
-            console.error("Error while checking username", error.message);
-            showToast("Failed to add new customer");
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const showToast = (message, type = "error") => {
-        Toast.show({
-            type: type,
-            text1: message,
-            position: "top",
-            onPress: () => Toast.hide(),
-            swipeable: true,
-            topOffset: 100,
-        });
-    };
-
-    const insertCustomer = async () => {
         const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-
-        if (
-            !username ||
-            !amountOfMoney ||
-            !paymentStatus ||
-            !selectedCurrency
-        ) {
-            showToast("Please fill in all required fields");
-            return;
-        }
-
         try {
-
-            const { data: customerData, error: customerError } = await supabase
+            // insert customer
+            const { data: customerData, error: custErr } = await supabase
                 .from("customers")
                 .insert([
-                    {
-                        username: username,
-                        created_at: currentDateTime,
-                        user_id: userId,
-                    },
+                    { username, created_at: currentDateTime, user_id: userId },
                 ])
                 .select();
-
-            if (customerError) {
-                showToast("Failed to add customer", "error");
-                console.error("Error inserting customer:", customerError);
-                return;
-            }
-
+            if (custErr) throw custErr;
             const newCustomerId = customerData[0].id;
 
-            const { data, error } = await supabase
+            // insert transaction
+            const { error: txErr } = await supabase
                 .from("customer_transactions")
                 .insert([
                     {
                         customer_id: newCustomerId,
-                        amount: Number.parseFloat(amountOfMoney),
+                        amount: parseFloat(amountOfMoney) || 0,
                         transaction_type: paymentStatus,
                         currency: selectedCurrency,
                         transaction_at: currentDateTime,
@@ -152,140 +77,141 @@ function AddNewCustomerPopup() {
                         user_id: userId,
                     },
                 ]);
-
-            if (error) {
-                showToast("Failed to add transaction record", "error");
-                console.error("Error inserting transaction record:", error);
-                return;
-            }
+            if (txErr) throw txErr;
 
             showToast("Customer added", "success");
             setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
+            setTimeout(() => navigator.goBack(), 1000);
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to add customer: " + err.message);
+        } finally {
             setSaving(false);
-
-            setTimeout(() => {
-                navigator.goBack();
-            }, 1000);
-        } catch (error) {
-            showToast("Failed to add customer: " + error.message, "error");
-            console.error("Error while adding new customer", error);
         }
     };
 
+    const showToast = (message, type = "error") => {
+        Toast.show({ type, text1: message, position: "top", topOffset: 100 });
+    };
+
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.container}
-        >
-            <Animated.View
-                entering={FadeIn.duration(300).delay(330)}
-                style={styles.modalView}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.container}
             >
-                <Animated.Text
-                    entering={SlideInRight.duration(300).delay(300)}
-                    style={styles.title}
-                >
-                    Add New Customer
-                </Animated.Text>
-
                 <Animated.View
-                    entering={SlideInLeft.duration(300).delay(250)}
-                    style={styles.inputContainer}
+                    entering={FadeIn.duration(300).delay(100)}
+                    style={styles.modalView}
                 >
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Username"
-                        onChangeText={setUsername}
-                        placeholderTextColor="#94A3B8"
-                    />
-                    <View style={styles.iconContainer}>
-                        <Feather name="user" size={28} color="#64748B" />
-                    </View>
-                </Animated.View>
-
-                <Animated.View
-                    entering={SlideInRight.duration(300).delay(200)}
-                    style={styles.inputContainer}
-                >
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Amount"
-                        onChangeText={setAmountOfMoney}
-                        keyboardType="decimal-pad"
-                        placeholderTextColor="#94A3B8"
-                    />
-                    <View style={styles.iconContainer}>
-                        <Feather name="dollar-sign" size={28} color="#64748B" />
-                    </View>
-                </Animated.View>
-
-                <Animated.View
-                    entering={SlideInLeft.duration(300).delay(150)}
-                    style={styles.paymentStatusContainer}
-                >
-                    <Text style={styles.paymentLabel}>Payment Status</Text>
-                    <RadioButton.Group
-                        onValueChange={setPaymentStatus}
-                        value={paymentStatus}
+                    <Animated.Text
+                        entering={SlideInRight.duration(300).delay(150)}
+                        style={styles.title}
                     >
-                        <View style={styles.radioGroup}>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="received"
-                                    color="#10B981"
-                                    uncheckedColor="#CBD5E1"
-                                />
-                                <Text style={styles.radioLabel}>Received</Text>
-                            </View>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="paid"
-                                    color="#EF4444"
-                                    uncheckedColor="#CBD5E1"
-                                />
-                                <Text style={styles.radioLabel}>Paid</Text>
-                            </View>
+                        Add New Customer
+                    </Animated.Text>
+
+                    <Animated.View
+                        entering={SlideInLeft.duration(300).delay(200)}
+                        style={styles.inputContainer}
+                    >
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Username"
+                            onChangeText={setUsername}
+                            placeholderTextColor="#94A3B8"
+                        />
+                        <View style={styles.iconContainer}>
+                            <Feather name="user" size={28} color="#64748B" />
                         </View>
-                    </RadioButton.Group>
-                </Animated.View>
-
-                <Animated.View
-                    entering={SlideInRight.duration(300).delay(100)}
-                    style={styles.dropDownContainer}
-                >
-                    <CurrencyDropdownListSearch
-                        setSelected={setSelectedCurrency}
-                        selected={selectedCurrency}
-                    />
-                </Animated.View>
-
-                <Animated.View
-                    entering={FadeInDown.duration(300).delay(50)}
-                    style={styles.buttonWrapper}
-                >
-                    <Animated.View style={[buttonStyle]}>
-                        <TouchableOpacity
-                            style={styles.addButton}
-                            onPress={addNewCustomer}
-                            onPressIn={onPressIn}
-                            onPressOut={onPressOut}
-                        >
-                            {saving ? (
-                                <ActivityIndicator
-                                    size="small"
-                                    color="white"
-                                    style={{ marginLeft: 12, marginTop: 5 }}
-                                />
-                            ) : (
-                                <Text style={styles.buttonText}>
-                                    Add Customer
-                                </Text>
-                            )}
-                        </TouchableOpacity>
                     </Animated.View>
+
+                    <Animated.View
+                        entering={SlideInRight.duration(300).delay(250)}
+                        style={styles.inputContainer}
+                    >
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Amount"
+                            onChangeText={setAmountOfMoney}
+                            keyboardType="decimal-pad"
+                            placeholderTextColor="#94A3B8"
+                        />
+                        <View style={styles.iconContainer}>
+                            <Feather
+                                name="dollar-sign"
+                                size={28}
+                                color="#64748B"
+                            />
+                        </View>
+                    </Animated.View>
+
+                    {/* payment status pills */}
+                    <Animated.View
+                        entering={SlideInLeft.duration(300).delay(250)}
+                        style={styles.section}
+                    >
+                        <Text style={styles.sectionLabel}>Payment Status</Text>
+                        <View style={styles.radioGroup}>
+                            {["received", "paid"].map((type) => {
+                                const isSel = paymentStatus === type;
+                                const color =
+                                    type === "received" ? "#10B981" : "#EF4444";
+                                return (
+                                    <TouchableOpacity
+                                        key={type}
+                                        style={[
+                                            styles.pill,
+                                            isSel && {
+                                                borderColor: color,
+                                                backgroundColor: color + "20",
+                                            },
+                                        ]}
+                                        onPress={() => setPaymentStatus(type)}
+                                    >
+                                        <Text
+                                            style={
+                                                isSel
+                                                    ? {
+                                                          ...styles.pillTextSel,
+                                                          color,
+                                                      }
+                                                    : styles.pillText
+                                            }
+                                        >
+                                            {type.charAt(0).toUpperCase() +
+                                                type.slice(1)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </Animated.View>
+
+                    <Animated.View
+                        entering={SlideInLeft.duration(300).delay(300)}
+                        style={styles.dropdownWrapper}
+                    >
+                        <CurrencyDropdownListSearch
+                            selected={selectedCurrency}
+                            setSelected={setSelectedCurrency}
+                        />
+                    </Animated.View>
+
+                    <TouchableOpacity
+                        style={[styles.addButton, { backgroundColor: "black" }]}
+                        onPress={addNewCustomer}
+                        disabled={saving}
+                    >
+                        {saving ? (
+                            <ActivityIndicator color="#FFF" />
+                        ) : (
+                            <Text style={styles.buttonText}>Add Customer</Text>
+                        )}
+                    </TouchableOpacity>
                 </Animated.View>
-            </Animated.View>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
     );
 }
 
@@ -293,66 +219,80 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "white",
-    },
-    modalView: {
-        flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        paddingHorizontal: 24,
+    },
+    modalView: {
+        width: "90%",
         backgroundColor: "white",
+        padding: 24,
+        borderRadius: 20,
+        elevation: 8,
     },
     title: {
         fontSize: 24,
         fontWeight: "700",
         color: "#1E293B",
-        marginBottom: 32,
-        letterSpacing: 0.5,
+        marginBottom: 24,
+        textAlign: "center",
     },
-    inputContainer: {
-        width: "100%",
-        marginBottom: 16,
-        position: "relative",
-    },
+    inputContainer: { marginBottom: 16, position: "relative" },
     input: {
         borderWidth: 1,
         borderColor: "#EDF2F7",
-        padding: 20,
-        width: "100%",
-        borderRadius: 20,
-    },
-    iconContainer: {
-        position: "absolute",
-        right: 16,
-        height: "100%",
-        justifyContent: "center",
-    },
-    paymentStatusContainer: {
-        width: "100%",
-        backgroundColor: "white",
         borderRadius: 12,
         padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "#EDF2F7",
+        fontSize: 16,
     },
-    paymentLabel: {
+    iconContainer: { position: "absolute", right: 12, top: 16 },
+    pillGroup: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginVertical: 16,
+    },
+    pill: {
+        flex: 1,
+        marginHorizontal: 4,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: "#CBD5E1",
+        borderRadius: 12,
+        alignItems: "center",
+    },
+    pillText: { color: "#475569", fontWeight: "500" },
+    pillTextSel: { fontWeight: "600" },
+    dropdownWrapper: { marginBottom: 24 },
+    addButton: { paddingVertical: 14, borderRadius: 12, alignItems: "center" },
+    buttonText: { color: "#FFF", fontSize: 16, fontWeight: "600" },
+    section: {
+        marginBottom: 16,
+        width: "100%",
+    },
+    sectionLabel: {
         fontSize: 16,
         fontWeight: "600",
+        marginBottom: 8,
         color: "#1E293B",
-        marginBottom: 12,
     },
+
+    // pill styles you already have:
     radioGroup: {
         flexDirection: "row",
-        justifyContent: "space-around",
+        justifyContent: "space-between",
+    },
+    pill: {
+        flex: 1,
+        marginHorizontal: 4,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: "#CBD5E1",
+        borderRadius: 12,
         alignItems: "center",
     },
-    radioOption: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    radioLabel: {
-        fontSize: 16,
+    pillText: {
         color: "#475569",
+
+        fontWeight: "500",
         marginLeft: 8,
     },
     dropDownContainer: {
@@ -382,10 +322,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: " center",
     },
-    buttonWrapper: {
-        width: "100%",
-        alignItems: "center",
+    pillTextSel: {
+        fontWeight: "600",
     },
 });
-
-export default AddNewCustomerPopup;

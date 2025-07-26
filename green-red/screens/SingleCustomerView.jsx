@@ -28,7 +28,7 @@ import * as Sharing from "expo-sharing";
 import { format, parseISO } from "date-fns";
 import { formatDistanceToNowStrict } from "date-fns";
 
-export default function SingleCustomerView({ navigation, route }) {
+export default function SingleCustomerView({ route }) {
     const [customers, setCustomers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [sortModal, setSortModal] = useState(false);
@@ -70,7 +70,6 @@ export default function SingleCustomerView({ navigation, route }) {
                 }
 
                 if (!customerData || customerData.length === 0) {
-                    console.log("No customer found for username", username);
                     return;
                 }
 
@@ -172,7 +171,6 @@ export default function SingleCustomerView({ navigation, route }) {
                 setIsLoading(false);
             }
         };
-
         fetchAllCustomerExpense();
     }, [refreshSingelViewChangeDatabase, refresh, refreshHomeScreenOnChangeDatabase]);
 
@@ -191,7 +189,6 @@ export default function SingleCustomerView({ navigation, route }) {
             }
 
             if (!customerData || customerData.length === 0) {
-                console.log("No customer found for username", username);
                 return;
             }
 
@@ -249,6 +246,21 @@ export default function SingleCustomerView({ navigation, route }) {
         refreshHomeScreenOnChangeDatabase,
         refresh,
     ]);
+
+    useEffect(() => {
+  if (!selectedSortOption) return;           // nothing selected yet
+  setCustomers(prev => {
+    // clone so we don’t mutate
+    const copy = [...prev];
+    if (selectedSortOption === "HIGHEST") {
+      copy.sort((a, b) => b.amount - a.amount);
+    } else {
+      // LOWEST
+      copy.sort((a, b) => a.amount - b.amount);
+    }
+    return copy;
+  });
+}, [selectedSortOption]);
 
     const fetchSingleCustomerData = async () => {
         try {
@@ -559,6 +571,9 @@ export default function SingleCustomerView({ navigation, route }) {
                 </Animated.View>
             )}
 
+
+            <View>
+                <ScrollView >
             <View
                 style={{
                     flex: 1,
@@ -633,7 +648,7 @@ export default function SingleCustomerView({ navigation, route }) {
 
             <Modal
                 visible={addNewRecordModal}
-                animationType="none"
+                animationType="slide"
                 transparent={true}
                 onRequestClose={() => {
                     modalScale.value = withSpring(0);
@@ -706,7 +721,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         gap: 10,
         bottom: 1,
-        
+        borderWidth: 1,
+        borderColor: "#EDF2F7",
+        marginBottom: 15
     },
     button: {
         flexDirection: "row",

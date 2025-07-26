@@ -243,11 +243,6 @@ export default function HomeScreen({ navigator }) {
                         (err.message.includes("network") ||
                             err.message.includes("timeout"))
                     ) {
-                        console.log(
-                            `Retrying customer data load, attempt ${
-                                retryCount + 1
-                            }`
-                        );
                         setTimeout(() => {
                             loadCustomerDataList(isRefreshing, retryCount + 1);
                         }, 1000 * (retryCount + 1));

@@ -57,12 +57,87 @@ const style = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'white',
     },
+
+    hideunhideButton: {
+        backgroundColor: '#F8F8F8',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+        padding: 6,
+        borderRadius: 50,
+        alignSelf: "center",
+    },
+
+    controlsRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-around",
+        width: "90%",
+        
+
     carouselContainer: {
         height: 80,
     },
 });
 
 export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
+
+    const [isPaused, setIsPaused] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const carouselRef = useRef(null);
+    const totalCount = totalExpenseOfCustomer?.length || 0;
+    const [hideCarousel, setHideCarousel] = useState(false);
+    const width = Dimensions.get("window").width;
+
+    // Handle carousel snap - this is the main fix for count display
+    const handleSnapToItem = useCallback((index) => {
+        setCurrentIndex(index);
+    }, []);
+
+    const goPrev = useCallback(() => {
+        if (totalCount > 1 && carouselRef.current) {
+            const newIndex =
+                currentIndex === 0 ? totalCount - 1 : currentIndex - 1;
+            
+            carouselRef.current.scrollTo({ index: newIndex, animated: true });
+        }
+    }, [currentIndex, totalCount]);
+
+    const goNext = useCallback(() => {
+        if (totalCount > 1 && carouselRef.current) {
+            const newIndex =
+                currentIndex === totalCount - 1 ? 0 : currentIndex + 1;
+            
+            carouselRef.current.scrollTo({ index: newIndex, animated: true });
+        }
+    }, [currentIndex, totalCount]);
+
+    // Enhanced toggle with haptic feedback (if available)
+    const togglePlayPause = useCallback(() => {
+        setIsPaused((prev) => !prev);
+    }, []);
+
+    // Enhanced render item with better performance
+    const renderItem = useCallback(
+        ({ item, index }) => (
+            <View style={styles.slide} key={`carousel-item-${index}`}>
+                <TotalExpenses
+                    totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
+                    totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
+                    currency={item.currency}
+                />
+            </View>
+        ),
+        []
+    );
+
+    // Don't render if no items
+    if (totalCount === 0) return null;
+
+    return (
+        <View style={[styles.container, ]}>
+
     const width = Dimensions.get('window').width;
 
     return (
@@ -118,7 +193,7 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
             </View>
 
             {/* Controls Row */}
-            <View style={styles.controlsRow}>
+            <View style={[styles.controlsRow, !hideCarousel && {marginTop: -30, marginBottom: 10}, hideCarousel && {marginTop: 10}]}>
                 {/* Prev */}
                 {totalCount > 1 && (
                     <TouchableOpacity

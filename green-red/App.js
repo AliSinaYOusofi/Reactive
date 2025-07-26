@@ -19,15 +19,22 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import SettingsScreen from "./screens/Settings";
 import LoginScreen from "./screens/LoginScreen";
 import Signup from "./screens/Signup";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Provider as PaperProvider } from "react-native-paper";
 SystemUI.setBackgroundColorAsync("white");
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
     return (
-        <AppContextProvider>
-            <Navigation />
-        </AppContextProvider>
+
+        <GestureHandlerRootView>
+            <AppContextProvider>
+                <PaperProvider>
+                    <Navigation />
+                </PaperProvider>
+            </AppContextProvider>
+        </GestureHandlerRootView>
     );
 }
 
@@ -50,11 +57,16 @@ function Navigation() {
                 initialRouteName={initialRoute}
                 screenOptions={({ navigation, route }) => ({
                     headerShown: true,
+                    headerStyle: { backgroundColor: 'white' },
+                    headerTitleStyle: { fontSize: 25 },
+                    headerRightContainerStyle: { paddingRight: 16 }, // consistent right padding
+                    headerLeftContainerStyle: { paddingLeft: 16 }, 
                     contentStyle: {
                         marginHorizontal: 10,
                         marginBottom: 4,
                         fontSize: 20,
                     },
+                    
                     headerRight: () =>
                         route.name !== "login" &&
                         route.name !== "signup" && (

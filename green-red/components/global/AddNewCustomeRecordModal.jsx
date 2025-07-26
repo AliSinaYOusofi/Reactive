@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { RadioButton } from "react-native-paper";
+import React, { useState, useRef } from "react";
 import {
     View,
     TextInput,
     Text,
     StyleSheet,
-    Pressable,
     TouchableOpacity,
-    TouchableOpacityBase,
     ActivityIndicator,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    Keyboard,
+    TouchableWithoutFeedback,
 } from "react-native";
 import CurrencyDropdownListSearch from "./CurrencyDropdownList";
 import Toast from "react-native-toast-message";
@@ -16,242 +18,214 @@ import { amountOfMoneyValidator } from "../../utils/validators/amountOfMoneyVali
 import { format } from "date-fns";
 import { useAppContext } from "../../context/useAppContext";
 import Animated, {
-    FadeInDown,
-    SlideInDown,
-    SlideOutDown,
+    FadeIn,
+    FadeOut,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
 } from "react-native-reanimated";
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { supabase } from "../../utils/supabase";
 
-export default function AddNewCustomeRecordModal({
+const { width, height } = Dimensions.get("window");
+
+export default function AddNewCustomerRecordModal({
     username,
     setAddNewRecordModal,
-    customer_id
+    customer_id,
 }) {
     const [amount, setAmount] = useState("");
     const [transactionType, setTransactionType] = useState("");
     const [currency, setCurrency] = useState("");
     const [saving, setSaving] = useState(false);
+
     const {
         setRefreshSingleViewChangeDatabase,
         setRefreshHomeScreenOnChangeDatabase,
-        userId
+        userId,
     } = useAppContext();
 
+    const buttonScale = useSharedValue(1);
+    const buttonStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: buttonScale.value }],
+    }));
+    const onPressIn = () =>
+        (buttonScale.value = withSpring(0.95, { damping: 15, stiffness: 300 }));
+    const onPressOut = () =>
+        (buttonScale.value = withSpring(1, { damping: 15, stiffness: 200 }));
+
+    const showToast = (message, type = "error") =>
+        Toast.show({ type, text1: message, position: "top", topOffset: 100 });
+
     const handleAddNewRecord = async () => {
-        if (!amountOfMoneyValidator(amount)) {
-            return showToast("Amount of money is not valid");
-        }
+        if (!amountOfMoneyValidator(amount)) return showToast("Amount is not valid");
+        if (!transactionType) return showToast("Please select a transaction type");
+        if (!currency) return showToast("Please select a currency");
 
-        if (!transactionType) {
-            return showToast("Please select a payment status");
-        }
-
-        if (!currency) {
-            return showToast("Please select a currency");
-        }
-
-        try {
-            await insertToCustomerChild();
-        } catch (error) {
-            console.error("Error while adding new record:", error.message);
-            showToast("Error while adding new record");
-        }
-    };
-
-    const showToast = (message, type = "error") => {
-        Toast.show({
-            type: type,
-            text1: message,
-            position: "top",
-            onPress: () => Toast.hide(),
-            swipeable: true,
-            topOffset: 100,
-        });
-    };
-
-    const insertToCustomerChild = async () => {
         setSaving(true);
         try {
-            const currentDateTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
-            const dataToInsert = {
-                amount: amount,
-                transaction_type: transactionType,
-                currency: currency,
-                transaction_at: currentDateTime,
-                transaction_updated_at: currentDateTime,
-                user_id: userId,
-                customer_id: customer_id
-            };
-
-            const { data, error } = await supabase
+            const now = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+            const { error } = await supabase
                 .from("customer_transactions")
-                .insert([dataToInsert]);
+                .insert([
+                    {
+                        amount,
+                        transaction_type: transactionType,
+                        currency,
+                        transaction_at: now,
+                        transaction_updated_at: now,
+                        user_id: userId,
+                        customer_id,
+                    },
+                ]);
+            if (error) throw error;
 
-            if (error) {
-                console.error("Error inserting data:", error);
-                showToast("Failed to add a new record", "error");
-                return
-            } 
-                
-            showToast("User record added", "success");
-                
-            
-        } catch (error) {
-            console.error("Error while inserting new record:", error.message);
-            showToast("Error while inserting new record");
+            showToast("Record added!", "success");
+            setTimeout(() => setAddNewRecordModal(false), 1000);
+            setRefreshSingleViewChangeDatabase(p => !p);
+            setRefreshHomeScreenOnChangeDatabase(p => !p);
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to add record");
         } finally {
             setSaving(false);
-            setRefreshSingleViewChangeDatabase((prev) => !prev);
-            setRefreshHomeScreenOnChangeDatabase((prev) => !prev);
         }
     };
 
+    const handleClose = () => setAddNewRecordModal(false);
+    const isFormValid = amount && transactionType && currency;
+
+    const green = '#10B981';
+    const red = '#EF4444';
+
     return (
-        <Animated.View
-            entering={SlideInDown.duration(500)}
-            style={styles.modalView}
-            exiting={SlideOutDown.duration(400)}
-        >
-            <View style={styles.options_container}>
-                <Animated.View
-                    entering={FadeInDown.duration(300).delay(100)}
-                    style={styles.input_container}
-                >
-                    <TextInput
-                        style={styles.input}
-                        placeholder="amount"
-                        onChangeText={(text) => setAmount(text)}
-                        keyboardType="phone-pad"
-                    />
+        <View style={styles.modalOverlay} pointerEvents="box-none">
+            <TouchableWithoutFeedback onPress={handleClose}>
+                <View style={styles.backdrop} />
+            </TouchableWithoutFeedback>
 
-                    <View style={styles.iconContainer}>
-                        <Feather name="dollar-sign" size={28} color="#64748B" />
-                    </View>
-                </Animated.View>
-
-                <Animated.View
-                    entering={FadeInDown.duration(300).delay(200)}
-                    style={styles.paymentStatusContainer}
-                >
-                    <Text style={styles.paymentLabel}>Payment Status</Text>
-                    <RadioButton.Group
-                        onValueChange={setTransactionType}
-                        value={transactionType}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.modalContainer}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <Animated.View
+                        entering={FadeIn.duration(300)}
+                        exiting={FadeOut.duration(300)}
+                        style={styles.contentContainer}
                     >
-                        <View style={styles.radioGroup}>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="received"
-                                    color="#10B981"
-                                    uncheckedColor="#CBD5E1"
-                                />
-                                <Text style={styles.radioLabel}>Received</Text>
+                        <View style={styles.headerContainer}>
+                            <View style={styles.headerIconContainer}>
+                                <MaterialIcons name="receipt-long" size={28} color="#FFF" />
                             </View>
-                            <View style={styles.radioOption}>
-                                <RadioButton
-                                    value="paid"
-                                    color="#EF4444"
-                                    uncheckedColor="#CBD5E1"
+                            <Text style={styles.title}>Add New Record</Text>
+                            <Text style={styles.subtitle}>for {username}</Text>
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <View style={styles.inputWrapper}>
+                                <Feather name="dollar-sign" size={20} color="#64748B" />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter amount"
+                                    placeholderTextColor="#94A3B8"
+                                    keyboardType="decimal-pad"
+                                    value={amount}
+                                    onChangeText={setAmount}
                                 />
-                                <Text style={styles.radioLabel}>Paid</Text>
                             </View>
                         </View>
-                    </RadioButton.Group>
-                </Animated.View>
 
-                <Animated.View
-                    entering={FadeInDown.duration(300).delay(300)}
-                    style={styles.drop_down_container}
-                >
-                    <CurrencyDropdownListSearch
-                        setSelected={setCurrency}
-                        selected={currency}
-                    />
-                </Animated.View>
+                        <View style={styles.section}>
+                            <Text style={styles.sectionLabel}>Transaction Type</Text>
+                            <View style={styles.pillGroup}>
+                                {['received', 'paid'].map(type => {
+                                    const isSel = transactionType === type;
+                                    const color = type === 'received' ? green : red;
+                                    return (
+                                        <TouchableOpacity
+                                            key={type}
+                                            style={[
+                                                styles.pill,
+                                                isSel && {
+                                                    borderColor: color,
+                                                    backgroundColor: color + '20',
+                                                },
+                                            ]}
+                                            onPress={() => setTransactionType(type)}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.pillText,
+                                                    isSel && { color },
+                                                ]}
+                                            >
+                                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </View>
 
-                <Animated.View entering={FadeInDown.duration(300).delay(400)}>
-                    <TouchableOpacity
-                        style={styles.add_new_customer_btn}
-                        onPress={handleAddNewRecord}
-                    >
-                        <Text>
-                            {saving ? (
-                                <ActivityIndicator
-                                    size="small"
-                                    color="white"
-                                    style={{  marginTop: 5 }}
-                                />
-                                )
-                                :
-                                <Text style={{ color: "white" }}>Save Record</Text>
-                            }
-                        </Text>
-                    </TouchableOpacity>
-                </Animated.View>
+                        <View style={styles.section}>
+                            <Text style={styles.sectionLabel}>Currency</Text>
+                            <CurrencyDropdownListSearch
+                                selected={currency}
+                                setSelected={setCurrency}
+                            />
+                        </View>
 
-                <TouchableOpacity
-                    onPress={() => setAddNewRecordModal(false)}
-                    style={[styles.pressable, styles.pressable_close]}
-                >
-                    <Feather name="x" size={20} color="black" />
-                </TouchableOpacity>
-            </View>
-        </Animated.View>
+                        <Animated.View style={[styles.buttonContainer, buttonStyle]}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.saveButton,
+                                    (!isFormValid || saving) && styles.saveButtonDisabled,
+                                ]}
+                                onPress={handleAddNewRecord}
+                                onPressIn={onPressIn}
+                                onPressOut={onPressOut}
+                                disabled={!isFormValid || saving}
+                            >
+                                {saving ? (
+                                    <ActivityIndicator color="#FFF" />
+                                ) : (
+                                    <Feather name="save" size={20} color="#FFF" />
+                                )}
+                                <Text style={styles.buttonText}>
+                                    {saving ? 'Saving...' : 'Save Record'}
+                                </Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+
+                        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                            <Feather name="x" size={20} color="#64748B" />
+                        </TouchableOpacity>
+                    </Animated.View>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    modalView: {
-        flex: 1,
-        justifyContent: "flex-end",
-        alignItems: "center",
-        position: "relative",
+    modalOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        zIndex: 1000,
     },
-    input: {
-        borderWidth: 1,
-        borderColor: "#EDF2F7",
-        padding: 20,
-        width: "100%",
-        borderRadius: 20,
+    backdrop: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
-    input_container: {
-        flexDirection: "row",
-        alignContent: "center",
-        alignItems: "center",
-        position: "relative",
-        marginTop: 10,
+    modalContainer: {
+        width: '100%',
+        justifyContent: 'flex-end',
     },
-
-    icon: {
-        position: "absolute",
-        right: 10,
-        top: "10%",
-        color: "black",
-        zIndex: 1,
-        backgroundColor: "white",
-        padding: 5,
-        borderRadius: 50,
-    },
-
-    payment_status: {
-        flexDirection: "row",
-        backgroundColor: "#FDFCFA",
-        borderRadius: 5,
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        padding: 5,
-    },
-
-    payment_text: {
-        fontSize: 14,
-        fontWeight: "bold",
-        marginLeft: 4,
-    },
-    options_container: {
-        backgroundColor: "white",
-        padding: 40,
+    contentContainer: {
+        backgroundColor: '#FFF',
+        padding: 24,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         width: "100%",
@@ -304,33 +278,64 @@ const styles = StyleSheet.create({
         padding: 16,
         marginTop: 10,
         borderWidth: 1,
-        borderColor: "#EDF2F7",
+        borderColor: '#EDF2F7',
+        width: '100%',
+        elevation: 8,
     },
-    paymentLabel: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#1E293B",
-        marginBottom: 12,
+    headerContainer: { alignItems: 'center', marginBottom: 24 },
+    headerIconContainer: {
+        backgroundColor: '#1E293B',
+        borderRadius: 30,
+        padding: 12,
+        marginBottom: 16,
     },
-    radioGroup: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
+    title: { fontSize: 24, fontWeight: '700', color: '#0F172A' },
+    subtitle: { fontSize: 16, color: '#64748B', marginBottom: 16 },
+    inputContainer: { marginBottom: 20 },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 16,
+        paddingHorizontal: 16,
     },
-    radioOption: {
-        flexDirection: "row",
-        alignItems: "center",
+    input: { flex: 1, fontSize: 16, paddingVertical: 12, color: '#1E293B' },
+    section: { marginBottom: 20 },
+    sectionLabel: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
+    pillGroup: { flexDirection: 'row', justifyContent: 'space-between' },
+    pill: {
+        flex: 1,
+        marginHorizontal: 4,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: '#CBD5E1',
+        borderRadius: 12,
+        alignItems: 'center',
     },
-    radioLabel: {
-        fontSize: 16,
-        color: "#475569",
-        marginLeft: 8,
+    pillText: { fontSize: 16, color: '#475569', fontWeight: '500' },
+    buttonContainer: { alignItems: 'center', marginBottom: 16 },
+    saveButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#10B981',
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        borderRadius: 16,
+        width: "100%",
+        justifyContent: 'center',
     },
-    iconContainer: {
-        position: "absolute",
+    saveButtonDisabled: { backgroundColor: '#94A3B8' },
+    buttonText: { color: '#FFF', fontSize: 16, marginLeft: 8 },
+    closeButton: {
+        position: 'absolute',
+        top: 16,
         right: 16,
-        height: "100%",
-        justifyContent: "center",
-        top: "1",
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#EDF2F7',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

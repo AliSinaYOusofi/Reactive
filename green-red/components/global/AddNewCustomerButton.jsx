@@ -1,9 +1,8 @@
-<<<<<<< HEAD
+
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { UserRoundPlus } from 'lucide-react-native';
-=======
 
 import {
     View,
@@ -23,12 +22,11 @@ import Animated, {
 const { width } = Dimensions.get("window");
 const AnimatedTouchableOpacity =
     Animated.createAnimatedComponent(TouchableOpacity);
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
+
 
 export default function ActionButtons() {
     const navigation = useNavigation();
 
-<<<<<<< HEAD
     const handleAddCustomer = () => {
         navigation.navigate('Add Customer');
     };
@@ -47,7 +45,6 @@ export default function ActionButtons() {
                 <UserRoundPlus size={24} color="white" />
                 <Text style={styles.text}>Add User</Text>
             </TouchableOpacity>
-=======
     // Animation values for button press feedback
     const addUserScale = useSharedValue(1);
     const analyticsScale = useSharedValue(1);
@@ -108,7 +105,7 @@ export default function ActionButtons() {
                     </View>
 
                     {/* Analytics Button */}
-                    <AnimatedTouchableOpacity
+                    {/* <AnimatedTouchableOpacity
                         onPress={() => navigation.navigate("Chart")}
                         style={[
                             styles.actionButton,
@@ -129,22 +126,15 @@ export default function ActionButtons() {
                         <View style={styles.textContainer}>
                             <Text style={styles.buttonText}>Analytics</Text>
                         </View>
-                    </AnimatedTouchableOpacity>
+                    </AnimatedTouchableOpacity> */}
                 </View>
 
-                {/* Professional indicator dots */}
-                <View style={styles.indicatorContainer}>
-                    <View style={[styles.indicator, styles.activeIndicator]} />
-                    <View style={styles.indicator} />
-                </View>
             </View>
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
     container: {
         width: '100%',
         columnGap: 8,
@@ -186,7 +176,6 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: " center"
     }
-=======
     wrapper: {
         position: "absolute",
         bottom: 0,
@@ -210,7 +199,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         borderRadius: 20,
         padding: 6,
-        marginBottom: 16,
+        marginBottom: 0,
     },
     actionButton: {
         flex: 1,
@@ -225,8 +214,6 @@ const styles = StyleSheet.create({
     },
     addUserButton: {
         marginRight: 3,
-        borderLeftWidth: 4,
-        borderLeftColor: "#1E293B",
     },
     analyticsButton: {
         marginLeft: 3,
@@ -298,5 +285,4 @@ const styles = StyleSheet.create({
         width: 20,
         borderRadius: 3,
     },
->>>>>>> 66e78290e03e9da2713968a103b23bf2202b6fc3
 });
