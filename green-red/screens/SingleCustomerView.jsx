@@ -568,8 +568,8 @@ export default function SingleCustomerView({ route }) {
                 
             )}
 
-            <View>
-                <ScrollView >
+            <View style={styles.listContainer}>
+                <ScrollView style={styles.scrollView} indicatorStyle="black">
                     {customers.length > 0 ? (
                         customers.map((customer, index) => (
                             <AnimatedUserListView
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         alignSelf: "center",
-        position: "absolute",
+        
         backgroundColor: "white",
         borderRadius: 9999,
         width: "70%",
@@ -732,5 +732,12 @@ const styles = StyleSheet.create({
         color: "black",
         fontSize: 23,
         fontWeight: "bold",
+    },
+    scrollView: {
+        paddingHorizontal: 4,
+        flex: 1,
+    },
+    listContainer: {
+        flex: 1,
     },
 });
