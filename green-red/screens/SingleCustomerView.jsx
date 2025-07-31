@@ -27,6 +27,8 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { format, parseISO } from "date-fns";
 import { formatDistanceToNowStrict } from "date-fns";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import CurrencyExchangeModal from "../components/SingleCustomerViewComp/CurrencyExchangeModal";
 
 export default function SingleCustomerView({ route }) {
     const [customers, setCustomers] = useState([]);
@@ -34,10 +36,11 @@ export default function SingleCustomerView({ route }) {
     const [sortModal, setSortModal] = useState(false);
     const [selectedSortOption, setSelectedSortOption] = useState(null); // Track the selected sort option
     const [convertinToPdf, setConvertingToPdf] = useState(false);
+    const [conversionModalVisible, setConversionModalVisible] = useState(false);
 
     const username = route.params.username;
     const customer_id = route.params.customer_id;
-    
+
     const [addNewRecordModal, setAddNewRecordModal] = useState(false);
     const {
         refreshSingelViewChangeDatabase,
@@ -172,7 +175,11 @@ export default function SingleCustomerView({ route }) {
             }
         };
         fetchAllCustomerExpense();
-    }, [refreshSingelViewChangeDatabase, refresh, refreshHomeScreenOnChangeDatabase]);
+    }, [
+        refreshSingelViewChangeDatabase,
+        refresh,
+        refreshHomeScreenOnChangeDatabase,
+    ]);
 
     useEffect(() => {
         const loadCustomerDataList = async () => {
@@ -248,19 +255,19 @@ export default function SingleCustomerView({ route }) {
     ]);
 
     useEffect(() => {
-  if (!selectedSortOption) return;           // nothing selected yet
-  setCustomers(prev => {
-    // clone so we don’t mutate
-    const copy = [...prev];
-    if (selectedSortOption === "HIGHEST") {
-      copy.sort((a, b) => b.amount - a.amount);
-    } else {
-      // LOWEST
-      copy.sort((a, b) => a.amount - b.amount);
-    }
-    return copy;
-  });
-}, [selectedSortOption]);
+        if (!selectedSortOption) return; // nothing selected yet
+        setCustomers((prev) => {
+            // clone so we don’t mutate
+            const copy = [...prev];
+            if (selectedSortOption === "HIGHEST") {
+                copy.sort((a, b) => b.amount - a.amount);
+            } else {
+                // LOWEST
+                copy.sort((a, b) => a.amount - b.amount);
+            }
+            return copy;
+        });
+    }, [selectedSortOption]);
 
     const fetchSingleCustomerData = async () => {
         try {
@@ -561,33 +568,13 @@ export default function SingleCustomerView({ route }) {
     return (
         <View style={styles.container}>
             {customers.length !== 0 && (
-                <Animated.View
-                    style={{ backgroundColor: "white", height: 195 }}
-                    entering={FadeIn.duration(500)}
-                >
-                    <CarouselOfTracker
-                        totalExpenseOfCustomer={singleCustomerExpense}
-                    />
-                </Animated.View>
+                <CarouselOfTracker
+                    totalExpenseOfCustomer={singleCustomerExpense}
+                />
             )}
 
-
-            <View>
-                <ScrollView >
-            <View
-                style={{
-                    flex: 1,
-                    paddingBottom: 40,
-                    backgroundColor: "white",
-                    marginTop: 50,
-                }}
-            >
-                <View style={styles.usernameContainer}>
-                    <Text style={styles.username}>
-                        Transactions with {username} ({customers.length})
-                    </Text>
-                </View>
-                <ScrollView style={styles.container}>
+            <View style={styles.listContainer}>
+                <ScrollView style={styles.scrollView} indicatorStyle="black">
                     {customers.length > 0 ? (
                         customers.map((customer, index) => (
                             <AnimatedUserListView
@@ -636,14 +623,18 @@ export default function SingleCustomerView({ route }) {
                         />
                     )}
                 </TouchableOpacity>
-                {/* <TouchableOpacity style={styles.button}>
-                    <Entypo
-                        name="wallet"
-                        size={24}
+
+                <TouchableOpacity
+                    onPress={() => setConversionModalVisible(true)}
+                    style={styles.button}
+                >
+                    <MaterialIcons
+                        name="currency-exchange"
+                        size={20}
                         color="white"
                         style={styles.icon}
                     />
-                </TouchableOpacity> */}
+                </TouchableOpacity>
             </Animated.View>
 
             <Modal
@@ -676,6 +667,19 @@ export default function SingleCustomerView({ route }) {
                     setCloseSortModal={setSortModal}
                 />
             </Modal>
+
+            <Modal
+                visible={conversionModalVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setConversionModalVisible(false)}
+            >
+                <CurrencyExchangeModal
+                    onClose={() => setConversionModalVisible(false)}
+                    transactions={customers}
+                    username={username}
+                />
+            </Modal>
         </View>
     );
 }
@@ -702,18 +706,13 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "between",
         alignItems: "stretch",
-        backgroundColor: "#181c20",
-        color: "white",
-        height: "auto",
-        backgroundColor: "#14171A",
-        borderRadius: 99,
         paddingVertical: 10,
         paddingHorizontal: 10,
         justifyContent: "center",
         alignItems: "center",
         alignSelf: "center",
-        position: "absolute",
-        backgroundColor: "#14171A",
+
+        backgroundColor: "white",
         borderRadius: 9999,
         width: "70%",
         flexDirection: "row",
@@ -723,7 +722,7 @@ const styles = StyleSheet.create({
         bottom: 1,
         borderWidth: 1,
         borderColor: "#EDF2F7",
-        marginBottom: 15
+        marginBottom: 15,
     },
     button: {
         flexDirection: "row",
@@ -732,7 +731,9 @@ const styles = StyleSheet.create({
         backgroundColor: "white", // A modern blue shade
         paddingVertical: 12,
         paddingHorizontal: 16, // Adjusted padding for better text fit
-        borderRadius: 25,
+        borderRadius: 9999,
+        borderWidth: 1,
+        borderColor: "#EDF2F7",
     },
     icon: {
         color: "black",
@@ -752,5 +753,12 @@ const styles = StyleSheet.create({
         color: "black",
         fontSize: 23,
         fontWeight: "bold",
+    },
+    scrollView: {
+        paddingHorizontal: 4,
+        flex: 1,
+    },
+    listContainer: {
+        flex: 1,
     },
 });
