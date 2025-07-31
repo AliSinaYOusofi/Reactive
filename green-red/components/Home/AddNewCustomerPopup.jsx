@@ -290,7 +290,36 @@ const styles = StyleSheet.create({
     },
     pillText: {
         color: "#475569",
+
         fontWeight: "500",
+        marginLeft: 8,
+    },
+    dropDownContainer: {
+        width: "100%",
+        marginBottom: 24,
+    },
+    addButton: {
+        width: "100%",
+        minWidth: 280,
+        backgroundColor: "black",
+        borderRadius: 99,
+        paddingVertical: 18,
+        paddingHorizontal: 16,
+        shadowColor: "#3B82F6",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    buttonText: {
+        color: "#FFFFFF",
+        fontSize: 16,
+        fontWeight: "600",
+        textAlign: "center",
+        letterSpacing: 0.5,
+        alignContent: "center",
+        justifyContent: "center",
+        alignItems: " center",
     },
     pillTextSel: {
         fontWeight: "600",

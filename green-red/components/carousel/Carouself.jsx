@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import Carousel from "react-native-reanimated-carousel";
 import TotalExpenses from "../Home/TotalExpenses";
@@ -5,17 +6,21 @@ import { Dimensions, StyleSheet, View } from "react-native";
 import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity, Text } from "react-native";
 
-const styles = StyleSheet.create({
+import React from 'react';
+import Carousel from 'react-native-reanimated-carousel';
+import TotalExpenses from '../Home/TotalExpenses';
+import { Dimensions, StyleSheet, View } from 'react-native';
+
+const style = StyleSheet.create({
     container: {
-        backgroundColor: "white",
+        backgroundColor: 'white',
         width: "100%",
-        overflow: "visible",
-        marginTop: 0,
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
+        overflow: 'visible',
+        marginTop: 10,
+        height: 'auto'
     },
     slide: {
+
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "white",
@@ -50,19 +55,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8F8F8',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        padding: 6,
-        borderRadius: 50,
-    },
-    prevButton: {
-        backgroundColor: '#F8F8F8',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E8E8E8',
-        padding: 6,
-        borderRadius: 50,
+        backgroundColor: 'white',
     },
 
     hideunhideButton: {
@@ -82,10 +75,14 @@ const styles = StyleSheet.create({
         justifyContent: "space-around",
         width: "90%",
         
+
+    carouselContainer: {
+        height: 80,
     },
 });
 
 export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
+
     const [isPaused, setIsPaused] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const carouselRef = useRef(null);
@@ -140,6 +137,30 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
 
     return (
         <View style={[styles.container, ]}>
+
+    const width = Dimensions.get('window').width;
+
+    return (
+        <View style={style.container}>
+            {totalExpenseOfCustomer.length > 0 && (
+                <View style={style.carouselContainer}>
+                    <Carousel
+                        loop
+                        width={width}
+                        height={300} 
+                        data={totalExpenseOfCustomer}
+                        scrollAnimationDuration={3000}
+                        
+                        autoPlay={totalExpenseOfCustomer.length > 1}
+                        renderItem={({ item }) => (
+                            <View style={style.slide}>
+                                <TotalExpenses
+                                    totalAmountToGive={item.totalAmountBasedOnCurrencyToGive}
+                                    totalAmountToTake={item.totalAmountBasedOnCurrencyToTake}
+                                    currency={item.currency}
+                                />
+                            </View>
+        <View style={styles.container}>
             {/* Carousel */}
             <View
                 style={[
@@ -232,6 +253,13 @@ export default function CarouselOfTracker({ totalExpenseOfCustomer }) {
                     )}
                 </TouchableOpacity>
             </View>
+                            <Pause color="#333333" size={20} />
+
+                        )}
+                    />
+                </View>
+            )}
+
         </View>
     );
 }
