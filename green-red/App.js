@@ -9,9 +9,7 @@ import SingleCustomerView from "./screens/SingleCustomerView";
 import EditCustomerParent from "./screens/EditCustomerParent";
 import { AppContextProvider, useAppContext } from "./context/useAppContext";
 import * as SystemUI from "expo-system-ui";
-import { ActivityIndicator } from "react-native-paper";
-
-// Replace lucide-react-native icons with @expo/vector-icons variants
+import { ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
@@ -20,7 +18,6 @@ import SettingsScreen from "./screens/Settings";
 import LoginScreen from "./screens/LoginScreen";
 import Signup from "./screens/Signup";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Provider as PaperProvider } from "react-native-paper";
 SystemUI.setBackgroundColorAsync("white");
 
 const Stack = createNativeStackNavigator();
@@ -30,9 +27,7 @@ export default function App() {
 
         <GestureHandlerRootView>
             <AppContextProvider>
-                <PaperProvider>
-                    <Navigation />
-                </PaperProvider>
+                <Navigation />
             </AppContextProvider>
         </GestureHandlerRootView>
     );
@@ -44,7 +39,7 @@ function Navigation() {
     if (loading) {
         return (
             <View style={styles.loaderContainer}>
-                <ActivityIndicator />
+                <ActivityIndicator color={'black'}/>
             </View>
         );
     }
