@@ -538,7 +538,7 @@ export default function HomeScreen({ navigator }) {
     if (loading && !refreshing && isInitialLoad) {
         return (
             <View style={styles.centerContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
+                <ActivityIndicator size="large" color="black" />
             </View>
         );
     } else if (error) {
@@ -615,10 +615,10 @@ export default function HomeScreen({ navigator }) {
                         <RefreshControl
                             refreshing={refreshing}
                             onRefresh={onRefresh}
-                            colors={["#007AFF"]}
-                            tintColor="#007AFF"
+                            colors={["black"]}
+                            tintColor="black"
                             title="Pull to refresh"
-                            titleColor="#007AFF"
+                            titleColor="black"
                         />
                     }
                     showsVerticalScrollIndicator={true}
@@ -670,7 +670,7 @@ export default function HomeScreen({ navigator }) {
             </View>
             {!parentSearchTerm.length && (
                 <Animated.View entering={FadeInDown.delay(300)}>
-                    <AddNewCustomer />
+                    <AddNewCustomer isCustomerListEmpty={customers.length} userId={userId}/>
                 </Animated.View>
             )}
         </Animated.View>

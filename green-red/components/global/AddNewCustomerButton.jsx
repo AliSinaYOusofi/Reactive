@@ -2,23 +2,58 @@ import {
     View,
     StyleSheet,
     TouchableOpacity,
-    Text,
-    Dimensions,
+    Modal,
+    ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withSpring,
 } from "react-native-reanimated";
+import React, { useState, useCallback } from "react";
+import CurrencyExchangeModal from "../SingleCustomerViewComp/CurrencyExchangeModal";
+import { supabase } from "../../utils/supabase";
 
-const { width } = Dimensions.get("window");
 const AnimatedTouchableOpacity =
     Animated.createAnimatedComponent(TouchableOpacity);
 
-export default function ActionButtons() {
+export default function ActionButtons({ userId, isCustomerListEmpty }) {
     const navigation = useNavigation();
+    const [exchangeModal, setExchangeModal] = useState(false);
+
+    // all transactions array which is the total amount of transactions
+    // that user has done. so first we use vars to fetch and track all currencies
+    // and then pass it to the modal
+    const [allCustomersTransactions, setAllCustomersTransactions] = useState(
+        []
+    );
+    const [loadingTransactions, setLoadingTransactions] = useState(false);
+    // a function to fetch all current logged in customer transactions
+
+    const fetchAllTransactions = useCallback(async () => {
+        setLoadingTransactions(true);
+        try {
+            const { data, error } = await supabase
+                .from("customer_transactions")
+                .select("*")
+                .eq("user_id", userId);
+
+            if (error) throw error;
+            setAllCustomersTransactions(data || []);
+        } catch (error) {
+            console.error("Error fetching transactions:", error);
+        } finally {
+            setLoadingTransactions(false);
+        }
+    }, [userId]);
+
+    // Open exchange modal handler
+    const openExchangeModal = async () => {
+        await fetchAllTransactions();
+        setExchangeModal(true);
+    };
 
     const handleAddCustomer = () => {
         navigation.navigate('Add Customer');
@@ -34,95 +69,15 @@ export default function ActionButtons() {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={handleAddCustomer}>
-                <UserRoundPlus size={24} color="white" />
-                <Text style={styles.text}>Add User</Text>
-            </TouchableOpacity>
-    // Animation values for button press feedback
-    const addUserScale = useSharedValue(1);
-    const analyticsScale = useSharedValue(1);
-
-    // Press animations
-    const createPressAnimation = (scaleValue) => {
-        return {
-            onPressIn: () => {
-                scaleValue.value = withSpring(0.95, {
-                    damping: 15,
-                    stiffness: 300,
-                });
-            },
-            onPressOut: () => {
-                scaleValue.value = withSpring(1, {
-                    damping: 15,
-                    stiffness: 200,
-                });
-            },
-        };
-    };
-
-    const addUserAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: addUserScale.value }],
-    }));
-
-    const analyticsAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: analyticsScale.value }],
-    }));
-
-    return (
-        <View style={styles.wrapper}>
-            <View style={styles.container}>
-                <View style={styles.buttonsContainer}>
-                    {/* Add User Button */}
-                    <AnimatedTouchableOpacity
-                        onPress={() => navigation.navigate("Add Customer")}
-                        style={[
-                            styles.actionButton,
-                            styles.addUserButton,
-                            addUserAnimatedStyle,
-                        ]}
-                        activeOpacity={0.9}
-                        {...createPressAnimation(addUserScale)}
-                    >
-                        <View style={styles.iconContainer}>
-                            <Feather name="user-plus" size={22} color="#FFFFFF" />
-                        </View>
-                        <View style={styles.textContainer}>
-                            <Text style={styles.buttonText}>Add User</Text>
-                        </View>
-                    </AnimatedTouchableOpacity>
-
-                    {/* Elegant Separator */}
-                    <View style={styles.separatorContainer}>
-                        <View style={styles.separator} />
-                        <View style={styles.separatorDot} />
-                    </View>
-
-                    {/* Analytics Button */}
-                    {/* <AnimatedTouchableOpacity
-                        onPress={() => navigation.navigate("Chart")}
-                        style={[
-                            styles.actionButton,
-                            styles.analyticsButton,
-                            analyticsAnimatedStyle,
-                        ]}
-                        activeOpacity={0.9}
-                        {...createPressAnimation(analyticsScale)}
-                    >
-                        <View
-                            style={[
-                                styles.iconContainer,
-                                styles.analyticsIconContainer,
-                            ]}
-                        >
-                            <Feather name="trending-up" size={22} color="#FFFFFF" />
-                        </View>
-                        <View style={styles.textContainer}>
-                            <Text style={styles.buttonText}>Analytics</Text>
-                        </View>
-                    </AnimatedTouchableOpacity> */}
-                </View>
-
-            </View>
+            <AnimatedTouchableOpacity
+                onPress={() => navigation.navigate("Add Customer")}
+                style={[styles.button, animatedStyle]}
+                activeOpacity={0.9}
+                {...pressHandlers}
+            >
+                <Feather name="user-plus" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Add User</Text>
+            </AnimatedTouchableOpacity>
         </View>
     );
 }
@@ -190,22 +145,44 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
+        flexDirection: "row",
     },
     button: {
         flexDirection: "row",
-        backgroundColor: "#1E293B",
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 12,
         alignItems: "center",
-        justifyContent: "center", // Centers the content horizontally
-        gap: 10,
-        width: width * 0.9,
-        alignSelf: "center",
+        justifyContent: "center", // Added for better text alignment
+        backgroundColor: "white", // A modern blue shade
+        paddingVertical: 12,
+        paddingHorizontal: 16, // Adjusted padding for better text fit
+        borderRadius: 9999,
+        borderWidth: 1,
+        borderColor: "#EDF2F7",
     },
     buttonText: {
         color: "#fff",
         fontSize: 16,
         fontWeight: "600",
+    },
+    buttonContainer: {
+        flexDirection: "row",
+        justifyContent: "between",
+        alignItems: "stretch",
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+        justifyContent: "center",
+        alignItems: "center",
+        alignSelf: "center",
+
+        backgroundColor: "white",
+        borderRadius: 9999,
+        width: "70%",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 10,
+        bottom: 1,
+        borderWidth: 1,
+        borderColor: "#EDF2F7",
+        marginBottom: 15,
     },
 });

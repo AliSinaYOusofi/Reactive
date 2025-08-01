@@ -8,13 +8,11 @@ import {
     ScrollView,
     ActivityIndicator,
     Dimensions,
-    Keyboard,
-    TouchableWithoutFeedback,
     KeyboardAvoidingView,
     Platform,
 } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import CurrencyDropdownListSearch from "../global/CurrencyDropdownList";
 import Toast from "react-native-toast-message";
 
@@ -29,7 +27,6 @@ const { width, height } = Dimensions.get("window");
 export default function CurrencyConverterModal({
     transactions = [],
     onClose,
-    onConvert,
     username = "Customer",
 }) {
     const [targetCurrency, setTargetCurrency] = useState("");
@@ -55,31 +52,33 @@ export default function CurrencyConverterModal({
         }
     }, [targetCurrency, useManualRates]);
 
+    // scroll to the bottom when conversion is done
+    useEffect(() => {
+        if (isConverted && scrollViewRef.current) {
+            scrollViewRef.current.scrollToEnd({ animated: true });
+        }
+    }, [isConverted]);
+
     const fetchExchangeRates = async () => {
         if (!targetCurrency || uniqueCurrencies.length === 0) return;
 
         setLoading(true);
         try {
-            // Using exchangerate-api.com (free tier: 1500 requests/month)
-            const promises = uniqueCurrencies.map(async (currency) => {
-                const response = await fetch(
-                    `https://api.exchangerate-api.com/v4/latest/${currency}`
-                );
-                const data = await response.json();
-                return { from: currency, rates: data.rates };
-            });
-
-            const results = await Promise.all(promises);
+            const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${targetCurrency.toLowerCase()}.json`;
+            const response = await fetch(url);
+            const data = await response.json();
             const rates = {};
-
-            results.forEach(({ from, rates: currencyRates }) => {
-                if (currencyRates[targetCurrency]) {
-                    rates[from] = currencyRates[targetCurrency];
+            
+            // Extract rates for each unique currency
+            uniqueCurrencies.forEach((currency) => {
+                const rateToCurrency = data[targetCurrency.toLowerCase()]?.[currency.toLowerCase()];
+                if (rateToCurrency && rateToCurrency !== 0) {
+                    // invert rate to get 1 unit of source currency = ? units target currency
+                    rates[currency] = 1 / rateToCurrency;
                 }
             });
-
+            
             setExchangeRates(rates);
-            showToast("Exchange rates fetched successfully!", "success");
         } catch (error) {
             console.error("Error fetching exchange rates:", error);
             showToast(
@@ -92,12 +91,13 @@ export default function CurrencyConverterModal({
         }
     };
 
-    const showToast = (message, type = "error") => {
+    const showToast = (message, type = "error", visibilityTime = 3000) => {
         Toast.show({
             type: type,
             text1: message,
             position: "top",
             topOffset: 100,
+            visibilityTime: visibilityTime,
         });
     };
 
@@ -110,7 +110,7 @@ export default function CurrencyConverterModal({
 
     const calculateConversion = () => {
         if (!targetCurrency) {
-            showToast("Please select a target currency");
+            showToast("Please select a target currency", "error", 5000);
             return;
         }
 
@@ -120,7 +120,11 @@ export default function CurrencyConverterModal({
         );
 
         if (missingRates.length > 0) {
-            showToast(`Missing exchange rates for: ${missingRates.join(", ")}`);
+            showToast(
+                `Missing exchange rates for: ${missingRates.join(", ")}`,
+                "error",
+                5000
+            );
             return;
         }
 
@@ -149,7 +153,6 @@ export default function CurrencyConverterModal({
 
         setConvertedTransactions(converted);
         setIsConverted(true);
-        showToast("Conversion completed successfully!", "success");
     };
 
     const getTotalByType = (type) => {
@@ -167,7 +170,8 @@ export default function CurrencyConverterModal({
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString();
+        // not local date format, just a simple date
+        return date.toLocaleDateString("en-US", {});
     };
 
     const formatDateTime = (dateString) => {
@@ -180,7 +184,7 @@ export default function CurrencyConverterModal({
 
     const generateConversionPdf = async () => {
         if (!convertedTransactions.length) {
-            showToast("No converted transactions to export");
+            showToast("No converted transactions to export", "info", 3000);
             return;
         }
 
@@ -505,8 +509,8 @@ export default function CurrencyConverterModal({
                                     <div class="summary-value summary-paid">${totalPaid} ${targetCurrency}</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-label">Net Amount</div>
-                                    <div class="summary-value summary-net">${netAmount} ${targetCurrency}</div>
+                                    <div class="summary-label">${netAmount > 0 ? "Must Recieve" : "Must Pay"}</div>
+                                    <div class="summary-value summary-net">${netAmount  < 0 ? netAmount *  -1 : netAmount} ${targetCurrency}</div>
                                 </div>
                             </div>
                         </div>
@@ -547,11 +551,9 @@ export default function CurrencyConverterModal({
                 mimeType: "application/pdf",
                 UTI: "com.adobe.pdf",
             });
-
-            showToast("PDF generated and shared successfully!", "success");
         } catch (error) {
-            console.error("Error generating PDF:", error);
-            showToast("Failed to generate PDF");
+            console.error("Error generating PDF:", error, error.message);
+            showToast("Failed to generate PDF", "error", 5000);
         } finally {
             setGeneratingPdf(false);
         }
@@ -560,9 +562,6 @@ export default function CurrencyConverterModal({
     const handleApplyConversion = async () => {
         // Generate PDF first
         await generateConversionPdf();
-        setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 50);
 
         // Close the modal
         // onClose();
@@ -575,431 +574,474 @@ export default function CurrencyConverterModal({
                 onPress={onClose}
             />
 
-            <Animated.View
-                entering={FadeIn.duration(300)}
-                exiting={FadeOut.duration(300)}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
                 style={styles.modalContainer}
             >
-                <View style={styles.contentContainer}>
-                    {/* Header */}
-                    <View style={styles.headerContainer}>
-                        <View style={styles.headerIconContainer}>
-                            <MaterialIcons
-                                name="currency-exchange"
-                                size={28}
-                                color="#FFFFFF"
-                            />
-                        </View>
-                        <Text style={styles.title}>Currency Converter</Text>
-                        <Text style={styles.subtitle}>
-                            Convert {transactions.length} transactions for{" "}
-                            {username}
-                        </Text>
-                    </View>
-
-                    <ScrollView
-                        ref={scrollViewRef}
-                        style={styles.scrollContainer}
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator={false}
-                    >
-                        {/* Current Currencies Info */}
-                        {transactions.length > 0 && (
-                            <View style={styles.section}>
-                                <Text style={styles.sectionLabel}>
-                                    Current Transactions
-                                </Text>
-                                <View style={styles.currencyInfo}>
-                                    <Text style={styles.currencyInfoText}>
-                                        Found {transactions.length} transactions
-                                        in {uniqueCurrencies.length} currencies:
-                                    </Text>
-                                    <Text style={styles.currencyList}>
-                                        {[
-                                            ...new Set(
-                                                transactions.map(
-                                                    (t) => t.currency
-                                                )
-                                            ),
-                                        ].join(", ")}
-                                    </Text>
-                                </View>
+                <Animated.View
+                    entering={FadeIn.duration(300)}
+                    exiting={FadeOut.duration(300)}
+                    style={styles.modalContainer}
+                >
+                    <View style={styles.contentContainer}>
+                        {/* Header */}
+                        <View style={styles.headerContainer}>
+                            <View style={styles.headerIconContainer}>
+                                <MaterialIcons
+                                    name="currency-exchange"
+                                    size={28}
+                                    color="#FFFFFF"
+                                />
                             </View>
-                        )}
-
-                        {/* Target Currency Selection */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionLabel}>
-                                Convert to Currency
+                            <Text style={styles.title}>Currency Converter</Text>
+                            <Text style={styles.subtitle}>
+                                Convert {transactions.length} transaction(s) for{" "}
+                                {username}
                             </Text>
-                            <CurrencyDropdownListSearch
-                                selected={targetCurrency}
-                                setSelected={setTargetCurrency}
-                            />
                         </View>
 
-                        {/* Rate Source Toggle */}
-                        {targetCurrency && uniqueCurrencies.length > 0 && (
-                            <View style={styles.section}>
-                                <Text style={styles.sectionLabel}>
-                                    Exchange Rate Source
-                                </Text>
-                                <View style={styles.toggleContainer}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.toggleButton,
-                                            !useManualRates &&
-                                                styles.toggleButtonActive,
-                                        ]}
-                                        onPress={() => setUseManualRates(false)}
-                                    >
-                                        <Feather
-                                            name="globe"
-                                            size={16}
-                                            color={
-                                                !useManualRates
-                                                    ? "#FFFFFF"
-                                                    : "#64748B"
-                                            }
-                                        />
-                                        <Text
-                                            style={[
-                                                styles.toggleText,
-                                                !useManualRates &&
-                                                    styles.toggleTextActive,
-                                            ]}
-                                        >
-                                            Live Rates
+                        <ScrollView
+                            ref={scrollViewRef}
+                            style={styles.scrollContainer}
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {/* Current Currencies Info */}
+                            {transactions.length > 0 && (
+                                <View style={styles.section}>
+                                    <Text style={styles.sectionLabel}>
+                                        Current Transactions
+                                    </Text>
+                                    <View style={styles.currencyInfo}>
+                                        <Text style={styles.currencyInfoText}>
+                                            Found {transactions.length}{" "}
+                                            transactions in{" "}
+                                            {uniqueCurrencies.length}{" "}
+                                            currencies:
                                         </Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.toggleButton,
-                                            useManualRates &&
-                                                styles.toggleButtonActive,
-                                        ]}
-                                        onPress={() => setUseManualRates(true)}
-                                    >
-                                        <Feather
-                                            name="edit-3"
-                                            size={16}
-                                            color={
-                                                useManualRates
-                                                    ? "#FFFFFF"
-                                                    : "#64748B"
-                                            }
-                                        />
-                                        <Text
-                                            style={[
-                                                styles.toggleText,
-                                                useManualRates &&
-                                                    styles.toggleTextActive,
-                                            ]}
-                                        >
-                                            Manual Input
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
-
-                        {/* Exchange Rates Display/Input */}
-                        {targetCurrency && uniqueCurrencies.length > 0 && (
-                            <View style={styles.section}>
-                                <Text style={styles.sectionLabel}>
-                                    Exchange Rates{" "}
-                                    {loading && (
-                                        <ActivityIndicator
-                                            size="small"
-                                            color="#1E293B"
-                                        />
-                                    )}
-                                </Text>
-
-                                {uniqueCurrencies.map((currency) => (
-                                    <View
-                                        key={currency}
-                                        style={styles.rateContainer}
-                                    >
-                                        <View style={styles.rateHeader}>
-                                            <Text style={styles.rateLabel}>
-                                                1 {currency} = ?{" "}
-                                                {targetCurrency}
-                                            </Text>
-                                        </View>
-
-                                        {useManualRates ? (
-                                            <TextInput
-                                                style={styles.rateInput}
-                                                placeholder="Enter exchange rate"
-                                                placeholderTextColor="#94A3B8"
-                                                keyboardType="decimal-pad"
-                                                value={
-                                                    manualRates[
-                                                        currency
-                                                    ]?.toString() || ""
-                                                }
-                                                onChangeText={(value) =>
-                                                    handleManualRateChange(
-                                                        currency,
-                                                        value
+                                        <Text style={styles.currencyList}>
+                                            {[
+                                                ...new Set(
+                                                    transactions.map(
+                                                        (t) => t.currency
                                                     )
+                                                ),
+                                            ].join(", ")}
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
+
+                            {/* Target Currency Selection */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionLabel}>
+                                    Convert to Currency
+                                </Text>
+                                <CurrencyDropdownListSearch
+                                    selected={targetCurrency}
+                                    setSelected={setTargetCurrency}
+                                />
+                            </View>
+
+                            {/* Rate Source Toggle */}
+                            {targetCurrency && uniqueCurrencies.length > 0 && (
+                                <View style={styles.section}>
+                                    <Text style={styles.sectionLabel}>
+                                        Exchange Rate Source
+                                    </Text>
+                                    <View style={styles.toggleContainer}>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.toggleButton,
+                                                !useManualRates &&
+                                                    styles.toggleButtonActive,
+                                            ]}
+                                            onPress={() =>
+                                                setUseManualRates(false)
+                                            }
+                                        >
+                                            <Feather
+                                                name="globe"
+                                                size={16}
+                                                color={
+                                                    !useManualRates
+                                                        ? "#FFFFFF"
+                                                        : "#64748B"
                                                 }
                                             />
-                                        ) : (
-                                            <View style={styles.rateDisplay}>
-                                                <Text style={styles.rateValue}>
-                                                    {loading
-                                                        ? "Loading..."
-                                                        : exchangeRates[
-                                                              currency
-                                                          ]?.toFixed(4) ||
-                                                          "N/A"}
-                                                </Text>
-                                                {exchangeRates[currency] && (
-                                                    <Text
-                                                        style={
-                                                            styles.rateTimestamp
-                                                        }
-                                                    >
-                                                        Live rate
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        )}
-                                    </View>
-                                ))}
-                            </View>
-                        )}
-
-                        {/* Conversion Results */}
-                        {isConverted && convertedTransactions.length > 0 && (
-                            <View style={styles.section}>
-                                <Text style={styles.sectionLabel}>
-                                    Conversion Results
-                                </Text>
-
-                                {/* Summary */}
-                                <View style={styles.summaryContainer}>
-                                    <View style={styles.summaryRow}>
-                                        <Text style={styles.summaryLabel}>
-                                            Total Received:
-                                        </Text>
-                                        <Text
+                                            <Text
+                                                style={[
+                                                    styles.toggleText,
+                                                    !useManualRates &&
+                                                        styles.toggleTextActive,
+                                                ]}
+                                            >
+                                                Live Rates
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
                                             style={[
-                                                styles.summaryValue,
-                                                styles.receivedText,
+                                                styles.toggleButton,
+                                                useManualRates &&
+                                                    styles.toggleButtonActive,
                                             ]}
+                                            onPress={() =>
+                                                setUseManualRates(true)
+                                            }
                                         >
-                                            {getTotalByType("received")}{" "}
-                                            {targetCurrency}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.summaryRow}>
-                                        <Text style={styles.summaryLabel}>
-                                            Total Paid:
-                                        </Text>
-                                        <Text
-                                            style={[
-                                                styles.summaryValue,
-                                                styles.paidText,
-                                            ]}
-                                        >
-                                            {getTotalByType("paid")}{" "}
-                                            {targetCurrency}
-                                        </Text>
-                                    </View>
-                                    <View
-                                        style={[
-                                            styles.summaryRow,
-                                            styles.netRow,
-                                        ]}
-                                    >
-                                        <Text style={styles.summaryLabel}>
-                                            Net Amount:
-                                        </Text>
-                                        <Text
-                                            style={[
-                                                styles.summaryValue,
-                                                Number.parseFloat(
-                                                    getNetAmount()
-                                                ) >= 0
-                                                    ? styles.receivedText
-                                                    : styles.paidText,
-                                            ]}
-                                        >
-                                            {getNetAmount()} {targetCurrency}
-                                        </Text>
+                                            <Feather
+                                                name="edit-3"
+                                                size={16}
+                                                color={
+                                                    useManualRates
+                                                        ? "#FFFFFF"
+                                                        : "#64748B"
+                                                }
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.toggleText,
+                                                    useManualRates &&
+                                                        styles.toggleTextActive,
+                                                ]}
+                                            >
+                                                Manual Input
+                                            </Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
+                            )}
 
-                                {/* Transaction Details */}
-                                <Text style={styles.detailsLabel}>
-                                    Transaction Details:
-                                </Text>
-                                {convertedTransactions.map(
-                                    (transaction, index) => (
+                            {/* Exchange Rates Display/Input */}
+                            {targetCurrency && uniqueCurrencies.length > 0 && (
+                                <View style={styles.section}>
+                                    <Text style={styles.sectionLabel}>
+                                        Exchange Rates{" "}
+                                        {loading && (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#1E293B"
+                                            />
+                                        )}
+                                    </Text>
+
+                                    {uniqueCurrencies.map((currency) => (
                                         <View
-                                            key={transaction.id || index}
-                                            style={styles.transactionRow}
+                                            key={currency}
+                                            style={styles.rateContainer}
                                         >
-                                            <View
-                                                style={styles.transactionInfo}
-                                            >
-                                                <Text
-                                                    style={
-                                                        styles.transactionType
-                                                    }
-                                                >
-                                                    {
-                                                        transaction.transaction_type
-                                                    }
-                                                </Text>
-                                                <Text
-                                                    style={
-                                                        styles.originalAmount
-                                                    }
-                                                >
-                                                    {transaction.originalAmount}{" "}
-                                                    {
-                                                        transaction.originalCurrency
-                                                    }
-                                                </Text>
-                                                <Text
-                                                    style={
-                                                        styles.transactionDate
-                                                    }
-                                                >
-                                                    {formatDate(
-                                                        transaction.transaction_at
-                                                    )}
-                                                </Text>
-                                            </View>
-                                            <View style={styles.conversionInfo}>
-                                                <Text
-                                                    style={
-                                                        styles.convertedAmount
-                                                    }
-                                                >
-                                                    {
-                                                        transaction.convertedAmount
-                                                    }{" "}
+                                            <View style={styles.rateHeader}>
+                                                <Text style={styles.rateLabel}>
+                                                    1 {currency} = ?{" "}
                                                     {targetCurrency}
                                                 </Text>
-                                                <Text
-                                                    style={
-                                                        styles.exchangeRateText
+                                            </View>
+
+                                            {useManualRates ? (
+                                                <TextInput
+                                                    style={styles.rateInput}
+                                                    placeholder="Enter exchange rate"
+                                                    placeholderTextColor="#94A3B8"
+                                                    keyboardType="decimal-pad"
+                                                    value={
+                                                        manualRates[
+                                                            currency
+                                                        ]?.toString() || ""
                                                     }
+                                                    onChangeText={(value) =>
+                                                        handleManualRateChange(
+                                                            currency,
+                                                            value
+                                                        )
+                                                    }
+                                                />
+                                            ) : (
+                                                <View
+                                                    style={styles.rateDisplay}
                                                 >
-                                                    Rate:{" "}
-                                                    {transaction.exchangeRate.toFixed(
-                                                        4
+                                                    <Text
+                                                        style={styles.rateValue}
+                                                    >
+                                                        {loading
+                                                            ? "Loading..."
+                                                            : exchangeRates[
+                                                                  currency
+                                                              ]?.toFixed(4) ||
+                                                              "N/A"}
+                                                    </Text>
+                                                    {exchangeRates[
+                                                        currency
+                                                    ] && (
+                                                        <Text
+                                                            style={
+                                                                styles.rateTimestamp
+                                                            }
+                                                        >
+                                                            Live rate
+                                                        </Text>
                                                     )}
+                                                </View>
+                                            )}
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+
+                            {/* Conversion Results */}
+                            {isConverted &&
+                                convertedTransactions.length > 0 && (
+                                    <View style={styles.section}>
+                                        <Text style={styles.sectionLabel}>
+                                            Conversion Results
+                                        </Text>
+
+                                        {/* Summary */}
+                                        <View style={styles.summaryContainer}>
+                                            <View style={styles.summaryRow}>
+                                                <Text
+                                                    style={styles.summaryLabel}
+                                                >
+                                                    Total Received:
+                                                </Text>
+                                                <Text
+                                                    style={[
+                                                        styles.summaryValue,
+                                                        styles.receivedText,
+                                                    ]}
+                                                >
+                                                    {getTotalByType("received")}{" "}
+                                                    {targetCurrency}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.summaryRow}>
+                                                <Text
+                                                    style={styles.summaryLabel}
+                                                >
+                                                    Total Paid:
+                                                </Text>
+                                                <Text
+                                                    style={[
+                                                        styles.summaryValue,
+                                                        styles.paidText,
+                                                    ]}
+                                                >
+                                                    {getTotalByType("paid")}{" "}
+                                                    {targetCurrency}
+                                                </Text>
+                                            </View>
+                                            <View
+                                                style={[
+                                                    styles.summaryRow,
+                                                    styles.netRow,
+                                                ]}
+                                            >
+                                                <Text
+                                                    style={styles.summaryLabel}
+                                                >
+                                                    {Number.parseFloat(
+                                                        getNetAmount()
+                                                    ) >= 0
+                                                        ? "Must Pay"
+                                                        : "Must Receive"}
+                                                </Text>
+                                                <Text
+                                                    style={[
+                                                        styles.summaryValue,
+                                                        Number.parseFloat(
+                                                            getNetAmount()
+                                                        ) >= 0
+                                                            ? styles.paidText
+                                                            : styles.receivedText,
+                                                    ]}
+                                                >
+                                                    {getNetAmount() * -1}{" "}
+                                                    {targetCurrency}
                                                 </Text>
                                             </View>
                                         </View>
-                                    )
-                                )}
 
-                                {convertedTransactions.length && (
-                                    <Text style={styles.moreTransactions}>
-                                        {convertedTransactions.length}{" "}
-                                        transactions converted
-                                    </Text>
-                                )}
-                            </View>
-                        )}
-                    </ScrollView>
+                                        {/* Transaction Details */}
+                                        <Text style={styles.detailsLabel}>
+                                            Transaction Details:
+                                        </Text>
+                                        {convertedTransactions.map(
+                                            (transaction, index) => (
+                                                <View
+                                                    key={
+                                                        transaction.id || index
+                                                    }
+                                                    style={
+                                                        styles.transactionRow
+                                                    }
+                                                >
+                                                    <View
+                                                        style={
+                                                            styles.transactionInfo
+                                                        }
+                                                    >
+                                                        <Text
+                                                            style={
+                                                                styles.transactionType
+                                                            }
+                                                        >
+                                                            {
+                                                                transaction.transaction_type
+                                                            }
+                                                        </Text>
+                                                        <Text
+                                                            style={
+                                                                styles.originalAmount
+                                                            }
+                                                        >
+                                                            {
+                                                                transaction.originalAmount
+                                                            }{" "}
+                                                            {
+                                                                transaction.originalCurrency
+                                                            }
+                                                        </Text>
+                                                        <Text
+                                                            style={
+                                                                styles.transactionDate
+                                                            }
+                                                        >
+                                                            {formatDate(
+                                                                transaction.transaction_at
+                                                            )}
+                                                        </Text>
+                                                    </View>
+                                                    <View
+                                                        style={
+                                                            styles.conversionInfo
+                                                        }
+                                                    >
+                                                        <Text
+                                                            style={
+                                                                styles.convertedAmount
+                                                            }
+                                                        >
+                                                            {
+                                                                transaction.convertedAmount
+                                                            }{" "}
+                                                            {targetCurrency}
+                                                        </Text>
+                                                        <Text
+                                                            style={
+                                                                styles.exchangeRateText
+                                                            }
+                                                        >
+                                                            Rate:{" "}
+                                                            {transaction.exchangeRate.toFixed(
+                                                                4
+                                                            )}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+                                            )
+                                        )}
 
-                    {/* Action Buttons */}
-                    <View style={styles.buttonContainer}>
-                        {!isConverted ? (
-                            <TouchableOpacity
-                                style={[
-                                    styles.convertButton,
-                                    (!targetCurrency || loading) &&
-                                        styles.convertButtonDisabled,
-                                ]}
-                                onPress={calculateConversion}
-                                disabled={!targetCurrency || loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#FFFFFF"
-                                    />
-                                ) : (
-                                    <Feather
-                                        name="refresh-cw"
-                                        size={20}
-                                        color="#FFFFFF"
-                                    />
+                                        {convertedTransactions.length && (
+                                            <Text
+                                                style={styles.moreTransactions}
+                                            >
+                                                {convertedTransactions.length}{" "}
+                                                transaction(s) converted
+                                            </Text>
+                                        )}
+                                    </View>
                                 )}
-                                <Text style={styles.convertButtonText}>
-                                    {loading
-                                        ? "Loading..."
-                                        : "Convert Transactions"}
-                                </Text>
-                            </TouchableOpacity>
-                        ) : (
-                            <View style={styles.actionButtonsRow}>
-                                <TouchableOpacity
-                                    style={styles.resetButton}
-                                    onPress={() => {
-                                        setIsConverted(false);
-                                        setConvertedTransactions([]);
-                                    }}
-                                >
-                                    <Feather
-                                        name="refresh-cw"
-                                        size={18}
-                                        color="#64748B"
-                                    />
-                                    <Text style={styles.resetButtonText}>
-                                        Reset
-                                    </Text>
-                                </TouchableOpacity>
+                        </ScrollView>
 
+                        {/* Action Buttons */}
+                        <View style={styles.buttonContainer}>
+                            {!isConverted ? (
                                 <TouchableOpacity
                                     style={[
-                                        styles.applyButton,
-                                        generatingPdf &&
-                                            styles.applyButtonDisabled,
+                                        styles.convertButton,
+                                        (!targetCurrency || loading) &&
+                                            styles.convertButtonDisabled,
                                     ]}
-                                    onPress={handleApplyConversion}
-                                    disabled={generatingPdf}
+                                    onPress={calculateConversion}
+                                    disabled={!targetCurrency || loading}
                                 >
-                                    {generatingPdf ? (
+                                    {loading ? (
                                         <ActivityIndicator
                                             size="small"
                                             color="#FFFFFF"
                                         />
                                     ) : (
                                         <Feather
-                                            name="file-text"
-                                            size={18}
+                                            name="refresh-cw"
+                                            size={20}
                                             color="#FFFFFF"
                                         />
                                     )}
-                                    <Text style={styles.applyButtonText}>
-                                        {generatingPdf
-                                            ? "Generating PDF..."
-                                            : "Apply & Export PDF"}
+                                    <Text style={styles.convertButtonText}>
+                                        {loading
+                                            ? "Loading..."
+                                            : "Convert Transactions"}
                                     </Text>
                                 </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
+                            ) : (
+                                <View style={styles.actionButtonsRow}>
+                                    <TouchableOpacity
+                                        style={styles.resetButton}
+                                        onPress={() => {
+                                            setIsConverted(false);
+                                            setConvertedTransactions([]);
+                                        }}
+                                    >
+                                        <Feather
+                                            name="refresh-cw"
+                                            size={18}
+                                            color="#64748B"
+                                        />
+                                        <Text style={styles.resetButtonText}>
+                                            Reset
+                                        </Text>
+                                    </TouchableOpacity>
 
-                    {/* Close Button */}
-                    <TouchableOpacity
-                        onPress={onClose}
-                        style={styles.closeButton}
-                    >
-                        <Feather name="x" size={20} color="#64748B" />
-                    </TouchableOpacity>
-                </View>
-            </Animated.View>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.applyButton,
+                                            generatingPdf &&
+                                                styles.applyButtonDisabled,
+                                        ]}
+                                        onPress={handleApplyConversion}
+                                        disabled={generatingPdf}
+                                    >
+                                        {generatingPdf ? (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#FFFFFF"
+                                            />
+                                        ) : (
+                                            <Feather
+                                                name="file-text"
+                                                size={18}
+                                                color="#FFFFFF"
+                                            />
+                                        )}
+                                        <Text style={styles.applyButtonText}>
+                                            {generatingPdf
+                                                ? "Generating PDF..."
+                                                : "Export PDF"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Close Button */}
+                        <TouchableOpacity
+                            onPress={onClose}
+                            style={styles.closeButton}
+                        >
+                            <Feather name="x" size={20} color="#64748B" />
+                        </TouchableOpacity>
+                    </View>
+                </Animated.View>
+            </KeyboardAvoidingView>
         </View>
     );
 }
@@ -1329,7 +1371,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 2,
         elevation: 3,
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
+        backgroundColor: "#EDF2F7",
     },
 });
