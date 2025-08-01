@@ -1,50 +1,43 @@
 {
-  "name": "PairPay",
-  "slug": "green-red",
-  "version": "11.0.0",
-  "orientation": "portrait",
-  "icon": "./assets/icon.png",
-  "userInterfaceStyle": "light",
-  "splash": {
-    "image": "./assets/splash.png",
-    "resizeMode": "contain",
-    "backgroundColor": "#ffffff"
-  },
-  "assetBundlePatterns": [
-    "**/*"
-  ],
-  "ios": {
-    "supportsTablet": true,
-    "bundleIdentifier": "com.alisinayousofi.greenred"
-  },
-  "android": {
-    "package": "com.alisinayousofi.greenred",
-    "permissions": [
-      "WRITE_EXTERNAL_STORAGE",
-      "READ_EXTERNAL_STORAGE"
-    ]
-  },
-  "web": {
-  },
-  "extra": {
-    "eas": {
-      "projectId": "5fd3d24a-fc71-4427-b0d3-dd20f4b537b8"
-    }
-  },
-  "plugins": [
-    [
-      "expo-build-properties",
-      {
-        "android": {
-          "compileSdkVersion": 35,
-          "targetSdkVersion": 35,
-          "buildToolsVersion": "35.0.0",
-          "enableProguardInReleaseBuilds": true,
-          "enableShrinkResourcesInReleaseBuilds": true,
-          "useLegacyPackaging": true
+    "name": "PairPay",
+    "slug": "green-red",
+    "version": "11.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+        "image": "./assets/splash.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+        "supportsTablet": true,
+        "bundleIdentifier": "com.alisinayousofi.greenred"
+    },
+    "android": {
+        "package": "com.alisinayousofi.greenred",
+        "permissions": ["WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"]
+    },
+    "web": {},
+    "extra": {
+        "eas": {
+            "projectId": "5fd3d24a-fc71-4427-b0d3-dd20f4b537b8"
         }
-      }
-    ],
-    "expo-font"
-  ]
+    },
+    "plugins": [
+        [
+            "expo-build-properties",
+            {
+                "android": {
+                    "compileSdkVersion": 35,
+                    "targetSdkVersion": 35,
+                    "buildToolsVersion": "35.0.0",
+                    "enableProguardInReleaseBuilds": true,
+                    "enableShrinkResourcesInReleaseBuilds": true,
+                    "useLegacyPackaging": true
+                }
+            }
+        ]
+    ]
 }

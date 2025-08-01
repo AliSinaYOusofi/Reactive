@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     Modal,
@@ -12,12 +11,11 @@ import Toast from "react-native-toast-message";
 import AddNewCustomeRecordModal from "../components/global/AddNewCustomeRecordModal";
 import { useAppContext } from "../context/useAppContext";
 import Animated, {
-    FadeIn,
     withSpring,
     useSharedValue,
 } from "react-native-reanimated";
 import NoCustomerRecordFound from "../components/global/NoCustomerRecordFound";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import AnimatedUserListView from "../components/global/AnimatedUserListView";
 import CarouselOfTracker from "../components/carousel/Carouself";
 import { supabase } from "../utils/supabase";

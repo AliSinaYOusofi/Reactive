@@ -1,5 +1,4 @@
-import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./screens/HomeScreen";
@@ -61,21 +60,6 @@ function Navigation() {
                         marginBottom: 4,
                         fontSize: 20,
                     },
-                    
-                    headerRight: () =>
-                        route.name !== "login" &&
-                        route.name !== "signup" && (
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate("settings")}
-                                style={styles.headerIcon}
-                            >
-                                <Feather
-                                    name="settings"
-                                    size={24}
-                                    color="black"
-                                />
-                            </TouchableOpacity>
-                        ),
                 })}
             >
                 <Stack.Screen
