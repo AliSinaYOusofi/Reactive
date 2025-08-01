@@ -220,14 +220,13 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "white",
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "center"
     },
     modalView: {
         width: "90%",
         backgroundColor: "white",
         padding: 24,
         borderRadius: 20,
-        elevation: 8,
     },
     title: {
         fontSize: 24,
