@@ -68,16 +68,19 @@ export default function CurrencyConverterModal({
             const response = await fetch(url);
             const data = await response.json();
             const rates = {};
-            
+
             // Extract rates for each unique currency
             uniqueCurrencies.forEach((currency) => {
-                const rateToCurrency = data[targetCurrency.toLowerCase()]?.[currency.toLowerCase()];
+                const rateToCurrency =
+                    data[targetCurrency.toLowerCase()]?.[
+                        currency.toLowerCase()
+                    ];
                 if (rateToCurrency && rateToCurrency !== 0) {
                     // invert rate to get 1 unit of source currency = ? units target currency
                     rates[currency] = 1 / rateToCurrency;
                 }
             });
-            
+
             setExchangeRates(rates);
         } catch (error) {
             console.error("Error fetching exchange rates:", error);
@@ -104,7 +107,7 @@ export default function CurrencyConverterModal({
     const handleManualRateChange = (currency, rate) => {
         setManualRates((prev) => ({
             ...prev,
-            [currency]: Number.parseFloat(rate) || 0,
+            [currency]: rate || 0,
         }));
     };
 
@@ -114,7 +117,17 @@ export default function CurrencyConverterModal({
             return;
         }
 
-        const ratesToUse = useManualRates ? manualRates : exchangeRates;
+        const ratesToUse = useManualRates
+            ? uniqueCurrencies.reduce((acc, cur) => {
+                    const text = manualRates[cur] ?? "";
+                    const num = parseFloat(text);
+                    if (!isNaN(num) && num > 0) {
+                        acc[cur] = num;
+                    }
+                    return acc;
+            }, {})
+            : exchangeRates;
+
         const missingRates = uniqueCurrencies.filter(
             (currency) => !ratesToUse[currency] || ratesToUse[currency] === 0
         );
@@ -509,8 +522,16 @@ export default function CurrencyConverterModal({
                                     <div class="summary-value summary-paid">${totalPaid} ${targetCurrency}</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-label">${netAmount > 0 ? "Must Recieve" : "Must Pay"}</div>
-                                    <div class="summary-value summary-net">${netAmount  < 0 ? netAmount *  -1 : netAmount} ${targetCurrency}</div>
+                                    <div class="summary-label">${
+                                        netAmount > 0
+                                            ? "Must Recieve"
+                                            : "Must Pay"
+                                    }</div>
+                                    <div class="summary-value summary-net">${
+                                        netAmount < 0
+                                            ? netAmount * -1
+                                            : netAmount
+                                    } ${targetCurrency}</div>
                                 </div>
                             </div>
                         </div>
@@ -566,6 +587,7 @@ export default function CurrencyConverterModal({
         // Close the modal
         // onClose();
     };
+
     return (
         <View style={styles.modalOverlay}>
             <TouchableOpacity
